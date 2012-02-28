@@ -1,0 +1,3 @@
+Ryouko is developed by foxhead128.
+
+Major thanks goes to roberto.alsina for coding the much more elegant browser, De Vicenzo <http://code.google.com/p/devicenzo/>, without which Ryouko would not have persistent cookie storage.
