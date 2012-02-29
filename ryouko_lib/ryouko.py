@@ -6,6 +6,8 @@ import os, sys, pickle, json, time, datetime
 from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 if not sys.platform.startswith("win"):
     from PyQt4 import uic
+    class Ui_MainWindow():
+        pass
 else:
     from mainwindow import Ui_MainWindow
 try: from urllib.request import urlretrieve
