@@ -463,7 +463,7 @@ class TabBrowser(QtGui.QMainWindow):
         QToolButton:pressed, QPushButton:pressed {
         border: 1px solid palette(shadow);
         background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shadow), stop:1 palette(button));
-        }
+            }
         """)
         self.tabs.setCornerWidget(self.cornerWidgets,QtCore.Qt.TopRightCorner)
         self.cornerWidgetsLayout = QtGui.QHBoxLayout()
@@ -486,21 +486,16 @@ class TabBrowser(QtGui.QMainWindow):
         self.undoCloseTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.undoCloseTabButton.setDefaultAction(undoCloseTabAction)
         self.cornerWidgetsLayout.addWidget(self.undoCloseTabButton)
-        self.cornerToolBar = QtGui.QToolBar()
-        self.cornerToolBar.setStyleSheet("""
-        QToolBar {
-        border-top: 0;
-        background: transparent;
-        }
-        """)
-        self.cornerWidgetsLayout.addWidget(self.cornerToolBar)
         historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(self.app_lib, "icons", "history.png"))), "Toggle History Sidebar", self)
         historyToggleAction.setToolTip("<b>View History</b><br>Ctrl+H")
         historyToggleAction.triggered.connect(self.historyToggle)
         historyToggleAction.triggered.connect(self.historyToolBar.show)
         historyToggleAction.setShortcut("Ctrl+H")
-        self.cornerToolBar.addAction(historyToggleAction)
         self.addAction(historyToggleAction)
+        self.historyToggleButton = QtGui.QToolButton()
+        self.historyToggleButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.historyToggleButton.setDefaultAction(historyToggleAction)
+        self.cornerWidgetsLayout.addWidget(self.historyToggleButton)
         closeTabAction = QtGui.QAction(self)
         closeTabAction.setShortcuts(['Ctrl+W'])
         closeTabAction.triggered.connect(self.closeTab)
