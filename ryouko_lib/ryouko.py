@@ -675,12 +675,12 @@ class TabBrowser(QtGui.QMainWindow):
         configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'settings.png'))), '&Preferences', self)
         configAction.setToolTip("<b>Preferences</b><br>Ctrl+Shift+P")
         configAction.setShortcuts(['Ctrl+Shift+P'])
-        configAction.triggered.connect(self.config)
+        configAction.triggered.connect(self.showSettings)
         self.addAction(configAction)
-        self.configButton = QtGui.QToolButton()
-        self.configButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.configButton.setDefaultAction(configAction)
-        self.cornerWidgetsLayout.addWidget(self.configButton)
+        self.settingsButton = QtGui.QToolButton()
+        self.settingsButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.settingsButton.setDefaultAction(configAction)
+        self.cornerWidgetsLayout.addWidget(self.settingsButton)
 
         closeTabAction = QtGui.QAction(self)
         closeTabAction.setShortcuts(['Ctrl+W'])
@@ -693,8 +693,12 @@ class TabBrowser(QtGui.QMainWindow):
             for arg in range(1, len(sys.argv)):
                 self.newTab(sys.argv[arg])
 
-    def config(self):
+    def showSettings(self):
         self.cDialog.show()
+        qr = self.cDialog.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.cDialog.move(qr.topLeft())
 
     def updateSettings(self):
         for tab in range(self.tabs.count()):
