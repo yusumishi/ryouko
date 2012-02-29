@@ -190,6 +190,15 @@ class RWebView(QtWebKit.QWebView):
         else:
             return ""
 
+    def locationEdit(self):
+        url = self.inputDialog("Open location", "Enter a URL here:", self.text)
+        if url:
+            header = ""
+            if not unicode(url).startswith("about:") and not "://" in unicode(url):
+                header = "http://"
+            url = qstring(header + unicode(url))
+            self.load(QtCore.QUrl(url))
+
     def find(self):
         find = self.inputDialog("Find", "Search for:", self.text)
         if find:
@@ -220,17 +229,21 @@ class RWebView(QtWebKit.QWebView):
             cookies = QtNetwork.QNetworkCookieJar(None)
             cookies.setAllCookies([])
             self.page().networkAccessManager().setCookieJar(cookies)
+
     def saveDialog(self, fname="", filters = "All files (*)"):
         saveDialog = QtGui.QFileDialog.getSaveFileName(None, "Save As", os.path.join(os.getcwd(), fname), filters)
         return saveDialog
+
     def downloadFile(self, request):
         fname = self.saveDialog(os.path.split(unicode(request.url().toString()))[1])
         if fname:
             downloaderThread.setUrl(unicode(request.url().toString()))
             downloaderThread.setDestination(fname)
             downloaderThread.start()
+
     def updateTitle(self):
         self.setWindowTitle(self.title())
+
     def createWindow(self, windowType):
         if not self.parent == None:
             exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(self.parent)")
@@ -240,7 +253,11 @@ class RWebView(QtWebKit.QWebView):
         exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.setShortcut('Ctrl+W')")
         exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.triggered.connect(self.newWindow" + str(len(self.newWindows)) + ".close)")
         exec("self.newWindow" + str(len(self.newWindows)) + ".addAction(self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction)")
+        exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction = QtGui.QAction(self.newWindow" + str(len(self.newWindows)) + ")")
+        exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction.setShortcuts(['Ctrl+L', 'Alt+D'])")
+        exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction.triggered.connect(self.newWindow" + str(len(self.newWindows)) + ".locationEdit)")
         exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
+        exec("self.newWindow" + str(len(self.newWindows)) + ".addAction(self.newWindow" + str(len(self.newWindows)) + ".locationEditAction)")
         if not self.parent == None:
             exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
         else:
@@ -432,10 +449,10 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
     def updateWeb(self):
         urlBar = self.urlBar.text()
         header = ""
-        if not str(urlBar).startswith("about:") and not str(urlBar).startswith("http://") and not str(urlBar).startswith("https://") and not str(urlBar).startswith("ftp://") and not str(urlBar).startswith("file://"):
+        if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar):
             header = "http://"
-        url = qstring(header + str(urlBar))
-        if str(urlBar) == "about:" or str(urlBar) == "about:version":
+        url = qstring(header + unicode(urlBar))
+        if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
             self.webView.setHtml("<html><head><title>About Ryouko</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>About Ryouko</h1><img src='file://" + os.path.join(app_lib, "icons", "about-logo.png") + "'></img><br><b>Ryouko version:</b> "+self.version+"<br><b>Release series:</b> \""+self.codename+"\"<br><b>Python version:</b> "+str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2])+"<br><b>Qt version:</b> "+QtCore.qVersion()+"<br></center></body></html>")
         else:
             url = QtCore.QUrl(url)
