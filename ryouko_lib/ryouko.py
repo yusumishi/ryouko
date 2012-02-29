@@ -14,7 +14,12 @@ except ImportError:
     except:
         print("", end="")
 
+try:
+    __file__
+except:
+    __file__ = sys.executable
 app_lib = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(app_lib)
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
 
 def doNothing():
