@@ -23,6 +23,7 @@ except:
 app_lib = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(app_lib)
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
+app_logo = os.path.join(app_lib, "icons", "logo.svg")
 
 def doNothing():
     return
@@ -152,12 +153,6 @@ class RWebView(QtWebKit.QWebView):
         super(RWebView, self).__init__()
         if parent == False:
             self.parent = None
-        else:
-            self.parent = parent
-        if not parent:
-            self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
-        if parent:
-            self.page().networkAccessManager().setCookieJar(self.parent.cookies)
         self.ryouko_home = app_home
         self.titleChanged.connect(self.updateTitle)
         if os.path.exists(os.path.join(os.path.dirname(os.path.realpath(__file__)), "logo.svg")):
@@ -165,6 +160,22 @@ class RWebView(QtWebKit.QWebView):
         self.page().setForwardUnsupportedContent(True)
         self.page().unsupportedContent.connect(self.downloadFile)
         self.page().downloadRequested.connect(self.downloadFile)
+        self.establishParent(parent)
+    def establishParent(self, parent):
+        if parent == False:
+            self.parent = None
+        else:
+            self.parent = parent
+        if not parent or parent == None:
+            self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
+        else:
+            self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, False)
+        if parent and self.parent != None:
+            self.page().networkAccessManager().setCookieJar(self.parent.cookies)
+        else:
+            cookies = QtNetwork.QNetworkCookieJar(None)
+            cookies.setAllCookies([])
+            self.page().networkAccessManager().setCookieJar(cookies)
     def saveDialog(self, fname="", filters = "All files (*)"):
         saveDialog = QtGui.QFileDialog.getSaveFileName(None, "Save As", os.path.join(os.getcwd(), fname), filters)
         return saveDialog
@@ -221,11 +232,8 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             uic.loadUi(os.path.join(self.app_lib, "mainwindow.ui"), self)
         else:
             self.setupUi(self)
-        if not self.pb:
-            self.webView = RWebView(self.parent)
-        else:
-            self.webView = RWebView(None)
-            self.webView.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
+        self.webView = RWebView(None)
+        self.updateSettings()
         self.mainLayout.addWidget(self.webView, 2, 0)
         self.historyCompletion = QtGui.QListWidget()
         self.historyCompletion.itemActivated.connect(self.openHistoryItem)
@@ -304,6 +312,38 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.updateText()
         self.historyCompletion.hide()
         self.webView.show()
+
+    def updateSettings(self):
+        settingsFile = os.path.join(app_home, "settings.json")
+        if os.path.exists(settingsFile):
+            fstream = open(settingsFile, "r")
+            settings = json.load(fstream)
+            fstream.close()
+        else:
+            settings = {'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False}
+        try: settings['loadImages']
+        except: 
+            print("", end = "")
+        else:
+            self.webView.settings().setAttribute(QtWebKit.QWebSettings.AutoLoadImages, settings['loadImages'])
+        try: settings['jsEnabled']
+        except: 
+            print("", end = "")
+        else:
+            self.webView.settings().setAttribute(QtWebKit.QWebSettings.JavascriptEnabled, settings['jsEnabled'])
+        try: self.settings['pluginsEnabled']
+        except: 
+            print("", end = "")
+        else:
+            self.webView.settings().setAttribute(QtWebKit.QWebSettings.PluginsEnabled, settings['pluginsEnabled'])
+        try: settings['privateBrowsing']
+        except: 
+            print("", end = "")
+        else:
+            self.webView.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, settings['privateBrowsing'])
+            if not settings['privateBrowsing'] and self.pb == False:
+                self.webView.establishParent(self.parent)
+
     def searchHistory(self, string):
         string = str(string)
         if string != "" and string != str(self.webView.url().toString()) and string != "about:version":
@@ -355,9 +395,77 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         texturl = url.toString()
         self.urlBar.setText(texturl)
 
+class CDialog(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        super(CDialog, self).__init__()
+        self.parent = parent
+        self.settings = {'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False}
+        self.initUI()
+    def initUI(self):
+        self.setWindowTitle("Preferences")
+        self.setWindowIcon(QtGui.QIcon(app_logo))
+        self.mainWidget = QtGui.QWidget()
+        self.setCentralWidget(self.mainWidget)
+        self.layout = QtGui.QVBoxLayout()
+        self.mainWidget.setLayout(self.layout)
+        self.imagesBox = QtGui.QCheckBox("Automatically load &images")
+        self.layout.addWidget(self.imagesBox)
+        self.jsBox = QtGui.QCheckBox("Enable &Javascript")
+        self.layout.addWidget(self.jsBox)
+        self.pluginsBox = QtGui.QCheckBox("Enable &plugins")
+        self.layout.addWidget(self.pluginsBox)
+        self.pbBox = QtGui.QCheckBox("Enable private &browsing mode")
+        self.layout.addWidget(self.pbBox)
+        self.cToolBar = QtGui.QToolBar()
+        self.cToolBar.setMovable(False)
+        self.cToolBar.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        applyAction = QtGui.QAction("&Apply", self)
+        applyAction.triggered.connect(self.saveSettings)
+        closeAction = QtGui.QAction("&Close", self)
+        closeAction.triggered.connect(self.hide)
+        self.cToolBar.addAction(applyAction)
+        self.cToolBar.addAction(closeAction)
+        self.addToolBar(QtCore.Qt.BottomToolBarArea, self.cToolBar)
+        self.loadSettings()
+    def loadSettings(self):
+        settingsFile = os.path.join(app_home, "settings.json")
+        if os.path.exists(settingsFile):
+            fstream = open(settingsFile, "r")
+            self.settings = json.load(fstream)
+            fstream.close()
+        try: self.settings['loadImages']
+        except: 
+            print("", end = "")
+        else:
+            self.imagesBox.setChecked(self.settings['loadImages'])
+        try: self.settings['jsEnabled']
+        except: 
+            print("", end = "")
+        else:
+            self.jsBox.setChecked(self.settings['jsEnabled'])
+        try: self.settings['pluginsEnabled']
+        except: 
+            print("", end = "")
+        else:
+            self.pluginsBox.setChecked(self.settings['pluginsEnabled'])
+        try: self.settings['privateBrowsing']
+        except: 
+            print("", end = "")
+        else:
+            self.pbBox.setChecked(self.settings['privateBrowsing'])
+        self.parent.updateSettings()
+    def saveSettings(self):
+        settingsFile = os.path.join(app_home, "settings.json")
+        self.settings = {'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked()}
+        fstream = open(settingsFile, "w")
+        json.dump(self.settings, fstream)
+        fstream.close()
+        self.parent.updateSettings()
+
 class TabBrowser(QtGui.QMainWindow):
-    def __init__(self):
+    def __init__(self, parent=None):
         super(TabBrowser, self).__init__()
+        self.parent = parent
         if sys.version_info[0] >= 3:
             self.cookieFile = os.path.join(app_home, "cookies.pkl")
         else:
@@ -559,8 +667,10 @@ class TabBrowser(QtGui.QMainWindow):
         self.newpbTabButton.setDefaultAction(newpbTabAction)
         self.cornerWidgetsLayout.addWidget(self.newpbTabButton)
 
-        # Config
-        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'pb.png'))), '&New Private Browsing Tab', self)
+        self.cDialog = CDialog(self)
+
+        # Config button
+        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'settings.png'))), '&New Private Browsing Tab', self)
         configAction.setToolTip("<b>Preferences</b><br>Ctrl+Shift+P")
         configAction.setShortcuts(['Ctrl+Shift+P'])
         configAction.triggered.connect(self.config)
@@ -580,6 +690,14 @@ class TabBrowser(QtGui.QMainWindow):
         elif len(sys.argv) > 1:
             for arg in range(1, len(sys.argv)):
                 self.newTab(sys.argv[arg])
+
+    def config(self):
+        self.cDialog.show()
+
+    def updateSettings(self):
+        for tab in range(self.tabs.count()):
+            self.tabs.widget(tab).updateSettings()
+
     def nextTab(self):
         tabIndex = self.tabs.currentIndex() + 1
         if tabIndex < self.tabs.count():
@@ -593,17 +711,20 @@ class TabBrowser(QtGui.QMainWindow):
         else:
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
     def newTab(self, url="about:blank"):
-        self.tabCount += 1
-        if url != False:
-            exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"')")
+        if self.cDialog.settings['privateBrowsing']:
+            self.newpbTab(url)
         else:
-            exec("tab" + str(self.tabCount) + " = Browser(self)")
-        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
-        exec("tab" + str(self.tabCount) + ".webView.urlChanged.connect(self.reloadHistory)")
-        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.reloadHistory)")
-        exec("tab" + str(self.tabCount) + ".webView.iconChanged.connect(self.updateIcons)")
-        exec("self.tabs.addTab(tab" + str(self.tabCount) + ", tab" + str(self.tabCount) + ".webView.icon(), 'New Tab')")
-        self.tabs.setCurrentIndex(self.tabs.count() - 1)
+            self.tabCount += 1
+            if url != False:
+                exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"')")
+            else:
+                exec("tab" + str(self.tabCount) + " = Browser(self)")
+            exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
+            exec("tab" + str(self.tabCount) + ".webView.urlChanged.connect(self.reloadHistory)")
+            exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.reloadHistory)")
+            exec("tab" + str(self.tabCount) + ".webView.iconChanged.connect(self.updateIcons)")
+            exec("self.tabs.addTab(tab" + str(self.tabCount) + ", tab" + str(self.tabCount) + ".webView.icon(), 'New Tab')")
+            self.tabs.setCurrentIndex(self.tabs.count() - 1)
     def newpbTab(self, url="about:blank"):
         self.tabCount += 1
         if url != False:
@@ -739,18 +860,6 @@ class TabBrowser(QtGui.QMainWindow):
         for tab in range(self.tabs.count()):
             self.tabs.setTabIcon(tab, self.tabs.widget(tab).webView.icon())
 
-    # This part was borrowed from devicenzo:
-    def put(self, key, value):
-        "Persist an object somewhere under a given key"
-        settings.setValue(key, json.dumps(value))
-        settings.sync()
-
-    def get(self, key, default=None):
-        "Get the object stored under 'key' in persistent storage, or the default value"
-        v = settings.value(key)
-        return json.loads(unicode(v.toString())) if v.isValid() else default
-    # end
-
     def updateTitles(self):
         for tab in range(self.tabs.count()):
             if str(self.tabs.widget(tab).webView.title()) == "":
@@ -784,8 +893,8 @@ class TabBrowser(QtGui.QMainWindow):
 def main():
     app = QtGui.QApplication(sys.argv)
     win = TabBrowser()
-    if os.path.exists(os.path.join(app_lib, "icons", "logo.svg")):
-        win.setWindowIcon(QtGui.QIcon(os.path.join(app_lib, "icons", "logo.svg")))
+    if os.path.exists(app_logo):
+        win.setWindowIcon(QtGui.QIcon(app_logo))
     win.show()
     app.exec_()
 
