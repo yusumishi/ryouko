@@ -422,6 +422,19 @@ class CDialog(QtGui.QMainWindow):
         border: 0;
         background: transparent;
         }
+
+        QToolButton, QPushButton {
+        padding: 4px;
+        margin-left: 2px;
+        border-radius: 4px;
+        border: 1px solid palette(shadow);
+        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(light), stop:1 palette(button));
+        }
+
+        QToolButton:pressed, QPushButton:pressed {
+        border: 1px solid palette(shadow);
+        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shadow), stop:1 palette(button));
+        }
         """)
         self.cToolBar.setMovable(False)
         self.cToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -622,7 +635,7 @@ class TabBrowser(QtGui.QMainWindow):
         QToolButton:pressed, QPushButton:pressed {
         border: 1px solid palette(shadow);
         background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shadow), stop:1 palette(button));
-            }
+        }
         """)
         self.tabs.setCornerWidget(self.cornerWidgets,QtCore.Qt.TopRightCorner)
         self.cornerWidgetsLayout = QtGui.QHBoxLayout()
