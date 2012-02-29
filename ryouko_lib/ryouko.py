@@ -148,10 +148,14 @@ downloaderThread = DownloaderThread()
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
     newWindows = [0]
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, pb=False):
         super(RWebView, self).__init__()
         self.parent = parent
-        self.page().networkAccessManager().setCookieJar(self.parent.cookies)
+        self.pb = pb
+        if self.pb:
+            self.settings().setAttribute(QWebSettings.PrivateBrowsingEnabled, True)
+        if not self.pb:
+            self.page().networkAccessManager().setCookieJar(self.parent.cookies)
         self.ryouko_home = app_home
         self.titleChanged.connect(self.updateTitle)
         if os.path.exists(os.path.join(os.path.dirname(os.path.realpath(__file__)), "logo.svg")):
@@ -171,25 +175,33 @@ class RWebView(QtWebKit.QWebView):
     def updateTitle(self):
         self.setWindowTitle(self.title())
     def createWindow(self, windowType):
-        exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(self.parent)")
+        if not self.pb:
+            exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(self.parent)")
+        else:
+            exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(None, True)")
         exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction = QtGui.QAction(self.newWindow" + str(len(self.newWindows)) + ")")
         exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.setShortcut('Ctrl+W')")
         exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.triggered.connect(self.newWindow" + str(len(self.newWindows)) + ".close)")
         exec("self.newWindow" + str(len(self.newWindows)) + ".addAction(self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction)")
         exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
-        exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
+        if not self.pb:
+            exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
+        else:
+            exec("self.newWindows.append(None)")
         self.createNewWindow.emit(windowType)
         return self.newWindows[len(self.newWindows) - 1]
 
 class Browser(QtGui.QMainWindow, Ui_MainWindow):
-    def __init__(self, parent=None, url=False):
+    def __init__(self, parent=None, url=False, pb=False):
         super(Browser, self).__init__()
         self.parent = parent
+        self.pb = pb
         self.ryouko_home = app_home
         self.tempHistory = []
         if not os.path.exists(self.ryouko_home):
             os.mkdir(self.ryouko_home)
-        self.browserHistory = BrowserHistory()
+        if not self.pb:
+            self.browserHistory = BrowserHistory()
         self.app_lib = app_lib
         self.version = "N/A"
         self.codename = "N/A"
@@ -207,7 +219,11 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             uic.loadUi(os.path.join(self.app_lib, "mainwindow.ui"), self)
         else:
             self.setupUi(self)
-        self.webView = RWebView(self.parent)
+        if not self.pb:
+            self.webView = RWebView(self.parent)
+        else:
+            self.webView = RWebView(None, True)
+            self.webView.settings().setAttribute(QWebSettings.PrivateBrowsingEnabled, True)
         self.mainLayout.addWidget(self.webView, 2, 0)
         self.historyCompletion = QtGui.QListWidget()
         self.historyCompletion.itemActivated.connect(self.openHistoryItem)
@@ -231,10 +247,12 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.nextButton.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_lib, "icons", 'next.png'))))
         self.nextButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.urlBar.returnPressed.connect(self.updateWeb)
-        self.urlBar.textChanged.connect(self.searchHistory)
+        if not self.pb:
+            self.urlBar.textChanged.connect(self.searchHistory)
         self.webView.urlChanged.connect(self.updateText)
-        self.webView.urlChanged.connect(self.browserHistory.append)
-        self.webView.titleChanged.connect(self.browserHistory.updateTitles)
+        if not self.pb:
+            self.webView.urlChanged.connect(self.browserHistory.append)
+            self.webView.titleChanged.connect(self.browserHistory.updateTitles)
         self.searchButton.clicked.connect(self.searchWeb)
         self.searchButton.setFocusPolicy(QtCore.Qt.NoFocus)
         historySearchAction = QtGui.QAction(self)
@@ -369,6 +387,8 @@ class TabBrowser(QtGui.QMainWindow):
             pickle.dump(cookies, cookieFile)
             cookieFile.close()
         else:
+            if sys.platform.startswith("linux"):
+                os.system("shred \"" + self.cookieFile + "\"")
             try: os.remove(self.cookieFile)
             except:
                 doNothing()
@@ -544,6 +564,15 @@ class TabBrowser(QtGui.QMainWindow):
         exec("tab" + str(self.tabCount) + ".webView.iconChanged.connect(self.updateIcons)")
         exec("self.tabs.addTab(tab" + str(self.tabCount) + ", tab" + str(self.tabCount) + ".webView.icon(), 'New Tab')")
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
+    def newpbTab(self, url="about:blank"):
+        self.tabCount += 1
+        exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"', True)")
+        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
+        exec("tab" + str(self.tabCount) + ".webView.urlChanged.connect(self.reloadHistory)")
+        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.reloadHistory)")
+        exec("tab" + str(self.tabCount) + ".webView.iconChanged.connect(self.updateIcons)")
+        exec("self.tabs.addTab(tab" + str(self.tabCount) + ", tab" + str(self.tabCount) + ".webView.icon(), 'New Tab')")
+        self.tabs.setCurrentIndex(self.tabs.count() - 1)
     def openHistoryItem(self, item):
         if self.searchOn == False:
             self.newTab(self.browserHistory.history[self.historyList.row(item)][0])
@@ -651,10 +680,11 @@ class TabBrowser(QtGui.QMainWindow):
         self.searchHistoryField.setFocus()
         self.searchHistoryField.selectAll()
     def closeTab(self, index=False):
-        if index == False:
+        if not index:
             index = self.tabs.currentIndex()
         if self.tabs.count() > 1:
-            self.closedTabList.append(self.tabs.widget(index))
+            if not self.tabs.widget(index).pb:
+                self.closedTabList.append(self.tabs.widget(index))
             self.tabs.removeTab(index)
     def undoCloseTab(self, index=False):
         if len(self.closedTabList) > 0:
@@ -681,7 +711,10 @@ class TabBrowser(QtGui.QMainWindow):
     def updateTitles(self):
         for tab in range(self.tabs.count()):
             if str(self.tabs.widget(tab).webView.title()) == "":
-                self.tabs.setTabText(tab, "New Tab")
+                if not self.tabs.widget(tab).pb
+                    self.tabs.setTabText(tab, "New Tab")
+                else:
+                    self.tabs.setTabText(tab, "New Tab (PB)")
                 if tab == self.tabs.currentIndex():
                     self.setWindowTitle("Ryouko")
             else:
@@ -697,6 +730,10 @@ class TabBrowser(QtGui.QMainWindow):
                     title = qstring(title)
                 else:
                     title = self.tabs.widget(tab).webView.title()
+                if self.tabs.widget(tab).pb:
+                    title = unicode(title)
+                    title = title + " (PB)"
+                    title = qstring(title)
                 self.tabs.setTabText(tab, title)
                 if tab == self.tabs.currentIndex():
                     self.setWindowTitle(self.tabs.widget(tab).webView.title() + " - Ryouko")
