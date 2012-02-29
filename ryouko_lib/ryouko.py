@@ -3,7 +3,11 @@
 from __future__ import print_function
 
 import os, sys, pickle, json, time, datetime
-from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork, uic
+from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
+if not sys.platform.startswith("win"):
+    from PyQt4 import uic
+else:
+    from mainwindow import Ui_MainWindow
 try: from urllib.request import urlretrieve
 except ImportError:
     try: from urllib import urlretrieve
@@ -170,7 +174,7 @@ class RWebView(QtWebKit.QWebView):
         self.createNewWindow.emit(windowType)
         return self.newWindows[len(self.newWindows) - 1]
 
-class Browser(QtGui.QMainWindow):
+class Browser(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, url=False):
         super(Browser, self).__init__()
         self.parent = parent
@@ -192,7 +196,10 @@ class Browser(QtGui.QMainWindow):
                 self.codename = metadata[1].rstrip("\n")
         self.initUI(url)
     def initUI(self, url):
-        uic.loadUi(os.path.join(self.app_lib, "mainwindow.ui"), self)
+        if not sys.platform.startswith("win"):
+            uic.loadUi(os.path.join(self.app_lib, "mainwindow.ui"), self)
+        else:
+            self.setupUi(self)
         self.webView = RWebView(self.parent)
         self.mainLayout.addWidget(self.webView, 2, 0)
         self.historyCompletion = QtGui.QListWidget()
