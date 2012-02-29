@@ -442,6 +442,8 @@ class TabBrowser(QtGui.QMainWindow):
 
     def initUI(self):
         self.browserHistory = BrowserHistory()
+
+        # History sidebar
         self.historyDock = QtGui.QDockWidget("History")
         self.historyDock.setFeatures(QtGui.QDockWidget.DockWidgetClosable)
         self.historyDockWindow = QtGui.QMainWindow()
@@ -469,7 +471,10 @@ class TabBrowser(QtGui.QMainWindow):
         self.reloadHistory()
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.historyDock)
         self.historyDock.hide()
+
+        # Tabs
         self.tabs = QtGui.QTabWidget()
+        self.tabs.setMovable(True)
         self.nextTabAction = QtGui.QAction(self)
         self.nextTabAction.triggered.connect(self.nextTab)
         self.nextTabAction.setShortcut("Ctrl+Tab")
@@ -481,6 +486,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabs.setTabsClosable(True)
         self.tabs.currentChanged.connect(self.updateTitles)
         self.tabs.tabCloseRequested.connect(self.closeTab)
+
+        # "Toolbar" for top right corner
         self.cornerWidgets = QtGui.QWidget()
         self.cornerWidgets.setStyleSheet("""
         QToolButton, QPushButton {
@@ -506,6 +513,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsLayout.setContentsMargins(0,0,0,0)
         self.cornerWidgetsLayout.setSpacing(0)
         self.cornerWidgets.setLayout(self.cornerWidgetsLayout)
+
+        # New tab button
         newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'add.png'))), '&New Tab', self)
         newTabAction.setToolTip("<b>New Tab</b><br>Ctrl+T")
         newTabAction.setShortcuts(['Ctrl+T'])
@@ -515,6 +524,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.newTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.newTabButton.setDefaultAction(newTabAction)
         self.cornerWidgetsLayout.addWidget(self.newTabButton)
+
+        # Undo closed tab button
         undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("user-trash-full", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'trash.png'))), '&Undo Close Tab', self)
         undoCloseTabAction.setToolTip("<b>Undo Close Tab</b><br>Ctrl+Shift+T")
         undoCloseTabAction.setShortcuts(['Ctrl+Shift+T'])
@@ -524,6 +535,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.undoCloseTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.undoCloseTabButton.setDefaultAction(undoCloseTabAction)
         self.cornerWidgetsLayout.addWidget(self.undoCloseTabButton)
+
+        # History sidebar button
         historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(self.app_lib, "icons", "history.png"))), "Toggle History Sidebar", self)
         historyToggleAction.setToolTip("<b>View History</b><br>Ctrl+H")
         historyToggleAction.triggered.connect(self.historyToggle)
@@ -534,6 +547,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.historyToggleButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.historyToggleButton.setDefaultAction(historyToggleAction)
         self.cornerWidgetsLayout.addWidget(self.historyToggleButton)
+
+        # New private browsing tab button
         newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'pb.png'))), '&New Private Browsing Tab', self)
         newpbTabAction.setToolTip("<b>New Private Browsing Tab</b><br>Ctrl+Shift+N")
         newpbTabAction.setShortcuts(['Ctrl+Shift+N'])
@@ -543,6 +558,18 @@ class TabBrowser(QtGui.QMainWindow):
         self.newpbTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.newpbTabButton.setDefaultAction(newpbTabAction)
         self.cornerWidgetsLayout.addWidget(self.newpbTabButton)
+
+        # Config
+        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'pb.png'))), '&New Private Browsing Tab', self)
+        configAction.setToolTip("<b>Preferences</b><br>Ctrl+Shift+P")
+        configAction.setShortcuts(['Ctrl+Shift+P'])
+        configAction.triggered.connect(self.config)
+        self.addAction(configAction)
+        self.configButton = QtGui.QToolButton()
+        self.configButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.configButton.setDefaultAction(configAction)
+        self.cornerWidgetsLayout.addWidget(self.configButton)
+
         closeTabAction = QtGui.QAction(self)
         closeTabAction.setShortcuts(['Ctrl+W'])
         closeTabAction.triggered.connect(self.closeTab)
