@@ -148,13 +148,15 @@ downloaderThread = DownloaderThread()
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
     newWindows = [0]
-    def __init__(self, parent=None, pb=False):
+    def __init__(self, parent=False):
         super(RWebView, self).__init__()
-        self.parent = parent
-        self.pb = pb
-        if self.pb:
+        if parent == False:
+            self.parent = None
+        else:
+            self.parent = parent
+        if not parent:
             self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
-        if not self.pb:
+        if parent:
             self.page().networkAccessManager().setCookieJar(self.parent.cookies)
         self.ryouko_home = app_home
         self.titleChanged.connect(self.updateTitle)
@@ -175,10 +177,10 @@ class RWebView(QtWebKit.QWebView):
     def updateTitle(self):
         self.setWindowTitle(self.title())
     def createWindow(self, windowType):
-        if not self.pb:
+        if not self.parent == None:
             exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(self.parent)")
         else:
-            exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(None, True)")
+            exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(None)")
         exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction = QtGui.QAction(self.newWindow" + str(len(self.newWindows)) + ")")
         exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.setShortcut('Ctrl+W')")
         exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.triggered.connect(self.newWindow" + str(len(self.newWindows)) + ".close)")
@@ -222,7 +224,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         if not self.pb:
             self.webView = RWebView(self.parent)
         else:
-            self.webView = RWebView(None, True)
+            self.webView = RWebView(None)
             self.webView.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
         self.mainLayout.addWidget(self.webView, 2, 0)
         self.historyCompletion = QtGui.QListWidget()
