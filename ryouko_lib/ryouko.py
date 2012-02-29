@@ -672,7 +672,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.cDialog = CDialog(self)
 
         # Config button
-        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'settings.png'))), '&New Private Browsing Tab', self)
+        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'settings.png'))), '&Preferences', self)
         configAction.setToolTip("<b>Preferences</b><br>Ctrl+Shift+P")
         configAction.setShortcuts(['Ctrl+Shift+P'])
         configAction.triggered.connect(self.config)
