@@ -155,6 +155,7 @@ class RWebView(QtWebKit.QWebView):
     newWindows = [0]
     def __init__(self, parent=False):
         super(RWebView, self).__init__()
+        self.setWindowTitle("Ryouko")
         if parent == False:
             self.parent = None
         self.app_home = app_home
@@ -164,6 +165,26 @@ class RWebView(QtWebKit.QWebView):
             self.setWindowIcon(QtGui.QIcon(os.path.join(app_lib, "icons", "logo.svg")))
 
         self.text = ""
+        
+        self.newWindowAction = QtGui.QAction(self)
+        self.newWindowAction.setShortcut("Ctrl+N")
+        self.newWindowAction.triggered.connect(self.newWindow)
+        self.addAction(self.newWindowAction)
+        
+        self.backAction = QtGui.QAction(self)
+        self.backAction.setShortcut("Alt+Left")
+        self.backAction.triggered.connect(self.back)
+        self.addAction(self.backAction)
+
+        self.nextAction = QtGui.QAction(self)
+        self.nextAction.setShortcuts("Alt+Right")
+        self.nextAction.triggered.connect(self.forward)
+        self.addAction(self.nextAction)
+
+        self.reloadAction = QtGui.QAction(self)
+        self.reloadAction.triggered.connect(self.reload)
+        self.reloadAction.setShortcuts(["Ctrl+R", "F5"])
+        self.addAction(self.reloadAction)
 
         self.findAction = QtGui.QAction(self)
         self.findAction.triggered.connect(self.find)
@@ -244,6 +265,9 @@ class RWebView(QtWebKit.QWebView):
     def updateTitle(self):
         self.setWindowTitle(self.title())
 
+    def newWindow(self):
+       self.createWindow(QtWebKit.QWebPage.WebBrowserWindow)
+
     def createWindow(self, windowType):
         if not self.parent == None:
             exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(self.parent)")
@@ -253,11 +277,15 @@ class RWebView(QtWebKit.QWebView):
         exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.setShortcut('Ctrl+W')")
         exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.triggered.connect(self.newWindow" + str(len(self.newWindows)) + ".close)")
         exec("self.newWindow" + str(len(self.newWindows)) + ".addAction(self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction)")
+        exec("self.newWindow" + str(len(self.newWindows)) + ".stopAction = QtGui.QAction(self.newWindow" + str(len(self.newWindows)) + ")")
+        exec("self.newWindow" + str(len(self.newWindows)) + ".stopAction.setShortcut('Esc')")
+        exec("self.newWindow" + str(len(self.newWindows)) + ".stopAction.triggered.connect(self.newWindow" + str(len(self.newWindows)) + ".stop)")
+        exec("self.newWindow" + str(len(self.newWindows)) + ".addAction(self.newWindow" + str(len(self.newWindows)) + ".stopAction)")
         exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction = QtGui.QAction(self.newWindow" + str(len(self.newWindows)) + ")")
         exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction.setShortcuts(['Ctrl+L', 'Alt+D'])")
         exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction.triggered.connect(self.newWindow" + str(len(self.newWindows)) + ".locationEdit)")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
         exec("self.newWindow" + str(len(self.newWindows)) + ".addAction(self.newWindow" + str(len(self.newWindows)) + ".locationEditAction)")
+        exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
         if not self.parent == None:
             exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
         else:
@@ -310,12 +338,10 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(os.path.join(app_lib, "icons", 'go.png'))))
         self.goButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.backButton.clicked.connect(self.webView.back)
-        self.backButton.setShortcut("Alt+Left")
         self.backButton.setIcon(QtGui.QIcon().fromTheme("go-previous", QtGui.QIcon(os.path.join(app_lib, "icons", 'back.png'))))
         self.backButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.nextButton.clicked.connect(self.webView.forward)
         self.nextButton.setText("")
-        self.nextButton.setShortcut("Alt+Right")
         self.nextButton.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_lib, "icons", 'next.png'))))
         self.nextButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.urlBar.returnPressed.connect(self.updateWeb)
@@ -326,6 +352,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.webView.urlChanged.connect(self.browserHistory.append)
             self.webView.titleChanged.connect(self.browserHistory.updateTitles)
         self.searchButton.clicked.connect(self.searchWeb)
+        self.searchButton.setShortcut("Ctrl+K")
         self.searchButton.setFocusPolicy(QtCore.Qt.NoFocus)
         historySearchAction = QtGui.QAction(self)
         historySearchAction.triggered.connect(self.parent.focusHistorySearch)
@@ -335,20 +362,22 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.reloadButton.setText("")
         self.reloadButton.setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_lib, "icons", 'reload.png'))))
         self.reloadButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.reloadAction = QtGui.QAction(self)
-        self.reloadAction.triggered.connect(self.webView.reload)
-        self.reloadAction.setShortcuts(["Ctrl+R", "F5"])
-        self.addAction(self.reloadAction)
 
         self.findButton.clicked.connect(self.webView.find)
         self.findButton.setText("")
         self.findButton.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_lib, "icons", 'find.png'))))
         self.findButton.setFocusPolicy(QtCore.Qt.NoFocus)
 
+        self.stopAction = QtGui.QAction(self)
+        self.stopAction.triggered.connect(self.webView.stop)
+        self.stopAction.triggered.connect(self.historyCompletion.hide)
+        self.stopAction.triggered.connect(self.updateText)
+        self.stopAction.setShortcut("Esc")
+        self.addAction(self.stopAction)
         self.stopButton.clicked.connect(self.webView.stop)
         self.stopButton.clicked.connect(self.historyCompletion.hide)
+        self.stopButton.clicked.connect(self.updateText)
         self.stopButton.setText("")
-        self.stopButton.setShortcut("Esc")
         self.stopButton.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_lib, "icons", 'stop.png'))))
         self.stopButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.focusURLBarButton.clicked.connect(self.focusURLBar)
@@ -365,7 +394,6 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.focusURLBarAction.setShortcut("Ctrl+L")
         self.focusURLBarAction.triggered.connect(self.focusURLBar)
         self.addAction(self.focusURLBarAction)
-        self.stopButton.clicked.connect(self.updateText)
         self.webView.settings().setIconDatabasePath(qstring(self.app_home))
         self.webView.loadFinished.connect(self.progressBar.hide)
         self.webView.loadProgress.connect(self.progressBar.setValue)

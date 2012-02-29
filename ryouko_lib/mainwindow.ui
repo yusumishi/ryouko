@@ -118,9 +118,6 @@ background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shado
               <property name="text">
                <string>Back</string>
               </property>
-              <property name="shortcut">
-               <string>Alt+Left</string>
-              </property>
              </widget>
             </item>
             <item>
@@ -134,9 +131,6 @@ background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shado
               <property name="text">
                <string>Next</string>
               </property>
-              <property name="shortcut">
-               <string>Alt+Right</string>
-              </property>
              </widget>
             </item>
             <item>
@@ -147,9 +141,6 @@ background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shado
               <property name="text">
                <string>Stop</string>
               </property>
-              <property name="shortcut">
-               <string>Esc</string>
-              </property>
              </widget>
             </item>
             <item>
@@ -159,9 +150,6 @@ background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shado
               </property>
               <property name="text">
                <string>Reload</string>
-              </property>
-              <property name="shortcut">
-               <string>F5</string>
               </property>
              </widget>
             </item>
@@ -230,9 +218,6 @@ background: transparent;</string>
            </property>
            <property name="text">
             <string>Search</string>
-           </property>
-           <property name="shortcut">
-            <string>Ctrl+K</string>
            </property>
           </widget>
          </item>
