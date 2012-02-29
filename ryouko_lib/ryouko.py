@@ -417,6 +417,12 @@ class CDialog(QtGui.QMainWindow):
         self.pbBox = QtGui.QCheckBox("Enable private &browsing mode")
         self.layout.addWidget(self.pbBox)
         self.cToolBar = QtGui.QToolBar()
+        self.cToolBar.setStyleSheet("""
+        QToolBar {
+        border: 0;
+        background: transparent;
+        }
+        """)
         self.cToolBar.setMovable(False)
         self.cToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         applyAction = QtGui.QAction("&Apply", self)
