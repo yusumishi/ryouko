@@ -59,27 +59,31 @@ def message(content="This is a message.", title="Alert", icon="info"):
         message.setIcon(QtGui.QMessageBox.Information)
     message.exec_()
 
-def inputBox(self, content="Enter a value here:", title="Query", value=""):
-    text = QtGui.QInputDialog.getText(content, title, value)
-    if text:
-        text = str(text)
-        return text[0]
+def inputDialog(title="Query", content="Enter a value here:", value=""):
+    text = QtGui.QInputDialog.getText(None, title, content, QtGui.QLineEdit.Normal, value)
+    if text[1]:
+        if unicode(text[0]) != "":
+            return text[0]
+        else:
+            return ""
+    else:
+        return ""
 
 class BrowserHistory():
     def __init__(self):
         self.history = []
         self.url = "about:blank"
-        self.ryouko_home = app_home
-        if not os.path.exists(os.path.join(self.ryouko_home, "history.json")):
+        self.app_home = app_home
+        if not os.path.exists(os.path.join(self.app_home, "history.json")):
             self.save()
         self.reload()
     def reload(self):
-        if os.path.exists(os.path.join(self.ryouko_home, "history.json")):
-            history = open(os.path.join(self.ryouko_home, "history.json"), "r")
+        if os.path.exists(os.path.join(self.app_home, "history.json")):
+            history = open(os.path.join(self.app_home, "history.json"), "r")
             self.history = json.load(history)
             history.close()
     def save(self):
-        history = open(os.path.join(self.ryouko_home, "history.json"), "w")
+        history = open(os.path.join(self.app_home, "history.json"), "w")
         json.dump(self.history, history)
         history.close()
     def append(self, url, name=""):
@@ -153,14 +157,54 @@ class RWebView(QtWebKit.QWebView):
         super(RWebView, self).__init__()
         if parent == False:
             self.parent = None
-        self.ryouko_home = app_home
+        self.app_home = app_home
+
         self.titleChanged.connect(self.updateTitle)
         if os.path.exists(os.path.join(os.path.dirname(os.path.realpath(__file__)), "logo.svg")):
             self.setWindowIcon(QtGui.QIcon(os.path.join(app_lib, "icons", "logo.svg")))
+
+        self.text = ""
+
+        self.findAction = QtGui.QAction(self)
+        self.findAction.triggered.connect(self.find)
+        self.findAction.setShortcut("Ctrl+F")
+        self.addAction(self.findAction)
+
+        self.findNextAction = QtGui.QAction(self)
+        self.findNextAction.triggered.connect(self.findNext)
+        self.findNextAction.setShortcuts(["Ctrl+G", "F3"])
+        self.addAction(self.findNextAction)
+
         self.page().setForwardUnsupportedContent(True)
         self.page().unsupportedContent.connect(self.downloadFile)
         self.page().downloadRequested.connect(self.downloadFile)
         self.establishParent(parent)
+
+    def inputDialog(self, title="Query", content="Enter a value here:", value=""):
+        text = QtGui.QInputDialog.getText(None, title, content, QtGui.QLineEdit.Normal, value)
+        if text[1]:
+            if unicode(text[0]) != "":
+                return text[0]
+            else:
+                return ""
+        else:
+            return ""
+
+    def find(self):
+        find = self.inputDialog("Find", "Search for:", self.text)
+        if find:
+            self.text = find
+            self.findText(self.text)
+        else:
+            self.text = ""
+            self.findText(self.text)
+
+    def findNext(self):
+        if not self.text:
+            self.find()
+        else:
+            self.findText(self.text)
+
     def establishParent(self, parent):
         if parent == False:
             self.parent = None
@@ -209,13 +253,14 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         super(Browser, self).__init__()
         self.parent = parent
         self.pb = pb
-        self.ryouko_home = app_home
+        self.app_home = app_home
         self.tempHistory = []
-        if not os.path.exists(self.ryouko_home):
-            os.mkdir(self.ryouko_home)
+        if not os.path.exists(self.app_home):
+            os.mkdir(self.app_home)
         if not self.pb:
             self.browserHistory = BrowserHistory()
         self.app_lib = app_lib
+        self.findText = ""
         self.version = "N/A"
         self.codename = "N/A"
         if os.path.exists(os.path.join(self.app_lib, "info.txt")):
@@ -271,13 +316,18 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.addAction(historySearchAction)
         self.reloadButton.clicked.connect(self.webView.reload)
         self.reloadButton.setText("")
-        self.reloadButton.setShortcut("F5")
         self.reloadButton.setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_lib, "icons", 'reload.png'))))
         self.reloadButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.reloadAction = QtGui.QAction(self)
         self.reloadAction.triggered.connect(self.webView.reload)
-        self.reloadAction.setShortcut("Ctrl+R")
+        self.reloadAction.setShortcuts(["Ctrl+R", "F5"])
         self.addAction(self.reloadAction)
+
+        self.findButton.clicked.connect(self.webView.find)
+        self.findButton.setText("")
+        self.findButton.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_lib, "icons", 'find.png'))))
+        self.findButton.setFocusPolicy(QtCore.Qt.NoFocus)
+
         self.stopButton.clicked.connect(self.webView.stop)
         self.stopButton.clicked.connect(self.historyCompletion.hide)
         self.stopButton.setText("")
@@ -299,7 +349,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.focusURLBarAction.triggered.connect(self.focusURLBar)
         self.addAction(self.focusURLBarAction)
         self.stopButton.clicked.connect(self.updateText)
-        self.webView.settings().setIconDatabasePath(qstring(self.ryouko_home))
+        self.webView.settings().setIconDatabasePath(qstring(self.app_home))
         self.webView.loadFinished.connect(self.progressBar.hide)
         self.webView.loadProgress.connect(self.progressBar.setValue)
         self.webView.loadProgress.connect(self.progressBar.show)
@@ -494,9 +544,9 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabCount = 0
         self.killCookies = False
         self.closedTabList = []
-        self.ryouko_home = app_home
-        if not os.path.exists(self.ryouko_home):
-            os.mkdir(self.ryouko_home)
+        self.app_home = app_home
+        if not os.path.exists(self.app_home):
+            os.mkdir(self.app_home)
         self.searchOn = False
         self.app_lib = app_lib
         self.tempHistory = []

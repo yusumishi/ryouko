@@ -166,6 +166,16 @@ background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shado
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="findButton">
+              <property name="toolTip">
+               <string>&lt;b&gt;Find&lt;/b&gt;&lt;br&gt;Ctrl+F</string>
+              </property>
+              <property name="text">
+               <string>Find</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QLineEdit" name="urlBar">
               <property name="toolTip">
                <string>&lt;b&gt;Location Bar&lt;/b&gt;&lt;br&gt;Ctrl+L/Alt+D</string>
