@@ -153,7 +153,7 @@ class RWebView(QtWebKit.QWebView):
         self.parent = parent
         self.pb = pb
         if self.pb:
-            self.settings().setAttribute(QWebSettings.PrivateBrowsingEnabled, True)
+            self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
         if not self.pb:
             self.page().networkAccessManager().setCookieJar(self.parent.cookies)
         self.ryouko_home = app_home
@@ -223,7 +223,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.webView = RWebView(self.parent)
         else:
             self.webView = RWebView(None, True)
-            self.webView.settings().setAttribute(QWebSettings.PrivateBrowsingEnabled, True)
+            self.webView.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
         self.mainLayout.addWidget(self.webView, 2, 0)
         self.historyCompletion = QtGui.QListWidget()
         self.historyCompletion.itemActivated.connect(self.openHistoryItem)
