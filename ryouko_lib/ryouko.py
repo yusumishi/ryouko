@@ -719,7 +719,7 @@ class TabBrowser(QtGui.QMainWindow):
     def updateTitles(self):
         for tab in range(self.tabs.count()):
             if str(self.tabs.widget(tab).webView.title()) == "":
-                if not self.tabs.widget(tab).pb
+                if not self.tabs.widget(tab).pb:
                     self.tabs.setTabText(tab, "New Tab")
                 else:
                     self.tabs.setTabText(tab, "New Tab (PB)")
