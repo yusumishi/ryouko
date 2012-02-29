@@ -186,7 +186,7 @@ class RWebView(QtWebKit.QWebView):
         exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.triggered.connect(self.newWindow" + str(len(self.newWindows)) + ".close)")
         exec("self.newWindow" + str(len(self.newWindows)) + ".addAction(self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction)")
         exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
-        if not self.pb:
+        if not self.parent == None:
             exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
         else:
             exec("self.newWindows.append(None)")
@@ -194,7 +194,7 @@ class RWebView(QtWebKit.QWebView):
         return self.newWindows[len(self.newWindows) - 1]
 
 class Browser(QtGui.QMainWindow, Ui_MainWindow):
-    def __init__(self, parent=None, url=False, pb=False):
+    def __init__(self, parent=None, url="about:blank", pb=False):
         super(Browser, self).__init__()
         self.parent = parent
         self.pb = pb
@@ -390,7 +390,7 @@ class TabBrowser(QtGui.QMainWindow):
             cookieFile.close()
         else:
             if sys.platform.startswith("linux"):
-                os.system("shred \"" + self.cookieFile + "\"")
+                os.system("shred -v \"" + self.cookieFile + "\"")
             try: os.remove(self.cookieFile)
             except:
                 doNothing()
@@ -514,14 +514,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.newTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.newTabButton.setDefaultAction(newTabAction)
         self.cornerWidgetsLayout.addWidget(self.newTabButton)
-        newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'pb.png'))), '&New Private Browsing Tab', self)
-        newpbTabAction.setShortcuts(['Ctrl+Shift+N'])
-        newpbTabAction.triggered.connect(self.newpbTab)
-        self.addAction(newpbTabAction)
-        self.newpbTabButton = QtGui.QToolButton()
-        self.newpbTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.newpbTabButton.setDefaultAction(newpbTabAction)
-        self.cornerWidgetsLayout.addWidget(self.newpbTabButton)
         undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("user-trash-full", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'trash.png'))), '&Undo Close Tab', self)
         undoCloseTabAction.setShortcuts(['Ctrl+Shift+T'])
         undoCloseTabAction.triggered.connect(self.undoCloseTab)
@@ -540,6 +532,14 @@ class TabBrowser(QtGui.QMainWindow):
         self.historyToggleButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.historyToggleButton.setDefaultAction(historyToggleAction)
         self.cornerWidgetsLayout.addWidget(self.historyToggleButton)
+        newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'pb.png'))), '&New Private Browsing Tab', self)
+        newpbTabAction.setShortcuts(['Ctrl+Shift+N'])
+        newpbTabAction.triggered.connect(self.newpbTab)
+        self.addAction(newpbTabAction)
+        self.newpbTabButton = QtGui.QToolButton()
+        self.newpbTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.newpbTabButton.setDefaultAction(newpbTabAction)
+        self.cornerWidgetsLayout.addWidget(self.newpbTabButton)
         closeTabAction = QtGui.QAction(self)
         closeTabAction.setShortcuts(['Ctrl+W'])
         closeTabAction.triggered.connect(self.closeTab)
@@ -576,7 +576,10 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
     def newpbTab(self, url="about:blank"):
         self.tabCount += 1
-        exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"', True)")
+        if url != False:
+            exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"', True)")
+        else:
+            exec("tab" + str(self.tabCount) + " = Browser(self, 'about:blank', True)")
         exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
         exec("tab" + str(self.tabCount) + ".webView.urlChanged.connect(self.reloadHistory)")
         exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.reloadHistory)")
