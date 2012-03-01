@@ -168,8 +168,6 @@ class RWebView(QtWebKit.QWebView):
         self.app_home = app_home
 
         self.titleChanged.connect(self.updateTitle)
-        if os.path.exists(app_logo):
-            win.setWindowIcon(QtGui.QIcon(app_logo))
 
         self.text = ""
 
