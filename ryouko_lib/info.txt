@@ -1,2 +1,2 @@
-0.4.12
-Muffin Utilities
+0.5.0
+Watashi wa Ryouko desu

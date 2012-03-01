@@ -364,7 +364,10 @@ class RWebView(QtWebKit.QWebView):
         return self.newWindows[len(self.newWindows) - 1]
 
 class HistoryCompletionList(QtGui.QListWidget):
-    statusMessage = QtCore.pyqtSignal(QtCore.QString)
+    if sys.version_info[0] <= 2:
+        statusMessage = QtCore.pyqtSignal(QtCore.QString)
+    else:
+        statusMessage = QtCore.pyqtSignal(str)
     def __init__(self, parent=None):
         super(HistoryCompletionList, self).__init__()
         self.parent = parent
