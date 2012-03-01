@@ -175,9 +175,9 @@ downloaderThread = DownloaderThread()
 
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
-    newWindows = [0]
     def __init__(self, parent=False):
         super(RWebView, self).__init__()
+        self.newWindows = [0]
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
         if parent == False or parent == None:
@@ -245,6 +245,7 @@ class RWebView(QtWebKit.QWebView):
         self.page().setForwardUnsupportedContent(True)
         self.page().unsupportedContent.connect(self.downloadFile)
         self.page().downloadRequested.connect(self.downloadFile)
+        self.updateSettings()
         self.establishParent(parent)
 
     def establishParent(self, parent):
@@ -262,6 +263,41 @@ class RWebView(QtWebKit.QWebView):
             cookies = QtNetwork.QNetworkCookieJar(None)
             cookies.setAllCookies([])
             self.page().networkAccessManager().setCookieJar(cookies)
+
+    def updateSettings(self):
+        settingsFile = os.path.join(app_home, "settings.json")
+        if os.path.exists(settingsFile):
+            fstream = open(settingsFile, "r")
+            settings = json.load(fstream)
+            fstream.close()
+        else:
+            settings = {'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False}
+        try: settings['loadImages']
+        except: 
+            print("", end = "")
+        else:
+            self.settings().setAttribute(QtWebKit.QWebSettings.AutoLoadImages, settings['loadImages'])
+        try: settings['jsEnabled']
+        except: 
+            print("", end = "")
+        else:
+            self.settings().setAttribute(QtWebKit.QWebSettings.JavascriptEnabled, settings['jsEnabled'])
+        try: self.settings['pluginsEnabled']
+        except: 
+            print("", end = "")
+        else:
+            self.settings().setAttribute(QtWebKit.QWebSettings.PluginsEnabled, settings['pluginsEnabled'])
+        try: settings['privateBrowsing']
+        except: 
+            print("", end = "")
+        else:
+            self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, settings['privateBrowsing'])
+            if not settings['privateBrowsing'] and (self.parent == False or self.parent == None):
+                self.establishParent(self.parent)
+        for child in self.newWindows:
+            try: child.updateSettings()
+            except:
+                print("Error! " + unicode(child) + "does not have an updateSettings() method!")
 
     def saveDialog(self, fname="", filters = "All files (*)"):
         saveDialog = QtGui.QFileDialog.getSaveFileName(None, "Save As", os.path.join(os.getcwd(), fname), filters)
@@ -533,35 +569,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.statusMessage.setText(qstring(link))
 
     def updateSettings(self):
-        settingsFile = os.path.join(app_home, "settings.json")
-        if os.path.exists(settingsFile):
-            fstream = open(settingsFile, "r")
-            settings = json.load(fstream)
-            fstream.close()
-        else:
-            settings = {'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False}
-        try: settings['loadImages']
-        except: 
-            print("", end = "")
-        else:
-            self.webView.settings().setAttribute(QtWebKit.QWebSettings.AutoLoadImages, settings['loadImages'])
-        try: settings['jsEnabled']
-        except: 
-            print("", end = "")
-        else:
-            self.webView.settings().setAttribute(QtWebKit.QWebSettings.JavascriptEnabled, settings['jsEnabled'])
-        try: self.settings['pluginsEnabled']
-        except: 
-            print("", end = "")
-        else:
-            self.webView.settings().setAttribute(QtWebKit.QWebSettings.PluginsEnabled, settings['pluginsEnabled'])
-        try: settings['privateBrowsing']
-        except: 
-            print("", end = "")
-        else:
-            self.webView.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, settings['privateBrowsing'])
-            if not settings['privateBrowsing'] and self.pb == False:
-                self.webView.establishParent(self.parent)
+        self.webView.updateSettings()
 
     def searchHistory(self, string):
         string = unicode(string)
@@ -1033,9 +1041,6 @@ class TabBrowser(QtGui.QMainWindow):
         if self.historyList.hasFocus():
             del browserHistory.history[self.historyList.row(self.historyList.currentItem())]
             browserHistory.save()
-            for tab in range(self.tabs.count()):
-                self.tabs.widget(tab).browserHistory.history = browserHistory.history
-                self.tabs.widget(tab).browserHistory.save()
             self.reloadHistory()
     def showClearHistoryDialog(self):
         self.clearHistoryToolBar.setVisible(not self.clearHistoryToolBar.isVisible())
@@ -1055,9 +1060,6 @@ class TabBrowser(QtGui.QMainWindow):
             if difference <= timeRange:
                 del browserHistory.history[browserHistory.history.index(item)]
         browserHistory.save()
-        for tab in range(self.tabs.count()):
-            self.tabs.widget(tab).browserHistory.history = browserHistory.history
-            self.tabs.widget(tab).browserHistory.save()
         self.reloadHistory()
     def clearHistory(self):
         if self.selectRange.currentIndex() == 0:
@@ -1096,9 +1098,6 @@ class TabBrowser(QtGui.QMainWindow):
                 if item['month'] == saveMonth and item['monthday'] == saveDay and item['year'] == saveYear:
                     del browserHistory.history[browserHistory.history.index(item)]
             browserHistory.save()
-            for tab in range(self.tabs.count()):
-                self.tabs.widget(tab).browserHistory.history = browserHistory.history
-                self.tabs.widget(tab).browserHistory.save()
             self.reloadHistory()
         elif self.selectRange.currentIndex() == 12:
             if sys.platform.startswith("linux"):
@@ -1108,9 +1107,6 @@ class TabBrowser(QtGui.QMainWindow):
                 doNothing()
             browserHistory.history = []
             browserHistory.save()
-            for tab in range(self.tabs.count()):
-                self.tabs.widget(tab).browserHistory.history = browserHistory.history
-                self.tabs.widget(tab).browserHistory.save()
             self.reloadHistory()
         elif self.selectRange.currentIndex() == 14:
             self.killCookies = True
