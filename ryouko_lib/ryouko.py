@@ -386,7 +386,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         if not os.path.exists(self.app_home):
             os.mkdir(self.app_home)
         if not self.pb:
-            browserHistory = BrowserHistory()
+            self.browserHistory = BrowserHistory()
         self.app_lib = app_lib
         self.findText = ""
         self.version = "N/A"
@@ -563,7 +563,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.historyCompletion.clear()
             history = []
             string = unicode(string)
-            for item in browserHistory.history:
+            for item in self.browserHistory.history:
                 add = False
                 for subitem in item:
                     if string.lower() in unicode(item[subitem]).lower():
