@@ -156,7 +156,7 @@ class RWebView(QtWebKit.QWebView):
     def __init__(self, parent=False):
         super(RWebView, self).__init__()
         if os.path.exists(app_logo):
-            win.setWindowIcon(QtGui.QIcon(app_logo))
+            self.setWindowIcon(QtGui.QIcon(app_logo))
         if parent == False or parent == None:
             self.setWindowTitle("Ryouko (PB)")
         else:
