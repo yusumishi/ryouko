@@ -89,8 +89,8 @@ class BrowserHistory():
     def append(self, url, name=""):
         try:
             self.reload()
-            self.url = str(url.toString())
-            url = str(url.toString())
+            self.url = unicode(url.toString())
+            url = unicode(url.toString())
             if url != "about:blank":
                 now = datetime.datetime.now()
                 add = True
@@ -125,7 +125,7 @@ class BrowserHistory():
     def updateTitles(self, title):
         try:
             self.reload()
-            title = str(title)
+            title = unicode(title)
             for item in self.history:
                 if item['url'].lower() == self.url.lower():
                     item['name'] = title
@@ -558,7 +558,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
 
     def searchHistory(self, string):
         string = unicode(string)
-        if string != "" and string != str(self.webView.url().toString()) and string != "about:version":
+        if string != "" and string != unicode(self.webView.url().toString()) and string != "about:version":
             self.searchOn = True
             self.historyCompletion.clear()
             history = []
@@ -997,22 +997,22 @@ class TabBrowser(QtGui.QMainWindow):
                 self.historyList.clear()
                 browserHistory.reload()
                 for item in browserHistory.history:
-                    self.historyList.addItem(qstring(str(item['name'])))
+                    self.historyList.addItem(qstring(unicode(item['name'])))
             else:
                 browserHistory.reload()
         except:
             browserHistory.reset()
     def searchHistory(self, string=""):
-        string = str(string)
+        string = unicode(string)
         if string != "":
             self.searchOn = True
             self.historyList.clear()
             history = []
-            string = str(string)
+            string = unicode(string)
             for item in browserHistory.history:
                 add = False
                 for subitem in item:
-                    if string.lower() in str(subitem).lower():
+                    if string.lower() in unicode(subitem).lower():
                         add = True
                 if add == True:
                     history.append(item)
@@ -1133,7 +1133,7 @@ class TabBrowser(QtGui.QMainWindow):
 
     def updateTitles(self):
         for tab in range(self.tabs.count()):
-            if str(self.tabs.widget(tab).webView.title()) == "":
+            if unicode(self.tabs.widget(tab).webView.title()) == "":
                 if not self.tabs.widget(tab).pb:
                     self.tabs.setTabText(tab, "New Tab")
                 else:
@@ -1141,10 +1141,10 @@ class TabBrowser(QtGui.QMainWindow):
                 if tab == self.tabs.currentIndex():
                     self.setWindowTitle("Ryouko")
             else:
-                if len(str(self.tabs.widget(tab).webView.title())) > 20:
+                if len(unicode(self.tabs.widget(tab).webView.title())) > 20:
                     title = ""
                     chars = 0
-                    for char in str(self.tabs.widget(tab).webView.title()):
+                    for char in unicode(self.tabs.widget(tab).webView.title()):
                         title += char
                         chars += 1
                         if chars >= 19:
