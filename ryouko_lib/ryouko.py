@@ -189,6 +189,7 @@ class RWebView(QtWebKit.QWebView):
         self.titleChanged.connect(self.updateTitle)
 
         self.text = ""
+        self.zoomFactor = 1.0
 
         self.showShortcutsAction = QtGui.QAction(self)
         self.showShortcutsAction.setShortcut("F1")
@@ -224,6 +225,18 @@ class RWebView(QtWebKit.QWebView):
         self.findNextAction.triggered.connect(self.findNext)
         self.findNextAction.setShortcuts(["Ctrl+G", "F3"])
         self.addAction(self.findNextAction)
+
+        self.zoomInAction = QtGui.QAction(self)
+        self.zoomInAction.triggered.connect(self.zoomIn)
+        self.addAction(self.zoomInAction)
+
+        self.zoomOutAction = QtGui.QAction(self)
+        self.zoomOutAction.triggered.connect(self.zoomOut)
+        self.addAction(self.zoomOutAction)
+
+        self.zoomResetAction = QtGui.QAction(self)
+        self.zoomResetAction.triggered.connect(self.zoomReset)
+        self.addAction(self.zoomResetAction)
 
         self.page().setForwardUnsupportedContent(True)
         self.page().unsupportedContent.connect(self.downloadFile)
@@ -265,7 +278,7 @@ class RWebView(QtWebKit.QWebView):
 
     def showShortcuts(self):
         self.load(QtCore.QUrl("about:blank"))
-        self.setHtml("<html><head><title>Keyboard shortcuts</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>Keyboard shortcuts</h1><br>F1: Show this list of shortcuts<br>Ctrl+N: New window<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next</body></html>")
+        self.setHtml("<html><head><title>Keyboard shortcuts</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>Keyboard shortcuts</h1><br>F1: Show this list of shortcuts<br>Ctrl+N: New window<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next<br>Ctrl+=; Ctrl++: Zoom in<br>Ctrl+-: Zoom out<br>Ctrl+0: Reset zoom</body></html>")
 
     def inputDialog(self, title="Query", content="Enter a value here:", value=""):
         text = QtGui.QInputDialog.getText(None, title, content, QtGui.QLineEdit.Normal, value)
@@ -301,6 +314,24 @@ class RWebView(QtWebKit.QWebView):
         else:
             self.findText(self.text)
 
+    def zoom(self, value=1.0):
+        self.zoomFactor = value
+        self.setZoomFactor(self.zoomFactor)
+
+    def zoomIn(self):
+        if self.zoomFactor < 3.0:
+            self.zoomFactor = self.zoomFactor + 0.25
+            self.setZoomFactor(self.zoomFactor)
+
+    def zoomOut(self):
+        if self.zoomFactor > 0.25:
+            self.zoomFactor = self.zoomFactor - 0.25
+            self.setZoomFactor(self.zoomFactor)
+
+    def zoomReset(self):
+        self.zoomFactor = 1.0
+        self.setZoomFactor(self.zoomFactor)
+
     def newWindow(self):
        self.createWindow(QtWebKit.QWebPage.WebBrowserWindow)
 
@@ -321,6 +352,9 @@ class RWebView(QtWebKit.QWebView):
         exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction.setShortcuts(['Ctrl+L', 'Alt+D'])")
         exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction.triggered.connect(self.newWindow" + str(len(self.newWindows)) + ".locationEdit)")
         exec("self.newWindow" + str(len(self.newWindows)) + ".addAction(self.newWindow" + str(len(self.newWindows)) + ".locationEditAction)")
+        exec("self.newWindow" + str(len(self.newWindows)) + ".zoomInAction.setShortcuts(['Ctrl+Shift+=', 'Ctrl+='])")
+        exec("self.newWindow" + str(len(self.newWindows)) + ".zoomOutAction.setShortcut('Ctrl+-')")
+        exec("self.newWindow" + str(len(self.newWindows)) + ".zoomResetAction.setShortcut('Ctrl+0')")
         exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
         if not self.parent == None:
             exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
@@ -458,7 +492,32 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.updateWeb()
         self.updateText()
         self.historyCompletion.hide()
+        self.zoomOutAction = QtGui.QAction(self)
+        self.zoomOutAction.setShortcut("Ctrl+-")
+        self.zoomOutAction.triggered.connect(self.zoomOut)
+        self.addAction(self.zoomOutAction)
+        self.zoomInAction = QtGui.QAction(self)
+        self.zoomInAction.setShortcuts(["Ctrl+Shift+=", "Ctrl+="])
+        self.zoomInAction.triggered.connect(self.zoomIn)
+        self.addAction(self.zoomInAction)
+        self.zoomResetAction = QtGui.QAction(self)
+        self.zoomResetAction.setShortcut("Ctrl+0")
+        self.zoomResetAction.triggered.connect(self.webView.zoomReset)
+        self.addAction(self.zoomResetAction)
+        self.zoomOutButton.clicked.connect(self.zoomOut)
+        self.zoomInButton.clicked.connect(self.zoomIn)
+        self.zoomSlider.valueChanged.connect(self.zoom)
         self.webView.show()
+
+    def zoomIn(self):
+        self.zoomSlider.setValue(self.zoomSlider.value() + 1)
+
+    def zoomOut(self):
+        self.zoomSlider.setValue(self.zoomSlider.value() - 1)
+        
+    def zoom(self, value):
+        self.webView.setZoomFactor(float(value) * 0.25)
+        self.zoomLabel.setText(qstring("%.2fx" % (float(value) * 0.25)))
 
     def updateStatusMessage(self, link="", title="", content=""):
         self.statusMessage.setText(qstring(link))
