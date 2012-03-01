@@ -187,7 +187,7 @@ class RWebView(QtWebKit.QWebView):
         self.addAction(self.backAction)
 
         self.nextAction = QtGui.QAction(self)
-        self.nextAction.setShortcuts("Alt+Right")
+        self.nextAction.setShortcut("Alt+Right")
         self.nextAction.triggered.connect(self.forward)
         self.addAction(self.nextAction)
 
