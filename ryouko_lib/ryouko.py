@@ -245,6 +245,7 @@ class RWebView(QtWebKit.QWebView):
             self.setWindowTitle(self.title())
 
     def showShortcuts(self):
+        self.load(QtCore.QUrl("about:blank"))
         self.setHtml("<html><head><title>Keyboard shortcuts</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>Keyboard shortcuts</h1><br>F1: Show this list of shortcuts<br>Ctrl+N: New window<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next</body></html>")
 
     def inputDialog(self, title="Query", content="Enter a value here:", value=""):
