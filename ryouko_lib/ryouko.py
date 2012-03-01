@@ -258,7 +258,9 @@ class RWebView(QtWebKit.QWebView):
         else:
             self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, False)
         if parent and self.parent != None:
-            self.page().networkAccessManager().setCookieJar(self.parent.cookies)
+            try: self.page().networkAccessManager().setCookieJar(self.parent.cookies)
+            except:
+                print("Error! No cookie jar!")
         else:
             cookies = QtNetwork.QNetworkCookieJar(None)
             cookies.setAllCookies([])
@@ -292,7 +294,7 @@ class RWebView(QtWebKit.QWebView):
             print("", end = "")
         else:
             self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, settings['privateBrowsing'])
-            if not settings['privateBrowsing'] and (self.parent == False or self.parent == None):
+            if not settings['privateBrowsing'] and not (self.parent == False or self.parent == None):
                 self.establishParent(self.parent)
         for child in range(1, len(self.newWindows)):
             try: self.newWindows[child].updateSettings()
@@ -380,12 +382,12 @@ class RWebView(QtWebKit.QWebView):
             exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(self.parent)")
         else:
             exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(None)")
-        if not self.parent == None:
-            exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
-        else:
-            exec("self.newWindows.append(None)")
+        exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
         self.createNewWindow.emit(windowType)
-        exec("win.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
+        if not self.parent == None:
+            exec("win.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
+        else:
+            exec("win.newpbTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
         return self.newWindows[len(self.newWindows) - 1]
 
 class HistoryCompletionList(QtGui.QListWidget):
@@ -436,6 +438,8 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         else:
             self.webView = widget
         self.updateSettings()
+        if not self.pb:
+            self.webView.establishParent(self.parent)
         self.webView.statusBarMessage.connect(self.statusMessage.setText)
         self.mainLayout.addWidget(self.webView, 2, 0)
         self.historyCompletion = HistoryCompletionList(self)
@@ -958,9 +962,22 @@ class TabBrowser(QtGui.QMainWindow):
     def newTabWithRWebView(self, url="", widget=None):
         self.tabCount += 1
         if url != False:
-            exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"', widget)")
+            exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"', False, widget)")
         else:
             exec("tab" + str(self.tabCount) + " = Browser(self)")
+        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
+        exec("tab" + str(self.tabCount) + ".webView.urlChanged.connect(self.reloadHistory)")
+        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.reloadHistory)")
+        exec("tab" + str(self.tabCount) + ".webView.iconChanged.connect(self.updateIcons)")
+        exec("self.tabs.addTab(tab" + str(self.tabCount) + ", tab" + str(self.tabCount) + ".webView.icon(), 'New Tab')")
+        self.tabs.setCurrentIndex(self.tabs.count() - 1)
+
+    def newpbTabWithRWebView(self, url="", widget=None):
+        self.tabCount += 1
+        if url != False:
+            exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"', True, widget)")
+        else:
+            exec("tab" + str(self.tabCount) + " = Browser(self, '', True, widget)")
         exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
         exec("tab" + str(self.tabCount) + ".webView.urlChanged.connect(self.reloadHistory)")
         exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.reloadHistory)")
