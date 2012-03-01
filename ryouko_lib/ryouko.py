@@ -502,7 +502,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.addAction(self.zoomInAction)
         self.zoomResetAction = QtGui.QAction(self)
         self.zoomResetAction.setShortcut("Ctrl+0")
-        self.zoomResetAction.triggered.connect(self.webView.zoomReset)
+        self.zoomResetAction.triggered.connect(self.zoomReset)
         self.addAction(self.zoomResetAction)
         self.zoomOutButton.clicked.connect(self.zoomOut)
         self.zoomInButton.clicked.connect(self.zoomIn)
@@ -514,6 +514,9 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
 
     def zoomOut(self):
         self.zoomSlider.setValue(self.zoomSlider.value() - 1)
+
+    def zoomReset(self):
+        self.zoomSlider.setValue(4)
         
     def zoom(self, value):
         self.webView.setZoomFactor(float(value) * 0.25)
