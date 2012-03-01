@@ -38,7 +38,7 @@ if sys.version_info[0] >= 3:
     def unicode(data):
         return str(data)
 
-def message(content="This is a message.", title="Alert", icon="info"):
+def message(title="Alert", content="This is a message.", icon="info"):
     message = QtGui.QMessageBox()
     message.setWindowTitle(title)
     message.setText(qstring(str(content)))
@@ -87,52 +87,71 @@ class BrowserHistory():
         json.dump(self.history, history)
         history.close()
     def append(self, url, name=""):
-        self.reload()
-        self.url = str(url.toString())
-        url = str(url.toString())
-        if url != "about:blank":
-            now = datetime.datetime.now()
-            add = True
-            index = 0
-            count = 1
-            for item in self.history:
-                if item[0].lower() == url:
-                    add = False
-                    index = self.history.index(item)
-                    break
-            if add == True:
-                self.history.insert(0, [url, name, count, time.time(), time.strftime("%A"), time.strftime("%B"), time.strftime("%d"), "%d" % now.year, time.strftime("%H:%M:%S")])
-            else:
-                if len(self.history[index]) < 3:
-                    self.history[index].append[1]
-                if not type(self.history[index][2]) is int:
-                    self.history[index][2] = 1
-                count = self.history[index][2] + 1
-                self.history[index][2] = count
-                self.history[index][3] = time.time()
-                tempIndex = self.history[index]
-                del self.history[index]
-                self.history.insert(0, tempIndex)
+        try:
+            self.reload()
+            self.url = str(url.toString())
+            url = str(url.toString())
+            if url != "about:blank":
+                now = datetime.datetime.now()
+                add = True
+                index = 0
+                count = 1
+                for item in self.history:
+                    if item['url'].lower() == url:
+                        add = False
+                        index = self.history.index(item)
+                        break
+                if add == True:
+                    self.history.insert(0, {'url' : url, 'name' : name, 'count' : count, 'time' : time.time(), 'weekday' : time.strftime("%A"), 'month' : time.strftime("%B"), 'monthday' : time.strftime("%d"), 'year' : "%d" % now.year, 'timestamp' : time.strftime("%H:%M:%S")})
+                else:
+                    if not 'count' in self.history[index]:
+                        self.history[index]['count'][1]
+                    if not type(self.history[index]['count']) is int:
+                        self.history[index]['count'] = 1
+                    count = self.history[index]['count'] + 1
+                    self.history[index]['count'] = count
+                    self.history[index]['time'] = time.time()
+                    tempIndex = self.history[index]
+                    del self.history[index]
+                    self.history.insert(0, tempIndex)
+            self.save()
+        except:
+            self.reset()
+    def reset(self):
+        message("Ryouko says...", "Oh, no! An error has occurred while trying to access or modify the history! Ryouko is now going to clear the history in an attempt to fix this. =(", "critical")
+        self.history = []
         self.save()
+        self.reload()
     def updateTitles(self, title):
-        self.reload()
-        title = str(title)
-        for item in self.history:
-            if item[0].lower() == self.url.lower():
-                item[1] = title
-        self.save()
+        try:
+            self.reload()
+            title = str(title)
+            for item in self.history:
+                if item['url'].lower() == self.url.lower():
+                    item['name'] = title
+            self.save()
+        except:
+            self.reset()
     def removeByName(self, name=""):
-        self.reload()
-        for item in self.history:
-            if item[1].lower() == name.lower():
-                del item
-        self.save()
+        try:
+            self.reload()
+            for item in self.history:
+                if item['name'].lower() == name.lower():
+                    del item
+            self.save()
+        except:
+            self.reset()
     def removeByUrl(self, url=""):
-        self.reload()
-        for item in self.history:
-            if item[0].lower() == url.lower():
-                del item
-        self.save()
+        try:
+            self.reload()
+            for item in self.history:
+                if item['url'].lower() == url.lower():
+                    del item
+            self.save()
+        except:
+            self.reset()
+
+browserHistory = BrowserHistory()
 
 class DownloaderThread(QtCore.QThread):
     def __init__(self, parent=None):
@@ -310,6 +329,19 @@ class RWebView(QtWebKit.QWebView):
         self.createNewWindow.emit(windowType)
         return self.newWindows[len(self.newWindows) - 1]
 
+class HistoryCompletionList(QtGui.QListWidget):
+    statusMessage = QtCore.pyqtSignal(QtCore.QString)
+    def __init__(self, parent=None):
+        super(HistoryCompletionList, self).__init__()
+        self.parent = parent
+        self.setMouseTracking(True)
+    def mouseMoveEvent(self, ev):
+        try: self.statusMessage.emit(qstring(self.parent.tempHistory[self.row(self.itemAt(QtGui.QCursor().pos().x() - self.mapToGlobal(QtCore.QPoint(0,0)).x(), QtGui.QCursor().pos().y() - self.mapToGlobal(QtCore.QPoint(0,0)).y()))]['url']))
+        except:
+            try: self.statusMessage.emit(qstring(self.parent.tempHistory[self.row(self.itemAt(QtGui.QCursor().pos().x() - self.mapToGlobal(QtCore.QPoint(0,0)).x(), QtGui.QCursor().pos().y() - self.mapToGlobal(QtCore.QPoint(0,0)).y()))]['url']))
+            except:
+                self.statusMessage.emit(qstring(""))
+
 class Browser(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, url="about:blank", pb=False):
         super(Browser, self).__init__()
@@ -320,7 +352,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         if not os.path.exists(self.app_home):
             os.mkdir(self.app_home)
         if not self.pb:
-            self.browserHistory = BrowserHistory()
+            browserHistory = BrowserHistory()
         self.app_lib = app_lib
         self.findText = ""
         self.version = "N/A"
@@ -341,9 +373,11 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.setupUi(self)
         self.webView = RWebView(None)
         self.updateSettings()
+        self.webView.statusBarMessage.connect(self.statusMessage.setText)
         self.mainLayout.addWidget(self.webView, 2, 0)
-        self.historyCompletion = QtGui.QListWidget()
+        self.historyCompletion = HistoryCompletionList(self)
         self.historyCompletion.itemActivated.connect(self.openHistoryItem)
+        self.historyCompletion.statusMessage.connect(self.statusMessage.setText)
         self.mainLayout.addWidget(self.historyCompletion, 3, 0)
         self.progressBar.hide()
         self.mainLayout.setSpacing(0);
@@ -366,8 +400,8 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.urlBar.textChanged.connect(self.searchHistory)
         self.webView.urlChanged.connect(self.updateText)
         if not self.pb:
-            self.webView.urlChanged.connect(self.browserHistory.append)
-            self.webView.titleChanged.connect(self.browserHistory.updateTitles)
+            self.webView.urlChanged.connect(browserHistory.append)
+            self.webView.titleChanged.connect(browserHistory.updateTitles)
         self.searchButton.clicked.connect(self.searchWeb)
         self.searchButton.setShortcut("Ctrl+K")
         self.searchButton.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -412,6 +446,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.focusURLBarAction.triggered.connect(self.focusURLBar)
         self.addAction(self.focusURLBarAction)
         self.webView.settings().setIconDatabasePath(qstring(self.app_home))
+        self.webView.page().linkHovered.connect(self.updateStatusMessage)
         self.webView.loadFinished.connect(self.progressBar.hide)
         self.webView.loadProgress.connect(self.progressBar.setValue)
         self.webView.loadProgress.connect(self.progressBar.show)
@@ -424,6 +459,9 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.updateText()
         self.historyCompletion.hide()
         self.webView.show()
+
+    def updateStatusMessage(self, link="", title="", content=""):
+        self.statusMessage.setText(qstring(link))
 
     def updateSettings(self):
         settingsFile = os.path.join(app_home, "settings.json")
@@ -457,20 +495,20 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
                 self.webView.establishParent(self.parent)
 
     def searchHistory(self, string):
-        string = str(string)
+        string = unicode(string)
         if string != "" and string != str(self.webView.url().toString()) and string != "about:version":
             self.searchOn = True
             self.historyCompletion.clear()
             history = []
-            string = str(string)
-            for item in self.browserHistory.history:
+            string = unicode(string)
+            for item in browserHistory.history:
                 add = False
                 for subitem in item:
-                    if string.lower() in str(subitem).lower():
+                    if string.lower() in unicode(item[subitem]).lower():
                         add = True
                 if add == True:
                     history.append(item)
-                    self.historyCompletion.addItem(item[1])
+                    self.historyCompletion.addItem(item['name'])
             self.tempHistory = history
             self.historyCompletion.show()
             self.webView.hide()
@@ -478,7 +516,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.historyCompletion.hide()
             self.webView.show()
     def openHistoryItem(self, item):
-        self.webView.load(QtCore.QUrl(self.tempHistory[self.historyCompletion.row(item)][0]))
+        self.webView.load(QtCore.QUrl(self.tempHistory[self.historyCompletion.row(item)]['url']))
         self.historyCompletion.hide()
         self.webView.show()
     def licensing(self):
@@ -682,7 +720,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.clearHistoryToolBar.addWidget(self.clearHistoryButton)
 
     def initUI(self):
-        self.browserHistory = BrowserHistory()
 
         # History sidebar
         self.historyDock = QtGui.QDockWidget("History")
@@ -889,17 +926,20 @@ class TabBrowser(QtGui.QMainWindow):
 
     def openHistoryItem(self, item):
         if self.searchOn == False:
-            self.newTab(self.browserHistory.history[self.historyList.row(item)][0])
+            self.newTab(browserHistory.history[self.historyList.row(item)]['url'])
         else:
-            self.newTab(self.tempHistory[self.historyList.row(item)][0])
+            self.newTab(self.tempHistory[self.historyList.row(item)]['url'])
     def reloadHistory(self):
-        if self.searchOn == False:
-            self.historyList.clear()
-            self.browserHistory.reload()
-            for item in self.browserHistory.history:
-                self.historyList.addItem(qstring(str(item[1])))
-        else:
-            self.browserHistory.reload()
+        try:
+            if self.searchOn == False:
+                self.historyList.clear()
+                browserHistory.reload()
+                for item in browserHistory.history:
+                    self.historyList.addItem(qstring(str(item['name'])))
+            else:
+                browserHistory.reload()
+        except:
+            browserHistory.reset()
     def searchHistory(self, string=""):
         string = str(string)
         if string != "":
@@ -907,37 +947,41 @@ class TabBrowser(QtGui.QMainWindow):
             self.historyList.clear()
             history = []
             string = str(string)
-            for item in self.browserHistory.history:
+            for item in browserHistory.history:
                 add = False
                 for subitem in item:
                     if string.lower() in str(subitem).lower():
                         add = True
                 if add == True:
                     history.append(item)
-                    self.historyList.addItem(item[1])
+                    self.historyList.addItem(item['name'])
             self.tempHistory = history
         else:
             self.searchOn = False
             self.reloadHistory()
     def deleteHistoryItem(self):
         if self.historyList.hasFocus():
-            del self.browserHistory.history[self.historyList.row(self.historyList.currentItem())]
-            self.browserHistory.save()
+            del browserHistory.history[self.historyList.row(self.historyList.currentItem())]
+            browserHistory.save()
             for tab in range(self.tabs.count()):
-                self.tabs.widget(tab).browserHistory.history = self.browserHistory.history
+                self.tabs.widget(tab).browserHistory.history = browserHistory.history
                 self.tabs.widget(tab).browserHistory.save()
             self.reloadHistory()
     def showClearHistoryDialog(self):
         self.clearHistoryToolBar.setVisible(not self.clearHistoryToolBar.isVisible())
     def clearHistoryRange(self, timeRange=0.0):
         saveTime = time.time()
-        for item in self.browserHistory.history:
-            difference = saveTime - item[3]
+        for item in browserHistory.history:
+            try:
+                difference = saveTime - item['time']
+            except:
+                browserHistory.reset()
+                break
             if difference <= timeRange:
-                del self.browserHistory.history[self.browserHistory.history.index(item)]
-        self.browserHistory.save()
+                del browserHistory.history[browserHistory.history.index(item)]
+        browserHistory.save()
         for tab in range(self.tabs.count()):
-            self.tabs.widget(tab).browserHistory.history = self.browserHistory.history
+            self.tabs.widget(tab).browserHistory.history = browserHistory.history
             self.tabs.widget(tab).browserHistory.save()
         self.reloadHistory()
     def clearHistory(self):
@@ -968,24 +1012,24 @@ class TabBrowser(QtGui.QMainWindow):
             saveDay = time.strftime("%d")
             now = datetime.datetime.now()
             saveYear = "%d" % now.year
-            for item in self.browserHistory.history:
-                if item[6] == saveMonth and item[7] == saveDay and item[8] == saveYear:
-                    del self.browserHistory.history[self.browserHistory.history.index(item)]
-            self.browserHistory.save()
+            for item in browserHistory.history:
+                if item['month'] == saveMonth and item['monthday'] == saveDay and item['year'] == saveYear:
+                    del browserHistory.history[browserHistory.history.index(item)]
+            browserHistory.save()
             for tab in range(self.tabs.count()):
-                self.tabs.widget(tab).browserHistory.history = self.browserHistory.history
+                self.tabs.widget(tab).browserHistory.history = browserHistory.history
                 self.tabs.widget(tab).browserHistory.save()
             self.reloadHistory()
         elif self.selectRange.currentIndex() == 12:
-            self.browserHistory.history = []
-            self.browserHistory.save()
+            browserHistory.history = []
+            browserHistory.save()
             for tab in range(self.tabs.count()):
-                self.tabs.widget(tab).browserHistory.history = self.browserHistory.history
+                self.tabs.widget(tab).browserHistory.history = browserHistory.history
                 self.tabs.widget(tab).browserHistory.save()
             self.reloadHistory()
         elif self.selectRange.currentIndex() == 14:
             self.killCookies = True
-            message("Cookies will be cleared on browser restart.", "Ryouko says...", "warn")
+            message("Ryouko says...", "Cookies will be cleared on browser restart.", "warn")
     def historyToggle(self):
         self.historyDock.setVisible(not self.historyDock.isVisible())
         if self.historyDock.isVisible():
