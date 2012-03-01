@@ -766,8 +766,15 @@ class TabBrowser(QtGui.QMainWindow):
         self.newTabButton.setDefaultAction(newTabAction)
         self.cornerWidgetsLayout.addWidget(self.newTabButton)
 
+        # New window button
+        self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'newwindow.png'))), '', self)
+        self.newWindowButton.setToolTip("<b>New Window</b><br>Ctrl+N")
+        self.newWindowButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.newWindowButton.clicked.connect(self.newWindow)
+        self.cornerWidgetsLayout.addWidget(self.newWindowButton)
+
         # Undo closed tab button
-        undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("user-trash-full", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'trash.png'))), '&Undo Close Tab', self)
+        undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'undo.png'))), '&Undo Close Tab', self)
         undoCloseTabAction.setToolTip("<b>Undo Close Tab</b><br>Ctrl+Shift+T")
         undoCloseTabAction.setShortcuts(['Ctrl+Shift+T'])
         undoCloseTabAction.triggered.connect(self.undoCloseTab)
@@ -847,6 +854,7 @@ class TabBrowser(QtGui.QMainWindow):
             self.tabs.setCurrentIndex(tabIndex)
         else:
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
+
     def newTab(self, url="about:blank"):
         if self.cDialog.settings['privateBrowsing']:
             self.newpbTab(url)
@@ -862,6 +870,7 @@ class TabBrowser(QtGui.QMainWindow):
             exec("tab" + str(self.tabCount) + ".webView.iconChanged.connect(self.updateIcons)")
             exec("self.tabs.addTab(tab" + str(self.tabCount) + ", tab" + str(self.tabCount) + ".webView.icon(), 'New Tab')")
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
+
     def newpbTab(self, url="about:blank"):
         self.tabCount += 1
         if url != False:
@@ -874,6 +883,10 @@ class TabBrowser(QtGui.QMainWindow):
         exec("tab" + str(self.tabCount) + ".webView.iconChanged.connect(self.updateIcons)")
         exec("self.tabs.addTab(tab" + str(self.tabCount) + ", tab" + str(self.tabCount) + ".webView.icon(), 'New Tab')")
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
+
+    def newWindow(self):
+        self.tabs.widget(self.tabs.currentIndex()).webView.newWindow()
+
     def openHistoryItem(self, item):
         if self.searchOn == False:
             self.newTab(self.browserHistory.history[self.historyList.row(item)][0])
