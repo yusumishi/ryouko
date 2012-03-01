@@ -184,8 +184,8 @@ class RWebView(QtWebKit.QWebView):
             self.setWindowTitle("Ryouko (PB)")
         else:
             self.setWindowTitle("Ryouko")
-        if unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "":
-            self.showShortcuts()
+#        if unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "":
+#            self.showShortcuts()
         if parent == False:
             self.parent = None
         self.app_home = app_home
@@ -195,10 +195,10 @@ class RWebView(QtWebKit.QWebView):
         self.text = ""
         self.zoomFactor = 1.0
 
-        self.showShortcutsAction = QtGui.QAction(self)
-        self.showShortcutsAction.setShortcut("F1")
-        self.showShortcutsAction.triggered.connect(self.showShortcuts)
-        self.addAction(self.showShortcutsAction)
+#        self.showShortcutsAction = QtGui.QAction(self)
+#        self.showShortcutsAction.setShortcut("F1")
+#        self.showShortcutsAction.triggered.connect(self.showShortcuts)
+#        self.addAction(self.showShortcutsAction)
 
         self.newWindowAction = QtGui.QAction(self)
         self.newWindowAction.setShortcut("Ctrl+N")
@@ -294,10 +294,10 @@ class RWebView(QtWebKit.QWebView):
             self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, settings['privateBrowsing'])
             if not settings['privateBrowsing'] and (self.parent == False or self.parent == None):
                 self.establishParent(self.parent)
-        for child in self.newWindows:
-            try: child.updateSettings()
+        for child in range(1, len(self.newWindows)):
+            try: self.newWindows[child].updateSettings()
             except:
-                print("Error! " + unicode(child) + "does not have an updateSettings() method!")
+                print("Error! " + self.newWindows[child] + "does not have an updateSettings() method!")
 
     def saveDialog(self, fname="", filters = "All files (*)"):
         saveDialog = QtGui.QFileDialog.getSaveFileName(None, "Save As", os.path.join(os.getcwd(), fname), filters)
@@ -316,9 +316,9 @@ class RWebView(QtWebKit.QWebView):
         else:
             self.setWindowTitle(self.title())
 
-    def showShortcuts(self):
-        self.load(QtCore.QUrl("about:blank"))
-        self.setHtml("<html><head><title>Keyboard shortcuts</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>Keyboard shortcuts</h1><br>F1: Show this list of shortcuts<br>Ctrl+N: New window<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next<br>Ctrl+=; Ctrl++: Zoom in<br>Ctrl+-: Zoom out<br>Ctrl+0: Reset zoom</body></html>")
+#    def showShortcuts(self):
+#        self.load(QtCore.QUrl("about:blank"))
+#        self.setHtml("<html><head><title>Keyboard shortcuts</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>Keyboard shortcuts</h1><br>F1: Show this list of shortcuts<br>Ctrl+N: New window<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next<br>Ctrl+=; Ctrl++: Zoom in<br>Ctrl+-: Zoom out<br>Ctrl+0: Reset zoom</body></html>")
 
     def inputDialog(self, title="Query", content="Enter a value here:", value=""):
         text = QtGui.QInputDialog.getText(None, title, content, QtGui.QLineEdit.Normal, value)
@@ -380,27 +380,12 @@ class RWebView(QtWebKit.QWebView):
             exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(self.parent)")
         else:
             exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(None)")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction = QtGui.QAction(self.newWindow" + str(len(self.newWindows)) + ")")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.setShortcut('Ctrl+W')")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.triggered.connect(self.newWindow" + str(len(self.newWindows)) + ".close)")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".addAction(self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction)")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".stopAction = QtGui.QAction(self.newWindow" + str(len(self.newWindows)) + ")")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".stopAction.setShortcut('Esc')")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".stopAction.triggered.connect(self.newWindow" + str(len(self.newWindows)) + ".stop)")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".addAction(self.newWindow" + str(len(self.newWindows)) + ".stopAction)")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction = QtGui.QAction(self.newWindow" + str(len(self.newWindows)) + ")")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction.setShortcuts(['Ctrl+L', 'Alt+D'])")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction.triggered.connect(self.newWindow" + str(len(self.newWindows)) + ".locationEdit)")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".addAction(self.newWindow" + str(len(self.newWindows)) + ".locationEditAction)")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".zoomInAction.setShortcuts(['Ctrl+Shift+=', 'Ctrl+='])")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".zoomOutAction.setShortcut('Ctrl+-')")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".zoomResetAction.setShortcut('Ctrl+0')")
-        exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
         if not self.parent == None:
             exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
         else:
             exec("self.newWindows.append(None)")
         self.createNewWindow.emit(windowType)
+        exec("win.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
         return self.newWindows[len(self.newWindows) - 1]
 
 class HistoryCompletionList(QtGui.QListWidget):
@@ -420,7 +405,7 @@ class HistoryCompletionList(QtGui.QListWidget):
                 self.statusMessage.emit(qstring(""))
 
 class Browser(QtGui.QMainWindow, Ui_MainWindow):
-    def __init__(self, parent=None, url="about:blank", pb=False):
+    def __init__(self, parent=None, url=False, pb=False, widget=None):
         super(Browser, self).__init__()
         self.parent = parent
         self.pb = pb
@@ -440,13 +425,16 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
                 self.version = metadata[0].rstrip("\n")
             if len(metadata) > 1:
                 self.codename = metadata[1].rstrip("\n")
-        self.initUI(url)
-    def initUI(self, url):
+        self.initUI(url, widget)
+    def initUI(self, url, widget=None):
         if not sys.platform.startswith("win"):
             uic.loadUi(os.path.join(self.app_lib, "mainwindow.ui"), self)
         else:
             self.setupUi(self)
-        self.webView = RWebView(None)
+        if widget == None:
+            self.webView = RWebView(None)
+        else:
+            self.webView = widget
         self.updateSettings()
         self.webView.statusBarMessage.connect(self.statusMessage.setText)
         self.mainLayout.addWidget(self.webView, 2, 0)
@@ -527,11 +515,8 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.webView.loadFinished.connect(self.progressBar.hide)
         self.webView.loadProgress.connect(self.progressBar.setValue)
         self.webView.loadProgress.connect(self.progressBar.show)
-        if url != False:
+        if not url == False and not url == "":
             self.urlBar.setText(qstring(url))
-            self.updateWeb()
-        elif len(sys.argv) > 1 and __name__ == "__main__":
-            self.urlBar.setText(qstring(sys.argv[1]))
             self.updateWeb()
         self.updateText()
         self.historyCompletion.hide()
@@ -882,11 +867,11 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsLayout.addWidget(self.newTabButton)
 
         # New window button
-        self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'newwindow.png'))), '', self)
-        self.newWindowButton.setToolTip("<b>New Window</b><br>Ctrl+N")
-        self.newWindowButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.newWindowButton.clicked.connect(self.newWindow)
-        self.cornerWidgetsLayout.addWidget(self.newWindowButton)
+#        self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'newwindow.png'))), '', self)
+#        self.newWindowButton.setToolTip("<b>New Window</b><br>Ctrl+N")
+#        self.newWindowButton.setFocusPolicy(QtCore.Qt.NoFocus)
+#        self.newWindowButton.clicked.connect(self.newWindow)
+#        self.cornerWidgetsLayout.addWidget(self.newWindowButton)
 
         # Undo closed tab button
         undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'undo.png'))), '&Undo Close Tab', self)
@@ -969,6 +954,19 @@ class TabBrowser(QtGui.QMainWindow):
             self.tabs.setCurrentIndex(tabIndex)
         else:
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
+
+    def newTabWithRWebView(self, url="", widget=None):
+        self.tabCount += 1
+        if url != False:
+            exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"', widget)")
+        else:
+            exec("tab" + str(self.tabCount) + " = Browser(self)")
+        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
+        exec("tab" + str(self.tabCount) + ".webView.urlChanged.connect(self.reloadHistory)")
+        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.reloadHistory)")
+        exec("tab" + str(self.tabCount) + ".webView.iconChanged.connect(self.updateIcons)")
+        exec("self.tabs.addTab(tab" + str(self.tabCount) + ", tab" + str(self.tabCount) + ".webView.icon(), 'New Tab')")
+        self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def newTab(self, url="about:blank"):
         if self.cDialog.settings['privateBrowsing']:
@@ -1165,7 +1163,10 @@ class TabBrowser(QtGui.QMainWindow):
                 if tab == self.tabs.currentIndex():
                     self.setWindowTitle(self.tabs.widget(tab).webView.title() + " - Ryouko")
 
+win = ""
+
 def main():
+    global win
     app = QtGui.QApplication(sys.argv)
     win = TabBrowser()
     if os.path.exists(app_logo):
