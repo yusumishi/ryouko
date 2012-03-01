@@ -155,7 +155,10 @@ class RWebView(QtWebKit.QWebView):
     newWindows = [0]
     def __init__(self, parent=False):
         super(RWebView, self).__init__()
-        self.setWindowTitle("Ryouko")
+        if parent == False or parent == None:
+            self.setWindowTitle("Ryouko (PB)")
+        else:
+            self.setWindowTitle("Ryouko")
         if unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "":
             self.showShortcuts()
         if parent == False:
@@ -236,7 +239,10 @@ class RWebView(QtWebKit.QWebView):
             downloaderThread.start()
 
     def updateTitle(self):
-        self.setWindowTitle(self.title())
+        if self.parent == None or self.parent == False:
+            self.setWindowTitle(qstring(unicode(self.title()) + " (PB)"))
+        else:
+            self.setWindowTitle(self.title())
 
     def showShortcuts(self):
         self.setHtml("<html><head><title>Keyboard shortcuts</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>Keyboard shortcuts</h1><br>F1: Show this list of shortcuts<br>Ctrl+N: New window<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next</body></html>")
