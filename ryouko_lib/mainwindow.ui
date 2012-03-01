@@ -227,27 +227,22 @@ border-top: 1px solid palette(shadow);
         <number>0</number>
        </property>
        <item>
-        <widget class="QLabel" name="statusMessage">
+        <widget class="QLineEdit" name="statusMessage">
          <property name="styleSheet">
-          <string notr="true">min-height: 1em;</string>
+          <string notr="true">QLineEdit {
+min-height: 1em;
+max-height: 1em;
+border: 0;
+background: transparent;
+}</string>
          </property>
          <property name="text">
           <string>Done</string>
          </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
         </widget>
-       </item>
-       <item>
-        <spacer name="statusSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
        <item>
         <widget class="QProgressBar" name="progressBar">
