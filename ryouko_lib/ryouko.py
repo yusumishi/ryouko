@@ -156,6 +156,8 @@ class RWebView(QtWebKit.QWebView):
     def __init__(self, parent=False):
         super(RWebView, self).__init__()
         self.setWindowTitle("Ryouko")
+        if unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "":
+            self.showShortcuts()
         if parent == False:
             self.parent = None
         self.app_home = app_home
@@ -165,7 +167,12 @@ class RWebView(QtWebKit.QWebView):
             self.setWindowIcon(QtGui.QIcon(os.path.join(app_lib, "icons", "logo.svg")))
 
         self.text = ""
-        
+
+        self.showShortcutsAction = QtGui.QAction(self)
+        self.showShortcutsAction.setShortcut("F1")
+        self.showShortcutsAction.triggered.connect(self.showShortcuts)
+        self.addAction(self.showShortcutsAction)
+
         self.newWindowAction = QtGui.QAction(self)
         self.newWindowAction.setShortcut("Ctrl+N")
         self.newWindowAction.triggered.connect(self.newWindow)
@@ -201,40 +208,6 @@ class RWebView(QtWebKit.QWebView):
         self.page().downloadRequested.connect(self.downloadFile)
         self.establishParent(parent)
 
-    def inputDialog(self, title="Query", content="Enter a value here:", value=""):
-        text = QtGui.QInputDialog.getText(None, title, content, QtGui.QLineEdit.Normal, value)
-        if text[1]:
-            if unicode(text[0]) != "":
-                return text[0]
-            else:
-                return ""
-        else:
-            return ""
-
-    def locationEdit(self):
-        url = self.inputDialog("Open location", "Enter a URL here:", self.text)
-        if url:
-            header = ""
-            if not unicode(url).startswith("about:") and not "://" in unicode(url):
-                header = "http://"
-            url = qstring(header + unicode(url))
-            self.load(QtCore.QUrl(url))
-
-    def find(self):
-        find = self.inputDialog("Find", "Search for:", self.text)
-        if find:
-            self.text = find
-            self.findText(self.text)
-        else:
-            self.text = ""
-            self.findText(self.text)
-
-    def findNext(self):
-        if not self.text:
-            self.find()
-        else:
-            self.findText(self.text)
-
     def establishParent(self, parent):
         if parent == False:
             self.parent = None
@@ -264,6 +237,43 @@ class RWebView(QtWebKit.QWebView):
 
     def updateTitle(self):
         self.setWindowTitle(self.title())
+
+    def showShortcuts(self):
+        self.setHtml("<html><head><title>Keyboard shortcuts</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>Keyboard shortcuts</h1><br>F1: Show this list of shortcuts<br>Ctrl+N: New window<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next</body></html>")
+
+    def inputDialog(self, title="Query", content="Enter a value here:", value=""):
+        text = QtGui.QInputDialog.getText(None, title, content, QtGui.QLineEdit.Normal, value)
+        if text[1]:
+            if unicode(text[0]) != "":
+                return text[0]
+            else:
+                return ""
+        else:
+            return ""
+
+    def locationEdit(self):
+        url = self.inputDialog("Open location", "Enter a URL here:", self.url().toString())
+        if url:
+            header = ""
+            if not unicode(url).startswith("about:") and not "://" in unicode(url):
+                header = "http://"
+            url = qstring(header + unicode(url))
+            self.load(QtCore.QUrl(url))
+
+    def find(self):
+        find = self.inputDialog("Find", "Search for:", self.text)
+        if find:
+            self.text = find
+            self.findText(self.text)
+        else:
+            self.text = ""
+            self.findText(self.text)
+
+    def findNext(self):
+        if not self.text:
+            self.find()
+        else:
+            self.findText(self.text)
 
     def newWindow(self):
        self.createWindow(QtWebKit.QWebPage.WebBrowserWindow)
