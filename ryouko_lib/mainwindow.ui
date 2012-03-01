@@ -237,7 +237,7 @@ background: transparent;
 }</string>
          </property>
          <property name="text">
-          <string>Done</string>
+          <string/>
          </property>
          <property name="readOnly">
           <bool>true</bool>
