@@ -1032,6 +1032,11 @@ class TabBrowser(QtGui.QMainWindow):
     def showClearHistoryDialog(self):
         self.clearHistoryToolBar.setVisible(not self.clearHistoryToolBar.isVisible())
     def clearHistoryRange(self, timeRange=0.0):
+        if sys.platform.startswith("linux"):
+            os.system("shred -v \"" + os.path.join(app_home, "WebpageIcons.db") + "\"")
+        try: os.remove(os.path.join(app_home, "WebpageIcons.db"))
+        except:
+            doNothing()
         saveTime = time.time()
         for item in browserHistory.history:
             try:
@@ -1070,6 +1075,11 @@ class TabBrowser(QtGui.QMainWindow):
         elif self.selectRange.currentIndex() == 10:
             self.clearHistoryRange(86400.0)
         elif self.selectRange.currentIndex() == 11:
+            if sys.platform.startswith("linux"):
+                os.system("shred -v \"" + os.path.join(app_home, "WebpageIcons.db") + "\"")
+            try: os.remove(os.path.join(app_home, "WebpageIcons.db"))
+            except:
+                doNothing()
             saveMonth = time.strftime("%B")
             saveDay = time.strftime("%d")
             now = datetime.datetime.now()
@@ -1083,6 +1093,11 @@ class TabBrowser(QtGui.QMainWindow):
                 self.tabs.widget(tab).browserHistory.save()
             self.reloadHistory()
         elif self.selectRange.currentIndex() == 12:
+            if sys.platform.startswith("linux"):
+                os.system("shred -v \"" + os.path.join(app_home, "WebpageIcons.db") + "\"")
+            try: os.remove(os.path.join(app_home, "WebpageIcons.db"))
+            except:
+                doNothing()
             browserHistory.history = []
             browserHistory.save()
             for tab in range(self.tabs.count()):
