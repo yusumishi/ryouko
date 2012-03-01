@@ -69,8 +69,11 @@ def inputDialog(title="Query", content="Enter a value here:", value=""):
     else:
         return ""
 
-class BrowserHistory():
-    def __init__(self):
+class BrowserHistory(QtCore.QObject):
+    historyChanged = QtCore.pyqtSignal()
+    def __init__(self, parent=None):
+        super(BrowserHistory, self).__init__()
+        self.parent = parent
         self.history = []
         self.url = "about:blank"
         self.app_home = app_home
@@ -115,6 +118,7 @@ class BrowserHistory():
                     del self.history[index]
                     self.history.insert(0, tempIndex)
             self.save()
+            self.historyChanged.emit()
         except:
             self.reset()
     def reset(self):
@@ -388,8 +392,6 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.tempHistory = []
         if not os.path.exists(self.app_home):
             os.mkdir(self.app_home)
-        if not self.pb:
-            self.browserHistory = BrowserHistory()
         self.app_lib = app_lib
         self.findText = ""
         self.version = "N/A"
@@ -436,8 +438,9 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         if not self.pb:
             self.urlBar.textChanged.connect(self.searchHistory)
         self.webView.urlChanged.connect(self.updateText)
-        self.webView.urlChanged.connect(self.browserHistory.reload)
         if not self.pb:
+            self.webView.urlChanged.connect(browserHistory.reload)
+            self.webView.titleChanged.connect(browserHistory.reload)
             self.webView.urlChanged.connect(browserHistory.append)
             self.webView.titleChanged.connect(browserHistory.updateTitles)
         self.searchButton.clicked.connect(self.searchWeb)
@@ -567,7 +570,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.historyCompletion.clear()
             history = []
             string = unicode(string)
-            for item in self.browserHistory.history:
+            for item in browserHistory.history:
                 add = False
                 for subitem in item:
                     if string.lower() in unicode(item[subitem]).lower():
@@ -812,6 +815,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.createClearHistoryDialog()
         self.historyDockWindow.setCentralWidget(self.historyList)
         self.historyDock.setWidget(self.historyDockWindow)
+        browserHistory.historyChanged.connect(self.reloadHistory)
         self.reloadHistory()
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.historyDock)
         self.historyDock.hide()
