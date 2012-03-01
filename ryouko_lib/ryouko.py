@@ -105,7 +105,7 @@ class BrowserHistory():
                     self.history.insert(0, {'url' : url, 'name' : name, 'count' : count, 'time' : time.time(), 'weekday' : time.strftime("%A"), 'month' : time.strftime("%B"), 'monthday' : time.strftime("%d"), 'year' : "%d" % now.year, 'timestamp' : time.strftime("%H:%M:%S")})
                 else:
                     if not 'count' in self.history[index]:
-                        self.history[index]['count'][1]
+                        self.history[index]['count'] = 1
                     if not type(self.history[index]['count']) is int:
                         self.history[index]['count'] = 1
                     count = self.history[index]['count'] + 1
