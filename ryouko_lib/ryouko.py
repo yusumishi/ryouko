@@ -857,7 +857,7 @@ class TabBrowser(QtGui.QMainWindow):
 
         # New tab button
         newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'newtab.png'))), '&New Tab', self)
-        newTabAction.setToolTip("<b>New Tab</b><br>Ctrl+T")
+        newTabAction.setToolTip("<b>New Tab</b><br>Ctrl+T; Ctrl+N")
         newTabAction.setShortcuts(['Ctrl+T'])
         newTabAction.triggered.connect(self.newTab)
         self.addAction(newTabAction)
