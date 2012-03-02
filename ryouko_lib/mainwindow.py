@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\DS_2\ryouko-build\ryouko_lib\mainwindow.ui'
+# Form implementation generated from reading ui file '/home/foxhead128/ryouko/ryouko_lib/mainwindow.ui'
 #
-# Created: Thu Mar 01 20:48:16 2012
-#      by: PyQt4 UI code generator 4.9.1
+# Created: Thu Mar  1 22:40:21 2012
+#      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -18,6 +18,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(832, 480)
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Ryouko", None, QtGui.QApplication.UnicodeUTF8))
         MainWindow.setStyleSheet(_fromUtf8("QListWidget {\n"
 "border: 0;\n"
 "}"))
@@ -80,27 +81,40 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setMargin(0)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.backButton = QtGui.QPushButton(self.subToolBar)
+        self.backButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Back</b><br>Alt+Left Arrow", None, QtGui.QApplication.UnicodeUTF8))
         self.backButton.setStyleSheet(_fromUtf8(""))
+        self.backButton.setText(QtGui.QApplication.translate("MainWindow", "Back", None, QtGui.QApplication.UnicodeUTF8))
         self.backButton.setObjectName(_fromUtf8("backButton"))
         self.horizontalLayout.addWidget(self.backButton)
         self.nextButton = QtGui.QPushButton(self.subToolBar)
+        self.nextButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Next</b><br>Alt+Right Arrow", None, QtGui.QApplication.UnicodeUTF8))
         self.nextButton.setStyleSheet(_fromUtf8(""))
+        self.nextButton.setText(QtGui.QApplication.translate("MainWindow", "Next", None, QtGui.QApplication.UnicodeUTF8))
         self.nextButton.setObjectName(_fromUtf8("nextButton"))
         self.horizontalLayout.addWidget(self.nextButton)
         self.stopButton = QtGui.QPushButton(self.subToolBar)
+        self.stopButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Stop</b><br>Esc", None, QtGui.QApplication.UnicodeUTF8))
+        self.stopButton.setText(QtGui.QApplication.translate("MainWindow", "Stop", None, QtGui.QApplication.UnicodeUTF8))
         self.stopButton.setObjectName(_fromUtf8("stopButton"))
         self.horizontalLayout.addWidget(self.stopButton)
         self.reloadButton = QtGui.QPushButton(self.subToolBar)
+        self.reloadButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Reload</b><br>F5", None, QtGui.QApplication.UnicodeUTF8))
+        self.reloadButton.setText(QtGui.QApplication.translate("MainWindow", "Reload", None, QtGui.QApplication.UnicodeUTF8))
         self.reloadButton.setObjectName(_fromUtf8("reloadButton"))
         self.horizontalLayout.addWidget(self.reloadButton)
         self.findButton = QtGui.QPushButton(self.subToolBar)
+        self.findButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Find</b><br>Ctrl+F", None, QtGui.QApplication.UnicodeUTF8))
+        self.findButton.setText(QtGui.QApplication.translate("MainWindow", "Find", None, QtGui.QApplication.UnicodeUTF8))
         self.findButton.setObjectName(_fromUtf8("findButton"))
         self.horizontalLayout.addWidget(self.findButton)
         self.urlBar = QtGui.QLineEdit(self.subToolBar)
+        self.urlBar.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Location Bar</b><br>Ctrl+L; Alt+D", None, QtGui.QApplication.UnicodeUTF8))
         self.urlBar.setObjectName(_fromUtf8("urlBar"))
         self.horizontalLayout.addWidget(self.urlBar)
         self.goButton = QtGui.QPushButton(self.subToolBar)
+        self.goButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Go</b><br>Enter", None, QtGui.QApplication.UnicodeUTF8))
         self.goButton.setStyleSheet(_fromUtf8(""))
+        self.goButton.setText(QtGui.QApplication.translate("MainWindow", "Go", None, QtGui.QApplication.UnicodeUTF8))
         self.goButton.setObjectName(_fromUtf8("goButton"))
         self.horizontalLayout.addWidget(self.goButton)
         self.mainToolBarLayout.addWidget(self.subToolBar)
@@ -111,10 +125,13 @@ class Ui_MainWindow(object):
 "background: transparent;"))
         self.focusURLBarButton.setText(_fromUtf8(""))
         self.focusURLBarButton.setIconSize(QtCore.QSize(0, 0))
+        self.focusURLBarButton.setShortcut(QtGui.QApplication.translate("MainWindow", "Alt+D", None, QtGui.QApplication.UnicodeUTF8))
         self.focusURLBarButton.setFlat(True)
         self.focusURLBarButton.setObjectName(_fromUtf8("focusURLBarButton"))
         self.mainToolBarLayout.addWidget(self.focusURLBarButton)
         self.searchButton = QtGui.QPushButton(self.mainToolBar)
+        self.searchButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Search</b><br>Ctrl+K", None, QtGui.QApplication.UnicodeUTF8))
+        self.searchButton.setText(QtGui.QApplication.translate("MainWindow", "Search", None, QtGui.QApplication.UnicodeUTF8))
         self.searchButton.setObjectName(_fromUtf8("searchButton"))
         self.mainToolBarLayout.addWidget(self.searchButton)
         self.mainToolBarContents.addLayout(self.mainToolBarLayout, 0, 0, 1, 1)
@@ -172,6 +189,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
         self.zoomOutButton = QtGui.QPushButton(self.zoomBar)
         self.zoomOutButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.zoomOutButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Zoom Out</b><br>Ctrl+-", None, QtGui.QApplication.UnicodeUTF8))
+        self.zoomOutButton.setText(QtGui.QApplication.translate("MainWindow", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.zoomOutButton.setObjectName(_fromUtf8("zoomOutButton"))
         self.horizontalLayout_3.addWidget(self.zoomOutButton)
         self.zoomSlider = QtGui.QSlider(self.zoomBar)
@@ -195,10 +214,13 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.addWidget(self.zoomSlider)
         self.zoomInButton = QtGui.QPushButton(self.zoomBar)
         self.zoomInButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.zoomInButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Zoom In</b><br>Ctrl++; Ctrl+=", None, QtGui.QApplication.UnicodeUTF8))
+        self.zoomInButton.setText(QtGui.QApplication.translate("MainWindow", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.zoomInButton.setObjectName(_fromUtf8("zoomInButton"))
         self.horizontalLayout_3.addWidget(self.zoomInButton)
         self.zoomLabel = QtGui.QLabel(self.zoomBar)
         self.zoomLabel.setStyleSheet(_fromUtf8("margin-left: 2px;"))
+        self.zoomLabel.setText(QtGui.QApplication.translate("MainWindow", "1.00x", None, QtGui.QApplication.UnicodeUTF8))
         self.zoomLabel.setObjectName(_fromUtf8("zoomLabel"))
         self.horizontalLayout_3.addWidget(self.zoomLabel)
         self.statusBarLayout.addWidget(self.zoomBar)
@@ -209,26 +231,5 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Ryouko", None, QtGui.QApplication.UnicodeUTF8))
-        self.backButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Back</b><br>Alt+Left Arrow", None, QtGui.QApplication.UnicodeUTF8))
-        self.backButton.setText(QtGui.QApplication.translate("MainWindow", "Back", None, QtGui.QApplication.UnicodeUTF8))
-        self.nextButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Next</b><br>Alt+Right Arrow", None, QtGui.QApplication.UnicodeUTF8))
-        self.nextButton.setText(QtGui.QApplication.translate("MainWindow", "Next", None, QtGui.QApplication.UnicodeUTF8))
-        self.stopButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Stop</b><br>Esc", None, QtGui.QApplication.UnicodeUTF8))
-        self.stopButton.setText(QtGui.QApplication.translate("MainWindow", "Stop", None, QtGui.QApplication.UnicodeUTF8))
-        self.reloadButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Reload</b><br>F5", None, QtGui.QApplication.UnicodeUTF8))
-        self.reloadButton.setText(QtGui.QApplication.translate("MainWindow", "Reload", None, QtGui.QApplication.UnicodeUTF8))
-        self.findButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Find</b><br>Ctrl+F", None, QtGui.QApplication.UnicodeUTF8))
-        self.findButton.setText(QtGui.QApplication.translate("MainWindow", "Find", None, QtGui.QApplication.UnicodeUTF8))
-        self.urlBar.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Location Bar</b><br>Ctrl+L; Alt+D", None, QtGui.QApplication.UnicodeUTF8))
-        self.goButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Go</b><br>Enter", None, QtGui.QApplication.UnicodeUTF8))
-        self.goButton.setText(QtGui.QApplication.translate("MainWindow", "Go", None, QtGui.QApplication.UnicodeUTF8))
-        self.focusURLBarButton.setShortcut(QtGui.QApplication.translate("MainWindow", "Alt+D", None, QtGui.QApplication.UnicodeUTF8))
-        self.searchButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Search</b><br>Ctrl+K", None, QtGui.QApplication.UnicodeUTF8))
-        self.searchButton.setText(QtGui.QApplication.translate("MainWindow", "Search", None, QtGui.QApplication.UnicodeUTF8))
-        self.zoomOutButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Zoom Out</b><br>Ctrl+-", None, QtGui.QApplication.UnicodeUTF8))
-        self.zoomOutButton.setText(QtGui.QApplication.translate("MainWindow", "-", None, QtGui.QApplication.UnicodeUTF8))
-        self.zoomInButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Zoom In</b><br>Ctrl++; Ctrl+=", None, QtGui.QApplication.UnicodeUTF8))
-        self.zoomInButton.setText(QtGui.QApplication.translate("MainWindow", "+", None, QtGui.QApplication.UnicodeUTF8))
-        self.zoomLabel.setText(QtGui.QApplication.translate("MainWindow", "1.00x", None, QtGui.QApplication.UnicodeUTF8))
+        pass
 
