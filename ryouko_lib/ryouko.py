@@ -178,6 +178,7 @@ class RWebView(QtWebKit.QWebView):
     def __init__(self, parent=False):
         super(RWebView, self).__init__()
         self.newWindows = [0]
+        self.openInTabs = True
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
         if parent == False or parent == None:
@@ -195,15 +196,19 @@ class RWebView(QtWebKit.QWebView):
         self.text = ""
         self.zoomFactor = 1.0
 
-#        self.showShortcutsAction = QtGui.QAction(self)
-#        self.showShortcutsAction.setShortcut("F1")
-#        self.showShortcutsAction.triggered.connect(self.showShortcuts)
-#        self.addAction(self.showShortcutsAction)
+        self.showShortcutsAction = QtGui.QAction(self)
+        self.showShortcutsAction.setShortcut("F1")
+        self.showShortcutsAction.triggered.connect(self.showShortcuts)
+        self.addAction(self.showShortcutsAction)
 
         self.newWindowAction = QtGui.QAction(self)
         self.newWindowAction.setShortcut("Ctrl+N")
         self.newWindowAction.triggered.connect(self.newWindow)
         self.addAction(self.newWindowAction)
+
+        self.closeWindowAction = QtGui.QAction(self)
+        self.closeWindowAction.triggered.connect(self.close)
+        self.addAction(self.closeWindowAction)
         
         self.backAction = QtGui.QAction(self)
         self.backAction.setShortcut("Alt+Left")
@@ -215,10 +220,18 @@ class RWebView(QtWebKit.QWebView):
         self.nextAction.triggered.connect(self.forward)
         self.addAction(self.nextAction)
 
+        self.stopAction = QtGui.QAction(self)
+        self.stopAction.triggered.connect(self.stop)
+        self.addAction(self.stopAction)
+
         self.reloadAction = QtGui.QAction(self)
         self.reloadAction.triggered.connect(self.reload)
         self.reloadAction.setShortcuts(["Ctrl+R", "F5"])
         self.addAction(self.reloadAction)
+
+        self.locationEditAction = QtGui.QAction(self)
+        self.locationEditAction.triggered.connect(self.locationEdit)
+        self.addAction(self.locationEditAction)
 
         self.findAction = QtGui.QAction(self)
         self.findAction.triggered.connect(self.find)
@@ -273,7 +286,12 @@ class RWebView(QtWebKit.QWebView):
             settings = json.load(fstream)
             fstream.close()
         else:
-            settings = {'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False}
+            settings = {'openInTabs' : True, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False}
+        try: settings['openInTabs']
+        except:
+            doNothing()
+        else:
+            self.openInTabs = settings['openInTabs']
         try: settings['loadImages']
         except: 
             print("", end = "")
@@ -318,9 +336,9 @@ class RWebView(QtWebKit.QWebView):
         else:
             self.setWindowTitle(self.title())
 
-#    def showShortcuts(self):
-#        self.load(QtCore.QUrl("about:blank"))
-#        self.setHtml("<html><head><title>Keyboard shortcuts</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>Keyboard shortcuts</h1><br>F1: Show this list of shortcuts<br>Ctrl+N: New window<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next<br>Ctrl+=; Ctrl++: Zoom in<br>Ctrl+-: Zoom out<br>Ctrl+0: Reset zoom</body></html>")
+    def showShortcuts(self):
+        self.load(QtCore.QUrl("about:blank"))
+        self.setHtml("<html><head><title>Keyboard shortcuts</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>Keyboard shortcuts</h1><br>F1: Show this list of shortcuts<br>Ctrl+N: New window<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next<br>Ctrl+=; Ctrl++: Zoom in<br>Ctrl+-: Zoom out<br>Ctrl+0: Reset zoom</body></html>")
 
     def inputDialog(self, title="Query", content="Enter a value here:", value=""):
         text = QtGui.QInputDialog.getText(None, title, content, QtGui.QLineEdit.Normal, value)
@@ -382,12 +400,21 @@ class RWebView(QtWebKit.QWebView):
             exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(self.parent)")
         else:
             exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(None)")
+        if self.openInTabs == False:
+            exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.setShortcut('Ctrl+W')")
+            exec("self.newWindow" + str(len(self.newWindows)) + ".stopAction.setShortcut('Esc')")
+            exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction.setShortcuts(['Ctrl+L', 'Alt+D'])")
+            exec("self.newWindow" + str(len(self.newWindows)) + ".zoomInAction.setShortcuts(['Ctrl+Shift+=', 'Ctrl+='])")
+            exec("self.newWindow" + str(len(self.newWindows)) + ".zoomOutAction.setShortcut('Ctrl+-')")
+            exec("self.newWindow" + str(len(self.newWindows)) + ".zoomResetAction.setShortcut('Ctrl+0')")
+            exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
         exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
         self.createNewWindow.emit(windowType)
-        if not self.parent == None:
-            exec("win.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
-        else:
-            exec("win.newpbTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
+        if self.openInTabs == True:
+            if not self.parent == None:
+                exec("win.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
+            else:
+                exec("win.newpbTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
         return self.newWindows[len(self.newWindows) - 1]
 
 class HistoryCompletionList(QtGui.QListWidget):
@@ -615,7 +642,7 @@ class CDialog(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(CDialog, self).__init__()
         self.parent = parent
-        self.settings = {'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False}
+        self.settings = {'openInTabs' : True, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False}
         self.initUI()
     def initUI(self):
         self.setWindowTitle("Preferences")
@@ -624,6 +651,8 @@ class CDialog(QtGui.QMainWindow):
         self.setCentralWidget(self.mainWidget)
         self.layout = QtGui.QVBoxLayout()
         self.mainWidget.setLayout(self.layout)
+        self.openTabsBox = QtGui.QCheckBox("Open new windows as new &tabs")
+        self.layout.addWidget(self.openTabsBox)
         self.imagesBox = QtGui.QCheckBox("Automatically load &images")
         self.layout.addWidget(self.imagesBox)
         self.jsBox = QtGui.QCheckBox("Enable &Javascript")
@@ -670,30 +699,36 @@ class CDialog(QtGui.QMainWindow):
             fstream = open(settingsFile, "r")
             self.settings = json.load(fstream)
             fstream.close()
+        try: self.settings['openInTabs']
+        except:
+            self.openTabsBox.setChecked(True)
+        else:
+            self.openTabsBox.setChecked(self.settings['openInTabs'])
         try: self.settings['loadImages']
         except: 
-            print("", end = "")
+            self.imagesBox.setChecked(True)
         else:
             self.imagesBox.setChecked(self.settings['loadImages'])
         try: self.settings['jsEnabled']
         except: 
-            print("", end = "")
+            self.jsBox.setChecked(True)
         else:
             self.jsBox.setChecked(self.settings['jsEnabled'])
         try: self.settings['pluginsEnabled']
         except: 
-            print("", end = "")
+            self.pluginsBox.setChecked(False)
         else:
             self.pluginsBox.setChecked(self.settings['pluginsEnabled'])
         try: self.settings['privateBrowsing']
         except: 
-            print("", end = "")
+            self.pbBox.setChecked(False)
         else:
             self.pbBox.setChecked(self.settings['privateBrowsing'])
+        self.saveSettings()
         self.parent.updateSettings()
     def saveSettings(self):
         settingsFile = os.path.join(app_home, "settings.json")
-        self.settings = {'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked()}
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked()}
         fstream = open(settingsFile, "w")
         json.dump(self.settings, fstream)
         fstream.close()
@@ -871,11 +906,11 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsLayout.addWidget(self.newTabButton)
 
         # New window button
-#        self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'newwindow.png'))), '', self)
-#        self.newWindowButton.setToolTip("<b>New Window</b><br>Ctrl+N")
-#        self.newWindowButton.setFocusPolicy(QtCore.Qt.NoFocus)
-#        self.newWindowButton.clicked.connect(self.newWindow)
-#        self.cornerWidgetsLayout.addWidget(self.newWindowButton)
+        self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'newwindow.png'))), '', self)
+        self.newWindowButton.setToolTip("<b>New Window</b><br>Ctrl+N")
+        self.newWindowButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.newWindowButton.clicked.connect(self.newWindow)
+        self.cornerWidgetsLayout.addWidget(self.newWindowButton)
 
         # Undo closed tab button
         undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'undo.png'))), '&Undo Close Tab', self)
