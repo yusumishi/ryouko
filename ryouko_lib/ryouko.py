@@ -190,6 +190,7 @@ class RWebView(QtWebKit.QWebView):
         if parent == False:
             self.parent = None
         self.app_home = app_home
+        self.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding)
 
         self.titleChanged.connect(self.updateTitle)
 
