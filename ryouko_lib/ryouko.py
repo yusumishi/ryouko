@@ -914,12 +914,10 @@ class TabBrowser(QtGui.QMainWindow):
         self.newTabButton = QtGui.QToolButton()
         self.newTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.newTabButton.setDefaultAction(newTabAction)
-        self.newTabButton.setIconSize(QtCore.QSize(16, 16))
         self.cornerWidgetsLayout.addWidget(self.newTabButton)
 
         # New window button
         self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), '', self)
-        self.newWindowButton.setIconSize(QtCore.QSize(16, 16))
         self.newWindowButton.setToolTip("<b>New Window</b><br>Ctrl+N")
         self.newWindowButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.newWindowButton.clicked.connect(self.newWindow)
@@ -934,7 +932,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.undoCloseTabButton = QtGui.QToolButton()
         self.undoCloseTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.undoCloseTabButton.setDefaultAction(undoCloseTabAction)
-        self.undoCloseTabButton.setIconSize(QtCore.QSize(16, 16))
         self.cornerWidgetsLayout.addWidget(self.undoCloseTabButton)
 
         # History sidebar button
@@ -947,7 +944,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.historyToggleButton = QtGui.QToolButton()
         self.historyToggleButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.historyToggleButton.setDefaultAction(historyToggleAction)
-        self.historyToggleButton.setIconSize(QtCore.QSize(16, 16))
         self.cornerWidgetsLayout.addWidget(self.historyToggleButton)
 
         # New private browsing tab button
@@ -959,7 +955,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.newpbTabButton = QtGui.QToolButton()
         self.newpbTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.newpbTabButton.setDefaultAction(newpbTabAction)
-        self.newpbTabButton.setIconSize(QtCore.QSize(16, 16))
         self.cornerWidgetsLayout.addWidget(self.newpbTabButton)
 
         self.cDialog = CDialog(self)
@@ -973,7 +968,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.settingsButton = QtGui.QToolButton()
         self.settingsButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.settingsButton.setDefaultAction(configAction)
-        self.settingsButton.setIconSize(QtCore.QSize(16, 16))
         self.cornerWidgetsLayout.addWidget(self.settingsButton)
 
         closeTabAction = QtGui.QAction(self)
