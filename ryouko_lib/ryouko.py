@@ -1239,7 +1239,10 @@ def main():
     app = QtGui.QApplication(sys.argv)
     win = TabBrowser()
     if os.path.exists(app_logo):
-        win.setWindowIcon(QtGui.QIcon(app_logo))
+        if not sys.platform.startswith("win"):
+            win.setWindowIcon(QtGui.QIcon(app_logo))
+        else:
+            win.setWindowIcon(QtGui.QIcon(os.path.join(app_lib, 'icons', 'about-logo.png')))
     win.show()
     app.exec_()
 
