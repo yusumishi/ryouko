@@ -185,8 +185,8 @@ class RWebView(QtWebKit.QWebView):
             self.setWindowTitle("Ryouko (PB)")
         else:
             self.setWindowTitle("Ryouko")
-#        if unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "":
-#            self.showShortcuts()
+        if unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "":
+            self.showShortcuts()
         if parent == False:
             self.parent = None
         self.app_home = app_home
@@ -273,7 +273,7 @@ class RWebView(QtWebKit.QWebView):
         if parent and self.parent != None:
             try: self.page().networkAccessManager().setCookieJar(self.parent.cookies)
             except:
-                print("Error! No cookie jar!")
+                doNothing()
         else:
             cookies = QtNetwork.QNetworkCookieJar(None)
             cookies.setAllCookies([])
@@ -338,7 +338,7 @@ class RWebView(QtWebKit.QWebView):
 
     def showShortcuts(self):
         self.load(QtCore.QUrl("about:blank"))
-        self.setHtml("<html><head><title>Keyboard shortcuts</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>Keyboard shortcuts</h1><br>F1: Show this list of shortcuts<br>Ctrl+N: New window<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next<br>Ctrl+=; Ctrl++: Zoom in<br>Ctrl+-: Zoom out<br>Ctrl+0: Reset zoom</body></html>")
+        self.setHtml("<html><head><title>Keyboard shortcuts</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>Keyboard shortcuts</h1><br>F1: Show this list of shortcuts<br>Ctrl+N: New window*<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next<br>Ctrl+=; Ctrl++: Zoom in<br>Ctrl+-: Zoom out<br>Ctrl+0: Reset zoom<br><br>Mouse over the different buttons for more keyboard shortcuts!</center><span style='font-size: 0.9em; position: fixed; bottom: 4px; left: 4px;'>* Opens a new tab by default; to change this, open the Preferences dialog and uncheck 'Open new windows as tabs'</span></body></html>")
 
     def inputDialog(self, title="Query", content="Enter a value here:", value=""):
         text = QtGui.QInputDialog.getText(None, title, content, QtGui.QLineEdit.Normal, value)
@@ -651,7 +651,7 @@ class CDialog(QtGui.QMainWindow):
         self.setCentralWidget(self.mainWidget)
         self.layout = QtGui.QVBoxLayout()
         self.mainWidget.setLayout(self.layout)
-        self.openTabsBox = QtGui.QCheckBox("Open new windows as new &tabs")
+        self.openTabsBox = QtGui.QCheckBox("Open new windows as &tabs")
         self.layout.addWidget(self.openTabsBox)
         self.imagesBox = QtGui.QCheckBox("Automatically load &images")
         self.layout.addWidget(self.imagesBox)
