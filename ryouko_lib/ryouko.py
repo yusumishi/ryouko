@@ -482,9 +482,13 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.goButton.setIconSize(QtCore.QSize(16, 16))
         self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(os.path.join(app_lib, "icons", 'go.png'))))
         self.goButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        if sys.platform.startswith("win"):
+            self.backButton.setIconSize(QtCore.QSize(22, 22))
         self.backButton.clicked.connect(self.webView.back)
         self.backButton.setIcon(QtGui.QIcon().fromTheme("go-previous", QtGui.QIcon(os.path.join(app_lib, "icons", 'back.png'))))
         self.backButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        if sys.platform.startswith("win"):
+            self.nextButton.setIconSize(QtCore.QSize(22, 22))
         self.nextButton.clicked.connect(self.webView.forward)
         self.nextButton.setText("")
         self.nextButton.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_lib, "icons", 'next.png'))))
@@ -505,11 +509,15 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         historySearchAction.triggered.connect(self.parent.focusHistorySearch)
         historySearchAction.setShortcuts(["Ctrl+Shift+K", "Ctrl+Shift+H"])
         self.addAction(historySearchAction)
+        if sys.platform.startswith("win"):
+            self.reloadButton.setIconSize(QtCore.QSize(22, 22))
         self.reloadButton.clicked.connect(self.webView.reload)
         self.reloadButton.setText("")
         self.reloadButton.setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_lib, "icons", 'reload.png'))))
         self.reloadButton.setFocusPolicy(QtCore.Qt.NoFocus)
 
+        if sys.platform.startswith("win"):
+            self.findButton.setIconSize(QtCore.QSize(22, 22))
         self.findButton.clicked.connect(self.webView.find)
         self.findButton.setText("")
         self.findButton.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_lib, "icons", 'find.png'))))
@@ -521,6 +529,8 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.stopAction.triggered.connect(self.updateText)
         self.stopAction.setShortcut("Esc")
         self.addAction(self.stopAction)
+        if sys.platform.startswith("win"):
+            self.stopButton.setIconSize(QtCore.QSize(22, 22))
         self.stopButton.clicked.connect(self.webView.stop)
         self.stopButton.clicked.connect(self.historyCompletion.hide)
         self.stopButton.clicked.connect(self.updateText)
@@ -872,6 +882,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgets.setStyleSheet("""
         QToolButton, QPushButton {
         min-width: 24px;
+		icon-size: 16px;
         border: 1px solid transparent;
         padding: 4px;
         border-radius: 4px;
@@ -895,7 +906,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgets.setLayout(self.cornerWidgetsLayout)
 
         # New tab button
-        newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'newtab.png'))), '&New Tab', self)
+        newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newtab.png'))), '&New Tab', self)
         newTabAction.setToolTip("<b>New Tab</b><br>Ctrl+T; Ctrl+N")
         newTabAction.setShortcuts(['Ctrl+T'])
         newTabAction.triggered.connect(self.newTab)
@@ -903,17 +914,19 @@ class TabBrowser(QtGui.QMainWindow):
         self.newTabButton = QtGui.QToolButton()
         self.newTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.newTabButton.setDefaultAction(newTabAction)
+        self.newTabButton.setIconSize(QtCore.QSize(16, 16))
         self.cornerWidgetsLayout.addWidget(self.newTabButton)
 
         # New window button
-        self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'newwindow.png'))), '', self)
+        self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), '', self)
+        self.newWindowButton.setIconSize(QtCore.QSize(16, 16))
         self.newWindowButton.setToolTip("<b>New Window</b><br>Ctrl+N")
         self.newWindowButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.newWindowButton.clicked.connect(self.newWindow)
         self.cornerWidgetsLayout.addWidget(self.newWindowButton)
 
         # Undo closed tab button
-        undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'undo.png'))), '&Undo Close Tab', self)
+        undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(app_lib, 'icons', 'undo.png'))), '&Undo Close Tab', self)
         undoCloseTabAction.setToolTip("<b>Undo Close Tab</b><br>Ctrl+Shift+T")
         undoCloseTabAction.setShortcuts(['Ctrl+Shift+T'])
         undoCloseTabAction.triggered.connect(self.undoCloseTab)
@@ -921,10 +934,11 @@ class TabBrowser(QtGui.QMainWindow):
         self.undoCloseTabButton = QtGui.QToolButton()
         self.undoCloseTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.undoCloseTabButton.setDefaultAction(undoCloseTabAction)
+        self.undoCloseTabButton.setIconSize(QtCore.QSize(16, 16))
         self.cornerWidgetsLayout.addWidget(self.undoCloseTabButton)
 
         # History sidebar button
-        historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(self.app_lib, "icons", "history.png"))), "Toggle History Sidebar", self)
+        historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(app_lib, "icons", "history.png"))), "Toggle History Sidebar", self)
         historyToggleAction.setToolTip("<b>View History</b><br>Ctrl+H")
         historyToggleAction.triggered.connect(self.historyToggle)
         historyToggleAction.triggered.connect(self.historyToolBar.show)
@@ -933,10 +947,11 @@ class TabBrowser(QtGui.QMainWindow):
         self.historyToggleButton = QtGui.QToolButton()
         self.historyToggleButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.historyToggleButton.setDefaultAction(historyToggleAction)
+        self.historyToggleButton.setIconSize(QtCore.QSize(16, 16))
         self.cornerWidgetsLayout.addWidget(self.historyToggleButton)
 
         # New private browsing tab button
-        newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'pb.png'))), '&New Private Browsing Tab', self)
+        newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(app_lib, 'icons', 'pb.png'))), '&New Private Browsing Tab', self)
         newpbTabAction.setToolTip("<b>New Private Browsing Tab</b><br>Ctrl+Shift+N")
         newpbTabAction.setShortcuts(['Ctrl+Shift+N'])
         newpbTabAction.triggered.connect(self.newpbTab)
@@ -944,12 +959,13 @@ class TabBrowser(QtGui.QMainWindow):
         self.newpbTabButton = QtGui.QToolButton()
         self.newpbTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.newpbTabButton.setDefaultAction(newpbTabAction)
+        self.newpbTabButton.setIconSize(QtCore.QSize(16, 16))
         self.cornerWidgetsLayout.addWidget(self.newpbTabButton)
 
         self.cDialog = CDialog(self)
 
         # Config button
-        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(os.path.dirname( os.path.realpath(__file__) ), 'settings.png'))), '&Preferences', self)
+        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_lib, 'icons', 'settings.png'))), '&Preferences', self)
         configAction.setToolTip("<b>Preferences</b><br>Ctrl+Shift+P")
         configAction.setShortcuts(['Ctrl+Shift+P'])
         configAction.triggered.connect(self.showSettings)
@@ -957,6 +973,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.settingsButton = QtGui.QToolButton()
         self.settingsButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.settingsButton.setDefaultAction(configAction)
+        self.settingsButton.setIconSize(QtCore.QSize(16, 16))
         self.cornerWidgetsLayout.addWidget(self.settingsButton)
 
         closeTabAction = QtGui.QAction(self)

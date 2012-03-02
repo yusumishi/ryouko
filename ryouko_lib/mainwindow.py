@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:\Users\DS_2\ryouko-build\ryouko_lib\mainwindow.ui'
 #
-# Created: Tue Feb 28 21:08:08 2012
+# Created: Thu Mar 01 20:48:16 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -28,13 +28,6 @@ class Ui_MainWindow(object):
         self.mainLayout.setMargin(0)
         self.mainLayout.setSpacing(0)
         self.mainLayout.setObjectName(_fromUtf8("mainLayout"))
-        self.progressBar = QtGui.QProgressBar(self.centralWidget)
-        self.progressBar.setEnabled(True)
-        self.progressBar.setStyleSheet(_fromUtf8("min-width: 200px;\n"
-"max-width: 200px;"))
-        self.progressBar.setProperty("value", 0)
-        self.progressBar.setObjectName(_fromUtf8("progressBar"))
-        self.mainLayout.addWidget(self.progressBar, 4, 0, 1, 1)
         self.mainToolBar = QtGui.QWidget(self.centralWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -100,6 +93,9 @@ class Ui_MainWindow(object):
         self.reloadButton = QtGui.QPushButton(self.subToolBar)
         self.reloadButton.setObjectName(_fromUtf8("reloadButton"))
         self.horizontalLayout.addWidget(self.reloadButton)
+        self.findButton = QtGui.QPushButton(self.subToolBar)
+        self.findButton.setObjectName(_fromUtf8("findButton"))
+        self.horizontalLayout.addWidget(self.findButton)
         self.urlBar = QtGui.QLineEdit(self.subToolBar)
         self.urlBar.setObjectName(_fromUtf8("urlBar"))
         self.horizontalLayout.addWidget(self.urlBar)
@@ -123,6 +119,90 @@ class Ui_MainWindow(object):
         self.mainToolBarLayout.addWidget(self.searchButton)
         self.mainToolBarContents.addLayout(self.mainToolBarLayout, 0, 0, 1, 1)
         self.mainLayout.addWidget(self.mainToolBar, 1, 0, 1, 1)
+        self.statusBar = QtGui.QWidget(self.centralWidget)
+        self.statusBar.setStyleSheet(_fromUtf8("#statusBar {\n"
+"border-top: 1px solid palette(shadow);\n"
+"}"))
+        self.statusBar.setObjectName(_fromUtf8("statusBar"))
+        self.statusBarLayout = QtGui.QHBoxLayout(self.statusBar)
+        self.statusBarLayout.setSpacing(6)
+        self.statusBarLayout.setMargin(0)
+        self.statusBarLayout.setMargin(0)
+        self.statusBarLayout.setObjectName(_fromUtf8("statusBarLayout"))
+        self.statusMessage = QtGui.QLineEdit(self.statusBar)
+        self.statusMessage.setStyleSheet(_fromUtf8("QLineEdit {\n"
+"min-height: 1em;\n"
+"max-height: 1em;\n"
+"border: 0;\n"
+"background: transparent;\n"
+"}"))
+        self.statusMessage.setText(_fromUtf8(""))
+        self.statusMessage.setReadOnly(True)
+        self.statusMessage.setObjectName(_fromUtf8("statusMessage"))
+        self.statusBarLayout.addWidget(self.statusMessage)
+        self.progressBar = QtGui.QProgressBar(self.statusBar)
+        self.progressBar.setEnabled(True)
+        self.progressBar.setStyleSheet(_fromUtf8("min-height: 1em;\n"
+"max-height: 1em;\n"
+"min-width: 200px;\n"
+"max-width: 200px;"))
+        self.progressBar.setProperty("value", 0)
+        self.progressBar.setObjectName(_fromUtf8("progressBar"))
+        self.statusBarLayout.addWidget(self.progressBar)
+        self.zoomBar = QtGui.QWidget(self.statusBar)
+        self.zoomBar.setStyleSheet(_fromUtf8("QToolButton, QPushButton {\n"
+"min-width: 16px;\n"
+"min-height: 1em;\n"
+"max-height: 1em;\n"
+"padding-left: 4px;\n"
+"padding-right: 4px;\n"
+"border-radius: 4px;\n"
+"border: 1px solid palette(shadow);\n"
+"background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(light), stop:1 palette(button));\n"
+"}\n"
+"\n"
+"QToolButton:pressed, QPushButton:pressed {\n"
+"border: 1px solid palette(shadow);\n"
+"background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shadow), stop:1 palette(button));\n"
+"}"))
+        self.zoomBar.setObjectName(_fromUtf8("zoomBar"))
+        self.horizontalLayout_3 = QtGui.QHBoxLayout(self.zoomBar)
+        self.horizontalLayout_3.setSpacing(0)
+        self.horizontalLayout_3.setContentsMargins(0, 2, 0, 0)
+        self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
+        self.zoomOutButton = QtGui.QPushButton(self.zoomBar)
+        self.zoomOutButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.zoomOutButton.setObjectName(_fromUtf8("zoomOutButton"))
+        self.horizontalLayout_3.addWidget(self.zoomOutButton)
+        self.zoomSlider = QtGui.QSlider(self.zoomBar)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.zoomSlider.sizePolicy().hasHeightForWidth())
+        self.zoomSlider.setSizePolicy(sizePolicy)
+        self.zoomSlider.setMinimumSize(QtCore.QSize(128, 0))
+        self.zoomSlider.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.zoomSlider.setStyleSheet(_fromUtf8("max-height: 1em;"))
+        self.zoomSlider.setMinimum(1)
+        self.zoomSlider.setMaximum(12)
+        self.zoomSlider.setSliderPosition(4)
+        self.zoomSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.zoomSlider.setInvertedAppearance(False)
+        self.zoomSlider.setInvertedControls(False)
+        self.zoomSlider.setTickPosition(QtGui.QSlider.TicksAbove)
+        self.zoomSlider.setTickInterval(1)
+        self.zoomSlider.setObjectName(_fromUtf8("zoomSlider"))
+        self.horizontalLayout_3.addWidget(self.zoomSlider)
+        self.zoomInButton = QtGui.QPushButton(self.zoomBar)
+        self.zoomInButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.zoomInButton.setObjectName(_fromUtf8("zoomInButton"))
+        self.horizontalLayout_3.addWidget(self.zoomInButton)
+        self.zoomLabel = QtGui.QLabel(self.zoomBar)
+        self.zoomLabel.setStyleSheet(_fromUtf8("margin-left: 2px;"))
+        self.zoomLabel.setObjectName(_fromUtf8("zoomLabel"))
+        self.horizontalLayout_3.addWidget(self.zoomLabel)
+        self.statusBarLayout.addWidget(self.zoomBar)
+        self.mainLayout.addWidget(self.statusBar, 4, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralWidget)
 
         self.retranslateUi(MainWindow)
@@ -132,21 +212,23 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Ryouko", None, QtGui.QApplication.UnicodeUTF8))
         self.backButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Back</b><br>Alt+Left Arrow", None, QtGui.QApplication.UnicodeUTF8))
         self.backButton.setText(QtGui.QApplication.translate("MainWindow", "Back", None, QtGui.QApplication.UnicodeUTF8))
-        self.backButton.setShortcut(QtGui.QApplication.translate("MainWindow", "Alt+Left", None, QtGui.QApplication.UnicodeUTF8))
         self.nextButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Next</b><br>Alt+Right Arrow", None, QtGui.QApplication.UnicodeUTF8))
         self.nextButton.setText(QtGui.QApplication.translate("MainWindow", "Next", None, QtGui.QApplication.UnicodeUTF8))
-        self.nextButton.setShortcut(QtGui.QApplication.translate("MainWindow", "Alt+Right", None, QtGui.QApplication.UnicodeUTF8))
         self.stopButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Stop</b><br>Esc", None, QtGui.QApplication.UnicodeUTF8))
         self.stopButton.setText(QtGui.QApplication.translate("MainWindow", "Stop", None, QtGui.QApplication.UnicodeUTF8))
-        self.stopButton.setShortcut(QtGui.QApplication.translate("MainWindow", "Esc", None, QtGui.QApplication.UnicodeUTF8))
         self.reloadButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Reload</b><br>F5", None, QtGui.QApplication.UnicodeUTF8))
         self.reloadButton.setText(QtGui.QApplication.translate("MainWindow", "Reload", None, QtGui.QApplication.UnicodeUTF8))
-        self.reloadButton.setShortcut(QtGui.QApplication.translate("MainWindow", "F5", None, QtGui.QApplication.UnicodeUTF8))
-        self.urlBar.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Location Bar</b><br>Ctrl+L/Alt+D", None, QtGui.QApplication.UnicodeUTF8))
+        self.findButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Find</b><br>Ctrl+F", None, QtGui.QApplication.UnicodeUTF8))
+        self.findButton.setText(QtGui.QApplication.translate("MainWindow", "Find", None, QtGui.QApplication.UnicodeUTF8))
+        self.urlBar.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Location Bar</b><br>Ctrl+L; Alt+D", None, QtGui.QApplication.UnicodeUTF8))
         self.goButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Go</b><br>Enter", None, QtGui.QApplication.UnicodeUTF8))
         self.goButton.setText(QtGui.QApplication.translate("MainWindow", "Go", None, QtGui.QApplication.UnicodeUTF8))
         self.focusURLBarButton.setShortcut(QtGui.QApplication.translate("MainWindow", "Alt+D", None, QtGui.QApplication.UnicodeUTF8))
         self.searchButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Search</b><br>Ctrl+K", None, QtGui.QApplication.UnicodeUTF8))
         self.searchButton.setText(QtGui.QApplication.translate("MainWindow", "Search", None, QtGui.QApplication.UnicodeUTF8))
-        self.searchButton.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+K", None, QtGui.QApplication.UnicodeUTF8))
+        self.zoomOutButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Zoom Out</b><br>Ctrl+-", None, QtGui.QApplication.UnicodeUTF8))
+        self.zoomOutButton.setText(QtGui.QApplication.translate("MainWindow", "-", None, QtGui.QApplication.UnicodeUTF8))
+        self.zoomInButton.setToolTip(QtGui.QApplication.translate("MainWindow", "<b>Zoom In</b><br>Ctrl++; Ctrl+=", None, QtGui.QApplication.UnicodeUTF8))
+        self.zoomInButton.setText(QtGui.QApplication.translate("MainWindow", "+", None, QtGui.QApplication.UnicodeUTF8))
+        self.zoomLabel.setText(QtGui.QApplication.translate("MainWindow", "1.00x", None, QtGui.QApplication.UnicodeUTF8))
 
