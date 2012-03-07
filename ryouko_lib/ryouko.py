@@ -69,6 +69,28 @@ def inputDialog(title="Query", content="Enter a value here:", value=""):
     else:
         return ""
 
+class RTabWidget(QtGui.QTabWidget):
+    def __init__(self, parent=None):
+        super(AMovableWindow, self).__init__(parent)
+        self.parent = parent
+        self.mouseX = False
+        self.mouseY = False
+
+    def mousePressEvent(self, ev):
+        self.mouseX = ev.globalX()
+        self.origX = self.parent.x()
+        self.mouseY = ev.globalY()
+        self.origY = self.parent.y()
+
+    def mouseMoveEvent(self, ev):
+        if self.mouseX and self.mouseY and not self.isMaximized():
+            self.parent.move(self.origX + ev.globalX() - self.mouseX,
+self.origY + ev.globalY() - self.mouseY)
+
+    def mouseReleaseEvent(self, ev):
+        self.mouseX = False
+        self.mouseY = False
+
 class BrowserHistory(QtCore.QObject):
     historyChanged = QtCore.pyqtSignal()
     def __init__(self, parent=None):
@@ -864,7 +886,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.historyDock.hide()
 
         # Tabs
-        self.tabs = QtGui.QTabWidget()
+        self.tabs = RTabWidget(self)
         self.tabs.setMovable(True)
         self.nextTabAction = QtGui.QAction(self)
         self.nextTabAction.triggered.connect(self.nextTab)
