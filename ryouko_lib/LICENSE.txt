@@ -1,8 +1,18 @@
-Qt is available under the terms of the GNU LGPL version 2.1 (http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html). Source code is available from <http://qt.gitorious.org/qt>.
+Qt is available under the terms of the GNU LGPL version 2.1
+(http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html). Source code is
+available from <http://qt.gitorious.org/qt>.
 
-PyQt4 is available under the terms of the GNU GPL version 2.0 (http://www.gnu.org/licenses/old-licenses/gpl-2.0.html) and GNU GPL version 3.0 (http://www.gnu.org/licenses/gpl.html). Source code is available from <http://www.riverbankcomputing.co.uk/software/pyqt/download>.
+PyQt4 is available under the terms of the GNU GPL version 2.0
+(http://www.gnu.org/licenses/old-licenses/gpl-2.0.html) and GNU GPL version 3.0
+(http://www.gnu.org/licenses/gpl.html). Source code is available from
+<http://www.riverbankcomputing.co.uk/software/pyqt/download>.
 
-Ryouko, because it uses the GPL-licensed PyQt4 and therefore must be distributed under a GPL-compatible license, is hereby released under the terms of the following MIT license:
+Ryouko's ryoukodesu module (ryoukodesu.py) is licensed under the terms of the
+GNU LGPL version 2.1. See lgpl-2.1-ryoukodesu.txt and
+<http://www.gnu.org/licenses/lgpl-2.1.html> for more details.
+
+The rest of Ryouko is hereby released under the terms of the following MIT
+license:
 
 /** START OF MIT LICENSE **/
 

@@ -1,9 +1,34 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
-# This is a modified version of the arietta module from Akane. It is
-# hereby released under the terms of the GNU LGPL version 2.1. See
-# lgpl-2.1-ryoukodesu.txt and/or
-# http://www.gnu.org/licenses/lgpl-2.1.html for more details.
+# ryoukodesu is a stripped-down version of Akane's arietta module
+# with less dependencies.
+
+# This file is released under the terms of the following MIT license:
+
+## START OF LICENSE ##
+"""
+Copyright (c) 2012 Daniel Sim
+Portions of the code are copyright (c) 2011 roberto.alsina
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+## END OF LICENSE ##
 
 def do_nothing():
     return
@@ -25,14 +50,8 @@ if sys.version_info[0] >= 3:
         return str(data)
     def unichr(data):
         return chr(data)
-# Commented out from the original module:
-#    import stagger
-#    from html.parser import HTMLParser
     from html.entities import name2codepoint
 else:
-# Commented out from the original module:
-#    import id3
-#    import HTMLParser
     from htmlentitydefs import name2codepoint
 
 import re
@@ -112,142 +131,3 @@ def unescape(text):
             pass
       return text # leave as is
    return re.sub("&#?\w+;", fixup, text)
-
-# Commented out from the original module:
-# The following function scans a file for ID3 tags, using either stagger (if Python 3) or id3 (if Python 2). It then returns a dictionary containing whatever tags it was able to retrieve:
-"""def get_tags(path):
-    if os.path.exists(metaunquote(path.replace("file://", ""))):
-        path = metaunquote(path.replace("file://", ""))
-    elif os.path.exists(path.replace("file://", "")):
-        path = path.replace("file://", "")
-    if os.path.exists(path):
-        if sys.version_info[0] >= 3:
-            try: tags = stagger.read_tag(metaunquote(path.replace("file://", "")))
-            except:
-                tags = ""
-        title = "(Untitled)"
-        artist = "Unknown Artist"
-        album = "Unknown Album"
-        date = "Unknown"
-        genre = "Unknown"
-        if sys.version_info[0] >= 3:
-            try: tags.title
-            except:
-                do_nothing()
-            else:
-                if type(tags.title) is str and tags.title != "":
-                    try: title = tags.title
-                    except:
-                        do_nothing()
-            try: tags.artist
-            except:
-                do_nothing()
-            else:
-                if type(tags.artist) is str and tags.artist != "":
-                    try: artist = tags.artist
-                    except:
-                        do_nothing()
-            try: tags.album
-            except:
-                do_nothing()
-            else:
-                if type(tags.album) is str and tags.album != "":
-                    try: album = tags.album
-                    except:
-                        do_nothing()
-            try: tags.date
-            except:
-                do_nothing()
-            else:
-                if type(tags.date) is str and tags.date != "":
-                    try: date = tags.date
-                    except:
-                        do_nothing()
-            try: tags.genre
-            except:
-                do_nothing()
-            else:
-                if type(tags.genre) is str and tags.genre != "":
-                    try: genre = tags.genre
-                    except:
-                        do_nothing()
-        else:
-            path = metaunquote(path.replace("file://", "")).replace("%20", " ")
-            try: id3.title(path)
-            except:
-                do_nothing()
-            else:
-                if type(id3.title(path)) is unicode and id3.title(path) != "":
-                    try: title = id3.title(path)
-                    except:
-                        do_nothing()
-            try: id3.artist(path)
-            except:
-                do_nothing()
-            else:
-                if type(id3.artist(path)) is unicode and id3.artist(path) != "":
-                    try: artist = id3.artist(path)
-                    except:
-                        do_nothing()
-            try: id3.album(path)
-            except:
-                do_nothing()
-            else:
-                if type(id3.album(path)) is unicode and id3.album(path) != "":
-                    try: album = id3.album(path)
-                    except:
-                        do_nothing()
-            try: id3.date(path)
-            except:
-                do_nothing()
-            else:
-                if type(id3.date(path)) is unicode and id3.date(path) != "":
-                    try: date = id3.date(path)
-                    except:
-                        do_nothing()
-            try: id3.genre(path)
-            except:
-                do_nothing()
-            else:
-                if type(id3.genre(path)) is unicode and id3.genre(path) != "":
-                    try: genre = id3.genre(path)
-                    except:
-                        do_nothing()
-        return {'title' : unicode(title), 'artist' : unicode(artist), 'album' : unicode(album), 'year' : unicode(date), 'date' : unicode(date), 'genre' : unicode(genre)}"""
-
-# Commented out from the original module:
-# This is for reading XSPF files:
-"""if sys.version_info[0] >= 3:
-    class XSPFReader(HTMLParser):
-        event_list = []
-        event_contents = ""
-        tag = ""
-        def handle_starttag(self, tag, attrs):
-            self.tag = tag
-        def handle_startendtag(self, tag, attrs):
-            self.tag = tag
-            self.attributes = attrs
-        def handle_endtag(self, tag):
-            self.tag = ""
-        def handle_data(self, data):
-            if self.tag == "playlist":
-                self.playlist = []
-            elif self.tag == "location":
-                self.playlist.append(data)
-else:
-    class XSPFReader(HTMLParser.HTMLParser):
-        event_list = []
-        event_contents = ""
-        tag = ""
-        def handle_starttag(self, tag, attrs):
-            self.tag = tag
-        def handle_startendtag(self, tag, attrs):
-            self.tag = tag
-            self.attributes = attrs
-        def handle_endtag(self, tag):
-            self.tag = ""
-        def handle_data(self, data):
-            if self.tag == "playlist":
-                self.playlist = []
-            elif self.tag == "location":
-                self.playlist.append(data)"""
