@@ -71,7 +71,7 @@ def inputDialog(title="Query", content="Enter a value here:", value=""):
 
 class RTabWidget(QtGui.QTabWidget):
     def __init__(self, parent=None):
-        super(AMovableWindow, self).__init__(parent)
+        super(RTabWidget, self).__init__(parent)
         self.parent = parent
         self.mouseX = False
         self.mouseY = False
