@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import os, sys, pickle, json, time, datetime
+from ryoukodesu import *
 from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 if not sys.platform.startswith("win"):
     from PyQt4 import uic
@@ -75,6 +76,10 @@ class RTabWidget(QtGui.QTabWidget):
         self.parent = parent
         self.mouseX = False
         self.mouseY = False
+
+    def mouseDoubleClickEvent(self, e):
+        e.accept()
+        self.parent.newTab()
 
     def mousePressEvent(self, ev):
         self.mouseX = ev.globalX()
@@ -1031,7 +1036,7 @@ class TabBrowser(QtGui.QMainWindow):
     def newTabWithRWebView(self, url="", widget=None):
         self.tabCount += 1
         if url != False:
-            exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"', False, widget)")
+            exec("tab" + str(self.tabCount) + " = Browser(self, '"+metaunquote(url)+"', False, widget)")
         else:
             exec("tab" + str(self.tabCount) + " = Browser(self)")
         exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
@@ -1044,7 +1049,7 @@ class TabBrowser(QtGui.QMainWindow):
     def newpbTabWithRWebView(self, url="", widget=None):
         self.tabCount += 1
         if url != False:
-            exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"', True, widget)")
+            exec("tab" + str(self.tabCount) + " = Browser(self, '"+metaunquote(url)+"', True, widget)")
         else:
             exec("tab" + str(self.tabCount) + " = Browser(self, '', True, widget)")
         exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
@@ -1060,7 +1065,7 @@ class TabBrowser(QtGui.QMainWindow):
         else:
             self.tabCount += 1
             if url != False:
-                exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"')")
+                exec("tab" + str(self.tabCount) + " = Browser(self, '"+metaunquote(url)+"')")
             else:
                 exec("tab" + str(self.tabCount) + " = Browser(self)")
             exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
@@ -1073,7 +1078,7 @@ class TabBrowser(QtGui.QMainWindow):
     def newpbTab(self, url="about:blank"):
         self.tabCount += 1
         if url != False:
-            exec("tab" + str(self.tabCount) + " = Browser(self, '"+str(url)+"', True)")
+            exec("tab" + str(self.tabCount) + " = Browser(self, '"+metaunquote(url)+"', True)")
         else:
             exec("tab" + str(self.tabCount) + " = Browser(self, 'about:blank', True)")
         exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
