@@ -30,7 +30,6 @@ SOFTWARE.
 from __future__ import print_function
 
 import os, sys, pickle, json, time, datetime
-from ryouko_common import *
 from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 if not sys.platform.startswith("win"):
     from PyQt4 import uic
@@ -50,8 +49,17 @@ except:
     __file__ = sys.executable
 app_lib = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(app_lib)
+import translate
+from ryouko_common import *
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
 app_logo = os.path.join(app_lib, "icons", "logo.svg")
+
+trManager = translate.TranslationManager()
+trManager.setDirectory(os.path.join(app_lib, "translations"))
+trManager.loadTranslation()
+
+def tr(key):
+    return trManager.tr(key)
 
 def doNothing():
     return
@@ -87,7 +95,7 @@ def message(title="Alert", content="This is a message.", icon="info"):
         message.setIcon(QtGui.QMessageBox.Information)
     message.exec_()
 
-def inputDialog(title="Query", content="Enter a value here:", value=""):
+def inputDialog(title=tr('query'), content=tr('enterValue'), value=""):
     text = QtGui.QInputDialog.getText(None, title, content, QtGui.QLineEdit.Normal, value)
     if text[1]:
         if unicode(text[0]) != "":
@@ -176,7 +184,7 @@ class BrowserHistory(QtCore.QObject):
         except:
             self.reset()
     def reset(self):
-        message("Ryouko says...", "Oh, no! An error has occurred while trying to access or modify the history! Ryouko is now going to clear the history in an attempt to fix this. =(", "critical")
+        message(tr('ryoukoSays'), tr('historyError'), "critical")
         self.history = []
         self.save()
         self.reload()
@@ -393,7 +401,7 @@ class RWebView(QtWebKit.QWebView):
 
     def showShortcuts(self):
         self.load(QtCore.QUrl("about:blank"))
-        self.setHtml("<html><head><title>Keyboard shortcuts</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>Keyboard shortcuts</h1><br>F1: Show this list of shortcuts<br>Ctrl+N: New window*<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next<br>Ctrl+=; Ctrl++: Zoom in<br>Ctrl+-: Zoom out<br>Ctrl+0: Reset zoom<br><br>Mouse over the different buttons for more keyboard shortcuts!</center><span style='font-size: 0.9em; position: fixed; bottom: 4px; left: 4px;'>* Opens a new tab by default; to change this, open the Preferences dialog and uncheck 'Open new windows as tabs'</span></body></html>")
+        self.setHtml(tr('shortcutsPage'))
 
     def inputDialog(self, title="Query", content="Enter a value here:", value=""):
         text = QtGui.QInputDialog.getText(None, title, content, QtGui.QLineEdit.Normal, value)
@@ -406,7 +414,7 @@ class RWebView(QtWebKit.QWebView):
             return ""
 
     def locationEdit(self):
-        url = self.inputDialog("Open location", "Enter a URL here:", self.url().toString())
+        url = self.inputDialog(tr('openLocaation'), tr('enterURL'), self.url().toString())
         if url:
             header = ""
             if not unicode(url).startswith("about:") and not "://" in unicode(url):
@@ -415,7 +423,7 @@ class RWebView(QtWebKit.QWebView):
             self.load(QtCore.QUrl(url))
 
     def find(self):
-        find = self.inputDialog("Find", "Search for:", self.text)
+        find = self.inputDialog(tr('find'), tr('searchFor'), self.text)
         if find:
             self.text = find
             self.findText(self.text)
@@ -694,7 +702,15 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             header = "http://"
         url = qstring(header + unicode(urlBar))
         if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
-            self.webView.setHtml("<html><head><title>About Ryouko</title></head><body style='font-family: sans-serif;'><center><h1 style='margin-bottom: 0;'>About Ryouko</h1><img src='file://" + os.path.join(app_lib, "icons", "about-logo.png") + "'></img><br><b>Ryouko version:</b> "+self.version+"<br><b>Release series:</b> \""+self.codename+"\"<br><b>Python version:</b> "+str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2])+"<br><b>Qt version:</b> "+QtCore.qVersion()+"<br></center></body></html>")
+            self.webView.setHtml("<html><head><title>About Ryouko</title>\
+            </head><body style='font-family: sans-serif;'><center>\
+            <h1 style='margin-bottom: 0;'>About Ryouko</h1><img src='file://" \
+            + os.path.join(app_lib, "icons", "about-logo.png") + "'></img><br>\
+            <b>Ryouko version:</b> "+self.version+"<br><b>Release series:</b> \
+            \""+self.codename+"\"<br><b>Python version:</b> "+str(\
+            sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(\
+            sys.version_info[2])+"<br><b>Qt version:</b> "+QtCore.qVersion()+"\
+            <br></center></body></html>")
         else:
             url = QtCore.QUrl(url)
             self.webView.load(url)
@@ -710,21 +726,21 @@ class CDialog(QtGui.QMainWindow):
         self.settings = {'openInTabs' : True, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False}
         self.initUI()
     def initUI(self):
-        self.setWindowTitle("Preferences")
+        self.setWindowTitle(tr('preferences'))
         self.setWindowIcon(QtGui.QIcon(app_logo))
         self.mainWidget = QtGui.QWidget()
         self.setCentralWidget(self.mainWidget)
         self.layout = QtGui.QVBoxLayout()
         self.mainWidget.setLayout(self.layout)
-        self.openTabsBox = QtGui.QCheckBox("Open new windows as &tabs")
+        self.openTabsBox = QtGui.QCheckBox(tr('newWindowOption'))
         self.layout.addWidget(self.openTabsBox)
-        self.imagesBox = QtGui.QCheckBox("Automatically load &images")
+        self.imagesBox = QtGui.QCheckBox(tr('autoLoadImages'))
         self.layout.addWidget(self.imagesBox)
-        self.jsBox = QtGui.QCheckBox("Enable &Javascript")
+        self.jsBox = QtGui.QCheckBox(tr('enableJS'))
         self.layout.addWidget(self.jsBox)
-        self.pluginsBox = QtGui.QCheckBox("Enable &plugins")
+        self.pluginsBox = QtGui.QCheckBox(tr('enablePlugins'))
         self.layout.addWidget(self.pluginsBox)
-        self.pbBox = QtGui.QCheckBox("Enable private &browsing mode")
+        self.pbBox = QtGui.QCheckBox(tr('enablePB'))
         self.layout.addWidget(self.pbBox)
         self.cToolBar = QtGui.QToolBar()
         self.cToolBar.setStyleSheet("""
@@ -865,30 +881,37 @@ class TabBrowser(QtGui.QMainWindow):
         self.historyDockWindow.addToolBar(self.clearHistoryToolBar)
         self.clearHistoryToolBar.hide()
         self.selectRange = QtGui.QComboBox()
-        self.selectRange.addItem("Last minute")
-        self.selectRange.addItem("Last 2 minutes")
-        self.selectRange.addItem("Last 5 minutes")
-        self.selectRange.addItem("Last 10 minutes")
-        self.selectRange.addItem("Last 15 minutes")
-        self.selectRange.addItem("Last 30 minutes")
-        self.selectRange.addItem("Last hour")
-        self.selectRange.addItem("Last 2 hours")
-        self.selectRange.addItem("Last 4 hours")
-        self.selectRange.addItem("Last 8 hours")
-        self.selectRange.addItem("Last 24 hours")
-        self.selectRange.addItem("Today")
-        self.selectRange.addItem("Everything")
+        self.selectRange.addItem(tr('lastMin'))
+        self.selectRange.addItem(tr('last2Minutes'))
+        self.selectRange.addItem(tr('last5Min'))
+        self.selectRange.addItem(tr('last10Min'))
+        self.selectRange.addItem(tr('last15Min'))
+        self.selectRange.addItem(tr('last30Min'))
+        self.selectRange.addItem(tr('lastHr'))
+        self.selectRange.addItem(tr('last2Hr'))
+        self.selectRange.addItem(tr('last4Hr'))
+        self.selectRange.addItem(tr('last8Hr'))
+        self.selectRange.addItem(tr('last24Hr'))
+        self.selectRange.addItem(tr('today'))
+        self.selectRange.addItem(tr('everything'))
         self.selectRange.addItem("----------------")
-        self.selectRange.addItem("Cookies")
+        self.selectRange.addItem(tr('cookies'))
         self.clearHistoryToolBar.addWidget(self.selectRange)
-        self.clearHistoryButton = QtGui.QPushButton("Clear")
+        self.clearHistoryButton = QtGui.QPushButton(tr('clear'))
         self.clearHistoryButton.clicked.connect(self.clearHistory)
         self.clearHistoryToolBar.addWidget(self.clearHistoryButton)
 
     def initUI(self):
+    
+        # Quit action
+        quitAction = QtGui.QAction(self)
+        quitAction.setShortcut("Ctrl+Shift+Q")
+        quitAction.triggered.connect(QtCore.QCoreApplication.instance().quit)
+        quitAction.triggered.connect(sys.exit)
+        self.addAction(quitAction)
 
         # History sidebar
-        self.historyDock = QtGui.QDockWidget("History")
+        self.historyDock = QtGui.QDockWidget(tr('history'))
         self.historyDock.setFeatures(QtGui.QDockWidget.DockWidgetClosable)
         self.historyDockWindow = QtGui.QMainWindow()
         self.historyToolBar = QtGui.QToolBar("History Toolbar")
@@ -901,7 +924,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.addAction(deleteHistoryItemAction)
         self.searchHistoryField = QtGui.QLineEdit()
         self.searchHistoryField.textChanged.connect(self.searchHistory)
-        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(self.app_lib, "icons", "clear.png"))), "Clear History", self)
+        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(self.app_lib, "icons", "clear.png"))), tr('clearHistory'), self)
         clearHistoryAction.setShortcut("Ctrl+Shift+Del")
         clearHistoryAction.triggered.connect(self.showClearHistoryDialog)
         clearHistoryAction.triggered.connect(self.historyDock.show)
@@ -961,8 +984,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgets.setLayout(self.cornerWidgetsLayout)
 
         # New tab button
-        newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newtab.png'))), '&New Tab', self)
-        newTabAction.setToolTip("<b>New Tab</b><br>Ctrl+T; Ctrl+N")
+        newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newtab.png'))), tr('newTabBtn'), self)
+        newTabAction.setToolTip(tr('newTabBtnTT'))
         newTabAction.setShortcuts(['Ctrl+T'])
         newTabAction.triggered.connect(self.newTab)
         self.addAction(newTabAction)
@@ -973,14 +996,14 @@ class TabBrowser(QtGui.QMainWindow):
 
         # New window button
         self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), '', self)
-        self.newWindowButton.setToolTip("<b>New Window</b><br>Ctrl+N")
+        self.newWindowButton.setToolTip(tr('newWindowBtnTT'))
         self.newWindowButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.newWindowButton.clicked.connect(self.newWindow)
         self.cornerWidgetsLayout.addWidget(self.newWindowButton)
 
         # Undo closed tab button
-        undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(app_lib, 'icons', 'undo.png'))), '&Undo Close Tab', self)
-        undoCloseTabAction.setToolTip("<b>Undo Close Tab</b><br>Ctrl+Shift+T")
+        undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(app_lib, 'icons', 'undo.png'))), tr('undoCloseTabBtn'), self)
+        undoCloseTabAction.setToolTip(tr('undoCloseTabBtnTT'))
         undoCloseTabAction.setShortcuts(['Ctrl+Shift+T'])
         undoCloseTabAction.triggered.connect(self.undoCloseTab)
         self.addAction(undoCloseTabAction)
@@ -990,8 +1013,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsLayout.addWidget(self.undoCloseTabButton)
 
         # History sidebar button
-        historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(app_lib, "icons", "history.png"))), "Toggle History Sidebar", self)
-        historyToggleAction.setToolTip("<b>View History</b><br>Ctrl+H")
+        historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(app_lib, "icons", "history.png"))), tr('viewHistoryBtn'), self)
+        historyToggleAction.setToolTip(tr('viewHistoryBtnTT'))
         historyToggleAction.triggered.connect(self.historyToggle)
         historyToggleAction.triggered.connect(self.historyToolBar.show)
         historyToggleAction.setShortcut("Ctrl+H")
@@ -1002,8 +1025,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsLayout.addWidget(self.historyToggleButton)
 
         # New private browsing tab button
-        newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(app_lib, 'icons', 'pb.png'))), '&New Private Browsing Tab', self)
-        newpbTabAction.setToolTip("<b>New Private Browsing Tab</b><br>Ctrl+Shift+N")
+        newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(app_lib, 'icons', 'pb.png'))), tr('newPBTabBtn'), self)
+        newpbTabAction.setToolTip(tr('newPBTabBtnTT'))
         newpbTabAction.setShortcuts(['Ctrl+Shift+N'])
         newpbTabAction.triggered.connect(self.newpbTab)
         self.addAction(newpbTabAction)
@@ -1015,8 +1038,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.cDialog = CDialog(self)
 
         # Config button
-        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_lib, 'icons', 'settings.png'))), '&Preferences', self)
-        configAction.setToolTip("<b>Preferences</b><br>Ctrl+Shift+P")
+        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_lib, 'icons', 'settings.png'))), tr('preferencesButton'), self)
+        configAction.setToolTip(tr('preferencesButtonTT'))
         configAction.setShortcuts(['Ctrl+Shift+P'])
         configAction.triggered.connect(self.showSettings)
         self.addAction(configAction)
@@ -1226,7 +1249,7 @@ class TabBrowser(QtGui.QMainWindow):
             self.reloadHistory()
         elif self.selectRange.currentIndex() == 14:
             self.killCookies = True
-            message("Ryouko says...", "Cookies will be cleared on browser restart.", "warn")
+            message(tr('ryoukoSays'), tr('clearCookiesMsg'), "warn")
     def historyToggle(self):
         self.historyDock.setVisible(not self.historyDock.isVisible())
         if self.historyDock.isVisible():
@@ -1255,9 +1278,9 @@ class TabBrowser(QtGui.QMainWindow):
         for tab in range(self.tabs.count()):
             if unicode(self.tabs.widget(tab).webView.title()) == "":
                 if not self.tabs.widget(tab).pb:
-                    self.tabs.setTabText(tab, "New Tab")
+                    self.tabs.setTabText(tab, tr('newTab'))
                 else:
-                    self.tabs.setTabText(tab, "New Tab (PB)")
+                    self.tabs.setTabText(tab, tr('newPBTab'))
                 if tab == self.tabs.currentIndex():
                     self.setWindowTitle("Ryouko")
             else:
