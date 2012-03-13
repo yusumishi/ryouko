@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# ryoukodesu is a stripped-down version of Akane's arietta module
+# ryouko_common is a stripped-down version of Akane's arietta module
 # with less dependencies.
 
 # This file is released under the terms of the following MIT license:

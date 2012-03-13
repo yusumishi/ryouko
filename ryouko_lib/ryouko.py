@@ -30,7 +30,7 @@ SOFTWARE.
 from __future__ import print_function
 
 import os, sys, pickle, json, time, datetime
-from ryoukodesu import *
+from ryouko_common import *
 from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 if not sys.platform.startswith("win"):
     from PyQt4 import uic
