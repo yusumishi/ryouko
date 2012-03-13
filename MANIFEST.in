@@ -1,4 +1,5 @@
 include ryouko
 include MANIFEST.in
+recursive-include ryouko_lib/translations *
 recursive-include ryouko_lib/icons *
 recursive-include ryouko_lib *
