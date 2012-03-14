@@ -135,7 +135,7 @@ class SearchManager(QtCore.QObject):
     def __init__(self, parent=None):
         super(SearchManager, self).__init__(parent)
         self.parent = parent
-        self.searchEngines = {"DuckDuckGo": {"expression" : "http://duckduckgo.com/?q=%s", "keyword" : "d"}, "Wikipedia": {"expression" : "http://wikipedia.org/w/index.php?title=Special:Search&search=%s", "keyword" : "w"}, "Google" : {"expression" : "http://www.google.com/#q=%s", "keyword" : "g"}, "deviantART" : {"expression" : "http://browse.deviantart.com/?qh=&section=&q=%s", "keyword" : "da"}}
+        self.searchEngines = {"DuckDuckGo": {"expression" : "http://duckduckgo.com/?q=%s", "keyword" : "d"}, "Wikipedia": {"expression" : "http://wikipedia.org/w/index.php?title=Special:Search&search=%s", "keyword" : "w"}, "YouTube" : {"expression" : "http://www.youtube.com/results?search_query=%s", "keyword" : "y"}, "Google" : {"expression" : "http://www.google.com/#q=%s", "keyword" : "g"}, "deviantART" : {"expression" : "http://browse.deviantart.com/?qh=&section=&q=%s", "keyword" : "da"}}
         self.currentSearch = "http://duckduckgo.com/?q=%s"
         self.searchEnginesFile = os.path.join(app_home, "search-engines.json")
         self.load()
