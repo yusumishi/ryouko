@@ -4,6 +4,7 @@
 "enterValue": "Enter a value here:",
 "enterName": "Enter a name here:",
 "enterKeyword": "Enter a keyword here (optional):",
+"searchEditor": "Search Engine Manager",
 "newSearchError": "Search expression must contain <b>%s</b> to indicate where the search terms go!",
 "ryoukoSays": "Ryouko says...",
 "historyError": "Oh, no! An error has occurred while trying to access or modify the history! Ryouko is now going to clear the history in an attempt to fix this. =(",

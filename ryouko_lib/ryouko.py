@@ -135,7 +135,7 @@ class SearchManager(QtCore.QObject):
     def __init__(self, parent=None):
         super(SearchManager, self).__init__(parent)
         self.parent = parent
-        self.searchEngines = {"DuckDuckGo": {"expression" : "http://duckduckgo.com/?q=%s", "keyword" : ""}}
+        self.searchEngines = {"DuckDuckGo": {"expression" : "http://duckduckgo.com/?q=%s", "keyword" : "d"}, "Wikipedia": {"expression" : "http://wikipedia.org/w/index.php?title=Special:Search&search=%s", "keyword" : "w"}, "Google" : {"expression" : "http://www.google.com/#q=%s", "keyword" : "g"}, "deviantART" : {"expression" : "http://browse.deviantart.com/?qh=&section=&q=%s", "keyword" : "da"}}
         self.currentSearch = "http://duckduckgo.com/?q=%s"
         self.searchEnginesFile = os.path.join(app_home, "search-engines.json")
         self.load()
@@ -186,6 +186,7 @@ class SearchEditor(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(SearchEditor, self).__init__(parent)
         self.parent = parent
+        self.setWindowTitle(tr('searchEditor'))
         self.entryBar = QtGui.QToolBar()
         self.addToolBar(self.entryBar)
         eLabel = QtGui.QLabel("Expression: ")
@@ -203,13 +204,21 @@ class SearchEditor(QtGui.QMainWindow):
         self.takeSearchAction.setShortcut("Del")
         self.addAction(self.takeSearchAction)
 
+        self.hideAction = QtGui.QAction(self)
+        self.hideAction.triggered.connect(self.hide)
+        self.hideAction.setShortcut("Esc")
+        self.addAction(self.hideAction)
+
         self.mainToolBar = QtGui.QToolBar()
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.mainToolBar)
 
     def reload(self):
         self.engineList.clear()
         for name in searchManager.searchEngines:
-            self.engineList.addItem(name)
+            keyword = "None"
+            if searchManager.searchEngines[name]['keyword'] != "":
+                keyword = searchManager.searchEngines[name]['keyword']
+            self.engineList.addItem(name + "\n" + "Keyword: " + keyword)
 
     def display(self):
         self.reload()
@@ -227,14 +236,14 @@ class SearchEditor(QtGui.QMainWindow):
 
     def applySearch(self, item=False):
         if item:
-            try: item.text()
+            try: unicode(item.text()).split("\n")[0]
             except:
                 message(tr('error'), tr('searchError'))
             else:
-                searchManager.change(unicode(item.text()))
+                searchManager.change(unicode(item.text()).split("\n")[0])
 
     def takeSearch(self):
-        searchManager.remove(self.engineList.currentItem().text())
+        searchManager.remove(unicode(self.engineList.currentItem().text()).split("\n")[0])
         self.reload()
 
 class BrowserHistory(QtCore.QObject):
@@ -794,12 +803,23 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.urlBar.selectAll()
     def updateWeb(self):
         urlBar = self.urlBar.text()
+        urlBar = unicode(urlBar)
         header = ""
-        if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar):
-            header = "http://"
-        url = qstring(header + unicode(urlBar))
-        if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
-            self.webView.setHtml("<html><head><title>About Ryouko</title>\
+        search = False
+        for key in searchManager.searchEngines:
+            if urlBar.startswith(searchManager.searchEngines[key]['keyword'] + " "):
+                search = searchManager.searchEngines[key]
+                break
+        if search:
+            urlBar = urlBar.replace(search['keyword'] + " ", "")
+            urlBar = QtCore.QUrl(search['expression'].replace("%s", urlBar))
+            self.webView.load(urlBar)
+        else:
+            if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar):
+                header = "http://"
+            url = qstring(header + unicode(urlBar))
+            if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
+                self.webView.setHtml("<html><head><title>About Ryouko</title>\
             </head><body style='font-family: sans-serif;'><center>\
             <h1 style='margin-bottom: 0;'>About Ryouko</h1><img src='file://" \
             + os.path.join(app_lib, "icons", "about-logo.png") + "'></img><br>\
@@ -808,9 +828,9 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(\
             sys.version_info[2])+"<br><b>Qt version:</b> "+QtCore.qVersion()+"\
             <br></center></body></html>")
-        else:
-            url = QtCore.QUrl(url)
-            self.webView.load(url)
+            else:
+                url = QtCore.QUrl(url)
+                self.webView.load(url)
     def updateText(self):
         url = self.webView.url()
         texturl = url.toString()
