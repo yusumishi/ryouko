@@ -187,9 +187,13 @@ class SearchEditor(QtGui.QMainWindow):
         super(SearchEditor, self).__init__(parent)
         self.parent = parent
         self.setWindowTitle(tr('searchEditor'))
+
         self.entryBar = QtGui.QToolBar()
+        self.entryBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.entryBar.setMovable(False)
         self.addToolBar(self.entryBar)
-        eLabel = QtGui.QLabel("Expression: ")
+
+        eLabel = QtGui.QLabel(tr('newExpression'))
         self.entryBar.addWidget(eLabel)
         self.expEntry = QtGui.QLineEdit()
         self.expEntry.returnPressed.connect(self.addSearch)
@@ -208,9 +212,6 @@ class SearchEditor(QtGui.QMainWindow):
         self.hideAction.triggered.connect(self.hide)
         self.hideAction.setShortcut("Esc")
         self.addAction(self.hideAction)
-
-        self.mainToolBar = QtGui.QToolBar()
-        self.addToolBar(QtCore.Qt.BottomToolBarArea, self.mainToolBar)
 
     def reload(self):
         self.engineList.clear()
@@ -632,7 +633,6 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.webView = RWebView(None)
         else:
             self.webView = widget
-        self.searchEditor = SearchEditor(self)
         self.updateSettings()
         if not self.pb:
             self.webView.establishParent(self.parent)
@@ -796,7 +796,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.webView.load(url)
 
     def editSearch(self):
-        self.searchEditor.display()
+        self.parent.searchEditor.display()
 
     def focusURLBar(self):
         self.urlBar.setFocus()
@@ -859,6 +859,11 @@ class CDialog(QtGui.QMainWindow):
         self.layout.addWidget(self.pluginsBox)
         self.pbBox = QtGui.QCheckBox(tr('enablePB'))
         self.layout.addWidget(self.pbBox)
+        self.editSearchButton = QtGui.QPushButton("Manage search engines...")
+        try: self.editSearchButton.clicked.connect(self.parent.searchEditor.display)
+        except:
+            doNothing()
+        self.layout.addWidget(self.editSearchButton)
         self.cToolBar = QtGui.QToolBar()
         self.cToolBar.setStyleSheet("""
         QToolBar {
@@ -1019,7 +1024,9 @@ class TabBrowser(QtGui.QMainWindow):
         self.clearHistoryToolBar.addWidget(self.clearHistoryButton)
 
     def initUI(self):
-    
+
+        self.searchEditor = SearchEditor(self)
+
         # Quit action
         quitAction = QtGui.QAction(self)
         quitAction.setShortcut("Ctrl+Shift+Q")

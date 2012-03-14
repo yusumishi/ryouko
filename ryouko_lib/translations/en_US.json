@@ -2,6 +2,7 @@
 "error": "Error",
 "query": "Query",
 "enterValue": "Enter a value here:",
+"newExpression": "New expression: ",
 "enterName": "Enter a name here:",
 "enterKeyword": "Enter a keyword here (optional):",
 "searchEditor": "Search Engine Manager",
