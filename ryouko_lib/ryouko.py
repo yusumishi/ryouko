@@ -203,7 +203,7 @@ class SearchEditor(QtGui.QMainWindow):
         self.entryBar.addWidget(self.addSearchButton)
 
         self.engineList = QtGui.QListWidget()
-        self.engineList.itemActivated.connect(self.applySearch)
+        self.engineList.currentItemChanged.connect(self.applySearch)
         self.setCentralWidget(self.engineList)
 
         self.takeSearchAction = QtGui.QAction(self)
@@ -243,7 +243,7 @@ class SearchEditor(QtGui.QMainWindow):
         else:
             message(tr('error'), tr('newSearchError'), 'warn')
 
-    def applySearch(self, item=False):
+    def applySearch(self, item=False, old=False):
         if item:
             try: unicode(item.text()).split("\n")[0]
             except:
