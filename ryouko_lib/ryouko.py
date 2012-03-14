@@ -1038,8 +1038,7 @@ class TabBrowser(QtGui.QMainWindow):
         # Quit action
         quitAction = QtGui.QAction(self)
         quitAction.setShortcut("Ctrl+Shift+Q")
-        quitAction.triggered.connect(QtCore.QCoreApplication.instance().quit)
-        quitAction.triggered.connect(sys.exit)
+        quitAction.triggered.connect(self.close)
         self.addAction(quitAction)
 
         # History sidebar
