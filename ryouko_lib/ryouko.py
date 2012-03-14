@@ -220,6 +220,10 @@ class SearchEditor(QtGui.QMainWindow):
             if searchManager.searchEngines[name]['keyword'] != "":
                 keyword = searchManager.searchEngines[name]['keyword']
             self.engineList.addItem(name + "\n" + "Keyword: " + keyword)
+        for item in range(0, self.engineList.count()):
+            if searchManager.searchEngines[unicode(self.engineList.item(item).text()).split("\n")[0]]['expression'] == searchManager.currentSearch:
+                self.engineList.setCurrentItem(self.engineList.item(item))
+                break
 
     def display(self):
         self.reload()
