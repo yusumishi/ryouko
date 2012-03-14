@@ -198,6 +198,9 @@ class SearchEditor(QtGui.QMainWindow):
         self.expEntry = QtGui.QLineEdit()
         self.expEntry.returnPressed.connect(self.addSearch)
         self.entryBar.addWidget(self.expEntry)
+        self.addSearchButton = QtGui.QPushButton("Add")
+        self.addSearchButton.clicked.connect(self.addSearch)
+        self.entryBar.addWidget(self.addSearchButton)
 
         self.engineList = QtGui.QListWidget()
         self.engineList.itemActivated.connect(self.applySearch)
@@ -227,6 +230,7 @@ class SearchEditor(QtGui.QMainWindow):
 
     def display(self):
         self.reload()
+        self.expEntry.setFocus()
         self.show()
 
     def addSearch(self):
