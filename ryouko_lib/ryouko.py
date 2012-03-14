@@ -131,6 +131,55 @@ self.origY + ev.globalY() - self.mouseY)
         self.mouseX = False
         self.mouseY = False
 
+class SearchManager(QtCore.QObject):
+    def __init__(self, parent=None):
+        super(SearchManager, self).__init__(parent)
+        self.parent = parent
+        self.searchEngines = {"DuckDuckGo": {"expression" : "http://duckduckgo.com/?q=%s", "keyword" : ""}}
+        self.currentSearch = "http://duckduckgo.com/?q=%s"
+        self.searchEnginesFile = os.path.join(app_home, "search-engines.json")
+        self.load()
+    def load(self):
+        if os.path.exists(self.searchEnginesFile):
+            f = open(self.searchEnginesFile, "r")
+            read = json.load(f)
+            f.close()
+            try: read['searchEngines']
+            except:
+                doNothing()
+            else:
+                self.searchEngines = read['searchEngines'] 
+            try: read['currentSearch']
+            except:
+                doNothing()
+            else:
+                self.currentSearch = read['currentSearch']
+    def save(self):
+        f = open(self.searchEnginesFile, "w")
+        json.dump({"searchEngines" : self.searchEngines, "currentSearch" : self.currentSearch}, self.searchEnginesFile)
+        f.close()
+    def add(self, name=False, expression=False, keyword=""):
+        if name and expression:
+            self.searchEngines[unicode(name)] = {"expression" : unicode(expression), "keyword" : keyword}
+            self.save()
+    def remove(self, name=False):
+        if name:
+            try: self.searchEngines[unicode(name)]
+            except:
+                message(tr('error'), tr('searchError'))
+            else:
+                del self.searchEngines[unicode(name)]
+                self.save()
+    def change(self, engine=""):
+        try: self.searchEngines[unicode(engine)]["expression"]
+        except:
+            message(tr('error'), tr('searchError'))
+        else:
+            self.currentSearch = self.searchEngines[unicode(engine)]["expression"]
+            self.save()
+
+searchManager = SearchManager()
+
 class BrowserHistory(QtCore.QObject):
     historyChanged = QtCore.pyqtSignal()
     def __init__(self, parent=None):
@@ -184,7 +233,7 @@ class BrowserHistory(QtCore.QObject):
         except:
             self.reset()
     def reset(self):
-        message(tr('ryoukoSays'), tr('historyError'), "critical")
+        message(tr('error'), tr('historyError'), "critical")
         self.history = []
         self.save()
         self.reload()
@@ -544,18 +593,15 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.goButton.setText("")
         self.goButton.setIconSize(QtCore.QSize(16, 16))
         self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(os.path.join(app_lib, "icons", 'go.png'))))
-        self.goButton.setFocusPolicy(QtCore.Qt.NoFocus)
         if sys.platform.startswith("win"):
             self.backButton.setIconSize(QtCore.QSize(22, 22))
         self.backButton.clicked.connect(self.webView.back)
         self.backButton.setIcon(QtGui.QIcon().fromTheme("go-previous", QtGui.QIcon(os.path.join(app_lib, "icons", 'back.png'))))
-        self.backButton.setFocusPolicy(QtCore.Qt.NoFocus)
         if sys.platform.startswith("win"):
             self.nextButton.setIconSize(QtCore.QSize(22, 22))
         self.nextButton.clicked.connect(self.webView.forward)
         self.nextButton.setText("")
         self.nextButton.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_lib, "icons", 'next.png'))))
-        self.nextButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.urlBar.returnPressed.connect(self.updateWeb)
         if not self.pb:
             self.urlBar.textChanged.connect(self.searchHistory)
@@ -567,7 +613,8 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.webView.titleChanged.connect(browserHistory.updateTitles)
         self.searchButton.clicked.connect(self.searchWeb)
         self.searchButton.setShortcut("Ctrl+K")
-        self.searchButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.searchEditButton.clicked.connect(self.editSearch)
+        self.searchEditButton.setShortcut("Ctrl+Shift+K")
         historySearchAction = QtGui.QAction(self)
         historySearchAction.triggered.connect(self.parent.focusHistorySearch)
         historySearchAction.setShortcuts(["Ctrl+Shift+K", "Ctrl+Shift+H"])
@@ -577,14 +624,12 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.reloadButton.clicked.connect(self.webView.reload)
         self.reloadButton.setText("")
         self.reloadButton.setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_lib, "icons", 'reload.png'))))
-        self.reloadButton.setFocusPolicy(QtCore.Qt.NoFocus)
 
         if sys.platform.startswith("win"):
             self.findButton.setIconSize(QtCore.QSize(22, 22))
         self.findButton.clicked.connect(self.webView.find)
         self.findButton.setText("")
         self.findButton.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_lib, "icons", 'find.png'))))
-        self.findButton.setFocusPolicy(QtCore.Qt.NoFocus)
 
         self.stopAction = QtGui.QAction(self)
         self.stopAction.triggered.connect(self.webView.stop)
@@ -599,7 +644,6 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.stopButton.clicked.connect(self.updateText)
         self.stopButton.setText("")
         self.stopButton.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_lib, "icons", 'stop.png'))))
-        self.stopButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.focusURLBarButton.clicked.connect(self.focusURLBar)
         self.focusURLBarButton.setStyleSheet("""
         max-width: 0;
@@ -690,7 +734,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.webView.load(url);
     def searchWeb(self):
         urlBar = self.urlBar.text()
-        url = QtCore.QUrl("http://duckduckgo.com/?q=" + urlBar)
+        url = QtCore.QUrl(searchManager.currentSearch.replace("%s", urlBar))
         self.webView.load(url)
     def focusURLBar(self):
         self.urlBar.setFocus()
@@ -990,14 +1034,14 @@ class TabBrowser(QtGui.QMainWindow):
         newTabAction.triggered.connect(self.newTab)
         self.addAction(newTabAction)
         self.newTabButton = QtGui.QToolButton()
-        self.newTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.newTabButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.newTabButton.setDefaultAction(newTabAction)
         self.cornerWidgetsLayout.addWidget(self.newTabButton)
 
         # New window button
         self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), '', self)
         self.newWindowButton.setToolTip(tr('newWindowBtnTT'))
-        self.newWindowButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.newWindowButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.newWindowButton.clicked.connect(self.newWindow)
         self.cornerWidgetsLayout.addWidget(self.newWindowButton)
 
@@ -1008,7 +1052,7 @@ class TabBrowser(QtGui.QMainWindow):
         undoCloseTabAction.triggered.connect(self.undoCloseTab)
         self.addAction(undoCloseTabAction)
         self.undoCloseTabButton = QtGui.QToolButton()
-        self.undoCloseTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.undoCloseTabButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.undoCloseTabButton.setDefaultAction(undoCloseTabAction)
         self.cornerWidgetsLayout.addWidget(self.undoCloseTabButton)
 
@@ -1020,7 +1064,7 @@ class TabBrowser(QtGui.QMainWindow):
         historyToggleAction.setShortcut("Ctrl+H")
         self.addAction(historyToggleAction)
         self.historyToggleButton = QtGui.QToolButton()
-        self.historyToggleButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.historyToggleButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.historyToggleButton.setDefaultAction(historyToggleAction)
         self.cornerWidgetsLayout.addWidget(self.historyToggleButton)
 
@@ -1031,7 +1075,7 @@ class TabBrowser(QtGui.QMainWindow):
         newpbTabAction.triggered.connect(self.newpbTab)
         self.addAction(newpbTabAction)
         self.newpbTabButton = QtGui.QToolButton()
-        self.newpbTabButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.newpbTabButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.newpbTabButton.setDefaultAction(newpbTabAction)
         self.cornerWidgetsLayout.addWidget(self.newpbTabButton)
 
@@ -1044,7 +1088,7 @@ class TabBrowser(QtGui.QMainWindow):
         configAction.triggered.connect(self.showSettings)
         self.addAction(configAction)
         self.settingsButton = QtGui.QToolButton()
-        self.settingsButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.settingsButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.settingsButton.setDefaultAction(configAction)
         self.cornerWidgetsLayout.addWidget(self.settingsButton)
 

@@ -1,4 +1,5 @@
 {
+"error": "Error",
 "query": "Query",
 "enterValue": "Enter a value here:",
 "ryoukoSays": "Ryouko says...",
@@ -45,5 +46,6 @@
 "preferencesButton": "&Preferences",
 "preferencesButtonTT": "<b>Preferences</b><br>Ctrl+Shift+P",
 "newTab": "New Tab",
-"newPBTab": "New Tab (PB)"
+"newPBTab": "New Tab (PB)",
+"searchError": "Ryouko encountered an error while trying to modify the search."
 }
