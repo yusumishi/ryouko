@@ -142,7 +142,9 @@ class SearchManager(QtCore.QObject):
     def load(self):
         if os.path.exists(self.searchEnginesFile):
             f = open(self.searchEnginesFile, "r")
-            read = json.load(f)
+            try: read = json.load(f)
+            except:
+                doNothing()
             f.close()
             try: read['searchEngines']
             except:
@@ -156,29 +158,84 @@ class SearchManager(QtCore.QObject):
                 self.currentSearch = read['currentSearch']
     def save(self):
         f = open(self.searchEnginesFile, "w")
-        json.dump({"searchEngines" : self.searchEngines, "currentSearch" : self.currentSearch}, self.searchEnginesFile)
+        json.dump({"searchEngines" : self.searchEngines, "currentSearch" : self.currentSearch}, f)
         f.close()
     def add(self, name=False, expression=False, keyword=""):
         if name and expression:
-            self.searchEngines[unicode(name)] = {"expression" : unicode(expression), "keyword" : keyword}
+            self.searchEngines[unicode(name)] = {"expression" : unicode(expression), "keyword" : unicode(keyword)}
             self.save()
     def remove(self, name=False):
         if name:
             try: self.searchEngines[unicode(name)]
             except:
-                message(tr('error'), tr('searchError'))
+                message(tr('error'), tr('searchError'), "warn")
             else:
                 del self.searchEngines[unicode(name)]
                 self.save()
-    def change(self, engine=""):
-        try: self.searchEngines[unicode(engine)]["expression"]
+    def change(self, name=""):
+        try: self.searchEngines[unicode(name)]["expression"]
         except:
-            message(tr('error'), tr('searchError'))
+            message(tr('error'), tr('searchError'), "warn")
         else:
-            self.currentSearch = self.searchEngines[unicode(engine)]["expression"]
+            self.currentSearch = self.searchEngines[unicode(name)]["expression"]
             self.save()
 
 searchManager = SearchManager()
+
+class SearchEditor(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        super(SearchEditor, self).__init__(parent)
+        self.parent = parent
+        self.entryBar = QtGui.QToolBar()
+        self.addToolBar(self.entryBar)
+        eLabel = QtGui.QLabel("Expression: ")
+        self.entryBar.addWidget(eLabel)
+        self.expEntry = QtGui.QLineEdit()
+        self.expEntry.returnPressed.connect(self.addSearch)
+        self.entryBar.addWidget(self.expEntry)
+
+        self.engineList = QtGui.QListWidget()
+        self.engineList.itemActivated.connect(self.applySearch)
+        self.setCentralWidget(self.engineList)
+
+        self.takeSearchAction = QtGui.QAction(self)
+        self.takeSearchAction.triggered.connect(self.takeSearch)
+        self.takeSearchAction.setShortcut("Del")
+        self.addAction(self.takeSearchAction)
+
+        self.mainToolBar = QtGui.QToolBar()
+        self.addToolBar(QtCore.Qt.BottomToolBarArea, self.mainToolBar)
+
+    def reload(self):
+        self.engineList.clear()
+        for name in searchManager.searchEngines:
+            self.engineList.addItem(name)
+
+    def display(self):
+        self.reload()
+        self.show()
+
+    def addSearch(self):
+        if "%s" in self.expEntry.text():
+            name = inputDialog(tr('query'), tr('enterName'))
+            if name and name != "":
+                keyword = inputDialog(tr('query'), tr('enterKeyword'))
+                searchManager.add(name, self.expEntry.text(), keyword)
+            self.reload()
+        else:
+            message(tr('error'), tr('newSearchError'), 'warn')
+
+    def applySearch(self, item=False):
+        if item:
+            try: item.text()
+            except:
+                message(tr('error'), tr('searchError'))
+            else:
+                searchManager.change(unicode(item.text()))
+
+    def takeSearch(self):
+        searchManager.remove(self.engineList.currentItem().text())
+        self.reload()
 
 class BrowserHistory(QtCore.QObject):
     historyChanged = QtCore.pyqtSignal()
@@ -452,18 +509,8 @@ class RWebView(QtWebKit.QWebView):
         self.load(QtCore.QUrl("about:blank"))
         self.setHtml(tr('shortcutsPage'))
 
-    def inputDialog(self, title="Query", content="Enter a value here:", value=""):
-        text = QtGui.QInputDialog.getText(None, title, content, QtGui.QLineEdit.Normal, value)
-        if text[1]:
-            if unicode(text[0]) != "":
-                return text[0]
-            else:
-                return ""
-        else:
-            return ""
-
     def locationEdit(self):
-        url = self.inputDialog(tr('openLocaation'), tr('enterURL'), self.url().toString())
+        url = inputDialog(tr('openLocaation'), tr('enterURL'), self.url().toString())
         if url:
             header = ""
             if not unicode(url).startswith("about:") and not "://" in unicode(url):
@@ -472,7 +519,7 @@ class RWebView(QtWebKit.QWebView):
             self.load(QtCore.QUrl(url))
 
     def find(self):
-        find = self.inputDialog(tr('find'), tr('searchFor'), self.text)
+        find = inputDialog(tr('find'), tr('searchFor'), self.text)
         if find:
             self.text = find
             self.findText(self.text)
@@ -576,6 +623,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.webView = RWebView(None)
         else:
             self.webView = widget
+        self.searchEditor = SearchEditor(self)
         self.updateSettings()
         if not self.pb:
             self.webView.establishParent(self.parent)
@@ -731,11 +779,16 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.webView.show()
     def licensing(self):
         url = QtCore.QUrl(os.path.join(self.app_lib, "LICENSE.html"))
-        self.webView.load(url);
+        self.webView.load(url)
+
     def searchWeb(self):
         urlBar = self.urlBar.text()
         url = QtCore.QUrl(searchManager.currentSearch.replace("%s", urlBar))
         self.webView.load(url)
+
+    def editSearch(self):
+        self.searchEditor.display()
+
     def focusURLBar(self):
         self.urlBar.setFocus()
         self.urlBar.selectAll()
