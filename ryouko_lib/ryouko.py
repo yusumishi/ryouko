@@ -953,7 +953,7 @@ class CDialog(QtGui.QMainWindow):
         self.layout.addWidget(self.pluginsBox)
         self.pbBox = QtGui.QCheckBox(tr('enablePB'))
         self.layout.addWidget(self.pbBox)
-        backendBox = QtGui.QLabel("Use this backend for downloads:")
+        backendBox = QtGui.QLabel("Default backend for downloads:")
         self.layout.addWidget(backendBox)
         self.selectBackend = QtGui.QComboBox()
         self.selectBackend.addItem('python')
