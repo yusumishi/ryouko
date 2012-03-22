@@ -30,6 +30,7 @@ SOFTWARE.
 from __future__ import print_function
 
 import os, sys, pickle, json, time, datetime
+from subprocess import Popen, PIPE
 from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 if not sys.platform.startswith("win"):
     from PyQt4 import uic
@@ -54,6 +55,16 @@ from ryouko_common import *
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
 app_logo = os.path.join(app_lib, "icons", "logo.svg")
 
+terminals=[ ["terminator",      "-x "],
+            ["sakura",          "--execute="],
+            ["roxterm",         "--execute "],
+            ["xfce4-terminal",  "--command="],
+            ["Terminal",  "--command="],
+            ["gnome-terminal",  "--command="],
+            ["idle3",           "-r "],
+            ["xterm",           ""],
+            ["konsole",         "-e="] ]
+
 trManager = translate.TranslationManager()
 trManager.setDirectory(os.path.join(app_lib, "translations"))
 trManager.loadTranslation()
@@ -63,6 +74,22 @@ def tr(key):
 
 def doNothing():
     return
+
+def read_terminal_output(command):
+    stdout_handle = os.popen(command)
+    value = stdout_handle.read().rstrip("\n")
+    return value
+
+def system_terminal(command):
+
+    location = False
+    for app in terminals:
+        location=Popen(["which", app[0]], stdout=PIPE).communicate()[0]
+        if location:
+            os.system(app[0]+' '+app[1]+"\""+command+"\"")
+            break
+    if not location:
+        os.system(command)
 
 def qstring(string):
     if sys.version_info[0] <= 2:
@@ -343,22 +370,6 @@ class BrowserHistory(QtCore.QObject):
 
 browserHistory = BrowserHistory()
 
-class DownloaderThread(QtCore.QThread):
-    def __init__(self, parent=None):
-        QtCore.QThread.__init__(self, parent)
-        self.url = ""
-        self.destination = ""
-    def setUrl(self, url):
-        self.url = url
-    def setDestination(self, destination):
-        self.destination = destination
-    def exec_(self):
-        urlretrieve(self.url, self.destination)
-    def run(self):
-        urlretrieve(self.url, self.destination)
-
-downloaderThread = DownloaderThread()
-
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
     def __init__(self, parent=False):
@@ -515,6 +526,14 @@ class RWebView(QtWebKit.QWebView):
         if fname:
             downloaderThread.setUrl(unicode(request.url().toString()))
             downloaderThread.setDestination(fname)
+            username = False
+            password = False
+            if settingsManager.settings['loginToDownload'] == True:
+                username = inputDialog("Enter a username", "Enter a username here [optional]:")
+                if username != "":
+                    password = inputDialog("Enter a username", "Enter a password here [optional]:")
+            downloaderThread.username = username
+            downloaderThread.password = password
             downloaderThread.start()
 
     def updateTitle(self):
@@ -844,11 +863,78 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         texturl = url.toString()
         self.urlBar.setText(texturl)
 
+class SettingsManager():
+    def __init__(self):
+        self.settings = {'openInTabs' : True, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'python', 'loginToDownload' : False}
+        self.loadSettings()
+    def loadSettings(self):
+        settingsFile = os.path.join(app_home, "settings.json")
+        if os.path.exists(settingsFile):
+            fstream = open(settingsFile, "r")
+            self.settings = json.load(fstream)
+            fstream.close()
+    def saveSettings(self):
+        settingsFile = os.path.join(app_home, "settings.json")
+        fstream = open(settingsFile, "w")
+        json.dump(self.settings, fstream)
+        fstream.close()
+    def setBackend(self, backend = "python"):
+        check = False
+        if backend == "aria2":
+            check = Popen(["which", "aria2c"], stdout=PIPE).communicate()[0]
+        elif backend != "python":
+            check = Popen(["which", backend], stdout=PIPE).communicate()[0]
+        else:
+            check = True
+        if check:
+            self.settings['backend'] = backend
+        else:
+            message("Error!", "Backend " + backend + " could not be found!", "warn")
+            self.settings['backend'] = "python"
+        
+settingsManager = SettingsManager()
+
+class DownloaderThread(QtCore.QThread):
+    def __init__(self, parent=None):
+        QtCore.QThread.__init__(self, parent)
+        self.url = ""
+        self.destination = ""
+        self.username = False
+        self.password = False
+    def setUrl(self, url):
+        self.url = url
+    def setDestination(self, destination):
+        self.destination = destination
+    def exec_(self):
+        urlretrieve(self.url, self.destination)
+    def run(self):
+        command = ""
+        if settingsManager.settings['backend'] == "aria2":
+            command = "aria2c --dir='" + os.path.dirname(unicode(self.destination)) + "'"
+            if self.username and self.username != "":
+                command = command + " --http-user='" + unicode(self.username) + "'"
+                if self.password and self.password != "":
+                    command = command + " --http-passwd='" + unicode(self.password) + "'"
+            command = command + " '" + self.url + "'"
+            system_terminal(command)
+        elif settingsManager.settings['backend'] == "axel":
+            os.chdir(os.path.dirname(unicode(self.destination)))
+            command = "axel"
+            command = command + " '" + self.url + "'"
+            system_terminal(command)
+        else:
+            urlretrieve(self.url, self.destination)
+        print(command)
+        self.username = False
+        self.password = False
+
+downloaderThread = DownloaderThread()
+
 class CDialog(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(CDialog, self).__init__()
         self.parent = parent
-        self.settings = {'openInTabs' : True, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False}
+        self.setings = {}
         self.initUI()
     def initUI(self):
         self.setWindowTitle(tr('preferences'))
@@ -867,6 +953,15 @@ class CDialog(QtGui.QMainWindow):
         self.layout.addWidget(self.pluginsBox)
         self.pbBox = QtGui.QCheckBox(tr('enablePB'))
         self.layout.addWidget(self.pbBox)
+        backendBox = QtGui.QLabel("Use this backend for downloads:")
+        self.layout.addWidget(backendBox)
+        self.selectBackend = QtGui.QComboBox()
+        self.selectBackend.addItem('python')
+        self.selectBackend.addItem('aria2')
+        self.selectBackend.addItem('axel')
+        self.layout.addWidget(self.selectBackend)
+        self.lDBox = QtGui.QCheckBox(tr('loginToDownload'))
+        self.layout.addWidget(self.lDBox)
         self.editSearchButton = QtGui.QPushButton("Manage search engines...")
         try: self.editSearchButton.clicked.connect(self.parent.searchEditor.display)
         except:
@@ -904,12 +999,10 @@ class CDialog(QtGui.QMainWindow):
         self.cToolBar.addAction(closeAction)
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.cToolBar)
         self.loadSettings()
+        settingsManager.saveSettings()
     def loadSettings(self):
-        settingsFile = os.path.join(app_home, "settings.json")
-        if os.path.exists(settingsFile):
-            fstream = open(settingsFile, "r")
-            self.settings = json.load(fstream)
-            fstream.close()
+        settingsManager.loadSettings()
+        self.settings = settingsManager.settings
         try: self.settings['openInTabs']
         except:
             self.openTabsBox.setChecked(True)
@@ -935,14 +1028,31 @@ class CDialog(QtGui.QMainWindow):
             self.pbBox.setChecked(False)
         else:
             self.pbBox.setChecked(self.settings['privateBrowsing'])
-        self.saveSettings()
-        self.parent.updateSettings()
+        try: self.settings['loginToDownload']
+        except: 
+            self.lDBox.setChecked(False)
+        else:
+            self.lDBox.setChecked(self.settings['loginToDownload'])
+        try: self.settings['backend']
+        except:
+            doNothing()
+        else:
+            for index in range(0, self.selectBackend.count()):
+                try: self.selectBackend.itemText(index)
+                except:
+                    doNothing()
+                else:
+                    if unicode(self.selectBackend.itemText(index)).lower() == self.settings['backend']:
+                        self.selectBackend.setCurrentIndex(index)
+                        break
+        try: self.parent.updateSettings()
+        except:
+            doNothing()
     def saveSettings(self):
-        settingsFile = os.path.join(app_home, "settings.json")
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked()}
-        fstream = open(settingsFile, "w")
-        json.dump(self.settings, fstream)
-        fstream.close()
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked()}
+        settingsManager.settings = self.settings
+        settingsManager.setBackend(unicode(self.selectBackend.currentText()).lower())
+        settingsManager.saveSettings()
         self.parent.updateSettings()
 
 class TabBrowser(QtGui.QMainWindow):

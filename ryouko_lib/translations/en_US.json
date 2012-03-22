@@ -20,6 +20,7 @@
 "enableJS": "Enable &Javascript",
 "enablePlugins": "Enable &plugins",
 "enablePB": "Enable private &browsing mode",
+"loginToDownload": "&Login to download? [aria2 only]",
 "lastMin": "Last minute",
 "last2Min": "Last 2 minutes",
 "last5Min": "Last 5 minutes",
