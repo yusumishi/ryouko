@@ -1427,7 +1427,7 @@ class TabBrowser(QtGui.QMainWindow):
             for item in browserHistory.history:
                 add = False
                 for subitem in item:
-                    if string.lower() in unicode(subitem).lower():
+                    if string.lower() in unicode(item[subitem]).lower():
                         add = True
                 if add == True:
                     history.append(item)
