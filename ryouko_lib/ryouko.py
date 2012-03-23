@@ -437,7 +437,6 @@ class RWebView(QtWebKit.QWebView):
         self.addAction(self.showShortcutsAction)
 
         self.newWindowAction = QtGui.QAction(self)
-        self.newWindowAction.setShortcut("Ctrl+N")
         self.newWindowAction.triggered.connect(self.newWindow)
         self.addAction(self.newWindowAction)
 
@@ -635,6 +634,7 @@ class RWebView(QtWebKit.QWebView):
             exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(None)")
         if self.openInTabs == False:
             exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.setShortcut('Ctrl+W')")
+            exec("self.newWindow" + str(len(self.newWindows)) + ".newWindowAction.setShortcut('Ctrl+N')")
             exec("self.newWindow" + str(len(self.newWindows)) + ".stopAction.setShortcut('Esc')")
             exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction.setShortcuts(['Ctrl+L', 'Alt+D'])")
             exec("self.newWindow" + str(len(self.newWindows)) + ".zoomInAction.setShortcuts(['Ctrl+Shift+=', 'Ctrl+='])")
@@ -702,11 +702,17 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.webView.establishParent(self.parent)
         self.webView.statusBarMessage.connect(self.statusMessage.setText)
         self.mainLayout.addWidget(self.webView, 2, 0)
+        self.historyCompletionBox = QtGui.QWidget()
+        self.historyCompletionBoxLayout = QtGui.QVBoxLayout()
+        self.historyCompletionBoxLayout.setContentsMargins(0,0,0,0)
+        self.historyCompletionBoxLayout.setSpacing(0)
+        self.historyCompletionBox.setLayout(self.historyCompletionBoxLayout)
+        self.historyCompletionBox.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Popup)
         self.historyCompletion = HistoryCompletionList(self)
         self.historyCompletion.itemActivated.connect(self.openHistoryItem)
         self.historyCompletion.statusMessage.connect(self.statusMessage.setText)
-        self.mainLayout.addWidget(self.historyCompletion, 3, 0)
-        self.progressBar.hide()
+#        self.mainLayout.addWidget(self.historyCompletion, 3, 0)
+#        self.progressBar.hide()
         self.mainLayout.setSpacing(0);
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
         self.mainToolBarLayout.setSpacing(0)
@@ -723,9 +729,15 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.nextButton.clicked.connect(self.webView.forward)
         self.nextButton.setText("")
         self.nextButton.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_lib, "icons", 'next.png'))))
-        self.urlBar.returnPressed.connect(self.updateWeb)
+        self.urlBar2 = QtGui.QLineEdit()
+        self.historyCompletionBoxLayout.addWidget(self.urlBar2)
+        self.historyCompletionBoxLayout.addWidget(self.historyCompletion)
+        self.urlBar.textChanged.connect(self.rSyncText)
+        self.urlBar.textChanged.connect(self.showHistoryBox)
+        self.urlBar2.textChanged.connect(self.syncText)
+        self.urlBar2.returnPressed.connect(self.updateWeb)
         if not self.pb:
-            self.urlBar.textChanged.connect(self.searchHistory)
+            self.urlBar2.textChanged.connect(self.searchHistory)
         self.webView.urlChanged.connect(self.updateText)
         if not self.pb:
             self.webView.urlChanged.connect(browserHistory.reload)
@@ -754,14 +766,14 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
 
         self.stopAction = QtGui.QAction(self)
         self.stopAction.triggered.connect(self.webView.stop)
-        self.stopAction.triggered.connect(self.historyCompletion.hide)
+        self.stopAction.triggered.connect(self.historyCompletionBox.hide)
         self.stopAction.triggered.connect(self.updateText)
         self.stopAction.setShortcut("Esc")
         self.addAction(self.stopAction)
         if sys.platform.startswith("win"):
             self.stopButton.setIconSize(QtCore.QSize(22, 22))
         self.stopButton.clicked.connect(self.webView.stop)
-        self.stopButton.clicked.connect(self.historyCompletion.hide)
+        self.stopButton.clicked.connect(self.historyCompletionBox.hide)
         self.stopButton.clicked.connect(self.updateText)
         self.stopButton.setText("")
         self.stopButton.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_lib, "icons", 'stop.png'))))
@@ -776,6 +788,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.focusURLBarButton.setShortcut("Alt+D")
         self.focusURLBarButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.focusURLBarAction = QtGui.QAction(self)
+        self.historyCompletionBox.addAction(self.focusURLBarAction)
         self.focusURLBarAction.setShortcut("Ctrl+L")
         self.focusURLBarAction.triggered.connect(self.focusURLBar)
         self.addAction(self.focusURLBarAction)
@@ -788,7 +801,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.urlBar.setText(qstring(url))
             self.updateWeb()
         self.updateText()
-        self.historyCompletion.hide()
+#        self.historyCompletion.hide()
         self.zoomOutAction = QtGui.QAction(self)
         self.zoomOutAction.setShortcut("Ctrl+-")
         self.zoomOutAction.triggered.connect(self.zoomOut)
@@ -825,6 +838,14 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
     def updateSettings(self):
         self.webView.updateSettings()
 
+    def showHistoryBox(self):
+        if not self.historyCompletionBox.isVisible():
+            self.urlBar2.setFocus(True)
+#            self.urlBar2.selectAll()
+            self.historyCompletionBox.move(self.urlBar.mapToGlobal(QtCore.QPoint(0,0)).x(), self.urlBar.mapToGlobal(QtCore.QPoint(0,0)).y())
+            self.historyCompletionBox.show()
+            self.historyCompletionBox.resize(self.urlBar.width(), self.historyCompletionBox.height())
+
     def searchHistory(self, string):
         string = unicode(string)
         if string != "" and string != unicode(self.webView.url().toString()) and string != "about:version":
@@ -841,14 +862,13 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
                     history.append(item)
                     self.historyCompletion.addItem(item['name'])
             self.tempHistory = history
-            self.historyCompletion.show()
-            self.webView.hide()
+#            self.webView.hide()
         else:
-            self.historyCompletion.hide()
-            self.webView.show()
+            self.historyCompletionBox.hide()
+#            self.webView.show()
     def openHistoryItem(self, item):
         self.webView.load(QtCore.QUrl(self.tempHistory[self.historyCompletion.row(item)]['url']))
-        self.historyCompletion.hide()
+        self.historyCompletionBox.hide()
         self.webView.show()
     def licensing(self):
         url = QtCore.QUrl(os.path.join(self.app_lib, "LICENSE.html"))
@@ -863,8 +883,12 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.parent.searchEditor.display(True, self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).x(), self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).y(), self.searchEditButton.width(), self.searchEditButton.height())
 
     def focusURLBar(self):
-        self.urlBar.setFocus()
-        self.urlBar.selectAll()
+        if not self.historyCompletionBox.isVisible():
+            self.urlBar.setFocus()
+            self.urlBar.selectAll()
+        else:
+            self.urlBar2.setFocus()
+            self.urlBar2.selectAll()
     def updateWeb(self):
         urlBar = self.urlBar.text()
         urlBar = unicode(urlBar)
@@ -895,10 +919,14 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             else:
                 url = QtCore.QUrl(url)
                 self.webView.load(url)
+    def syncText(self):
+        self.urlBar.setText(self.urlBar2.text())
+    def rSyncText(self):
+        self.urlBar2.setText(self.urlBar.text())
     def updateText(self):
         url = self.webView.url()
         texturl = url.toString()
-        self.urlBar.setText(texturl)
+        self.urlBar2.setText(texturl)
 
 class SettingsManager():
     def __init__(self):
@@ -1202,6 +1230,8 @@ class TabBrowser(QtGui.QMainWindow):
 
         # Tabs
         self.tabs = RTabWidget(self)
+        self.tabs.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.tabs.customContextMenuRequested.connect(self.showTabsContextMenu)
         self.tabs.setMovable(True)
         self.nextTabAction = QtGui.QAction(self)
         self.nextTabAction.triggered.connect(self.nextTab)
@@ -1255,6 +1285,10 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsLayout.addWidget(self.newTabButton)
 
         # New window button
+        newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), tr("newWindowBtn"), self)
+        newWindowAction.setShortcut('Ctrl+N')
+        newWindowAction.triggered.connect(self.newWindow)
+        self.addAction(newWindowAction)
         self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), '', self)
         self.newWindowButton.setToolTip(tr('newWindowBtnTT'))
         self.newWindowButton.setFocusPolicy(QtCore.Qt.TabFocus)
@@ -1297,6 +1331,13 @@ class TabBrowser(QtGui.QMainWindow):
 
         self.cDialog = CDialog(self)
 
+        self.tabsContextMenu = QtGui.QMenu()
+        self.tabsContextMenu.addAction(newTabAction)
+        self.tabsContextMenu.addAction(newWindowAction)
+        self.tabsContextMenu.addAction(newpbTabAction)
+        self.tabsContextMenu.addSeparator()
+        self.tabsContextMenu.addAction(undoCloseTabAction)
+
         # Config button
         configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_lib, 'icons', 'settings.png'))), tr('preferencesButton'), self)
         configAction.setToolTip(tr('preferencesButtonTT'))
@@ -1318,6 +1359,16 @@ class TabBrowser(QtGui.QMainWindow):
         elif len(sys.argv) > 1:
             for arg in range(1, len(sys.argv)):
                 self.newTab(sys.argv[arg])
+
+    def showTabsContextMenu(self):
+        x = QtCore.QPoint(QtGui.QCursor.pos()).x()
+        if x + self.tabsContextMenu.width() > QtGui.QApplication.desktop().size().width():
+            x = x - tabsContextMenu.width()
+        y = QtCore.QPoint(QtGui.QCursor.pos()).y()
+        if y + self.tabsContextMenu.height() > QtGui.QApplication.desktop().size().height():
+            y = y - tabsContextMenu.height()
+        self.tabsContextMenu.move(x, y)
+        self.tabsContextMenu.show()
 
     def showSettings(self):
         self.cDialog.show()

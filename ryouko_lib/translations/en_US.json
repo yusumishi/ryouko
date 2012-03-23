@@ -52,6 +52,7 @@
 "preferencesButton": "&Preferences",
 "preferencesButtonTT": "<b>Preferences</b><br>Ctrl+Shift+P",
 "newTab": "New Tab",
+"newWindow": "New Window",
 "newPBTab": "New Tab (PB)",
 "searchError": "Ryouko encountered an error while trying to modify the search."
 }
