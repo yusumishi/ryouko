@@ -64,6 +64,23 @@ terminals=[ ["terminator",      "-x "],
             ["idle3",           "-r "],
             ["xterm",           ""],
             ["konsole",         "-e="] ]
+dialogToolBarSheet = """QToolBar {
+                        border: 0;
+                        background: transparent;
+                        }
+
+                        QToolButton, QPushButton {
+                        padding: 4px;
+                        margin-left: 2px;
+                        border-radius: 4px;
+                        border: 1px solid palette(shadow);
+                        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(light), stop:1 palette(button));
+                        }
+
+                        QToolButton:pressed, QPushButton:pressed {
+                        border: 1px solid palette(shadow);
+                        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(shadow), stop:1 palette(button));
+                        }"""
 
 trManager = translate.TranslationManager()
 trManager.setDirectory(os.path.join(app_lib, "translations"))
@@ -216,6 +233,7 @@ class SearchEditor(QtGui.QMainWindow):
         self.setWindowTitle(tr('searchEditor'))
 
         self.entryBar = QtGui.QToolBar()
+        self.entryBar.setStyleSheet(dialogToolBarSheet)
         self.entryBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.entryBar.setMovable(False)
         self.addToolBar(self.entryBar)
@@ -243,6 +261,10 @@ class SearchEditor(QtGui.QMainWindow):
         self.hideAction.setShortcut("Esc")
         self.addAction(self.hideAction)
 
+    def focusOutEvent(self, e):
+        e.accept()
+        self.hide()
+
     def reload(self):
         self.engineList.clear()
         for name in searchManager.searchEngines:
@@ -255,10 +277,25 @@ class SearchEditor(QtGui.QMainWindow):
                 self.engineList.setCurrentItem(self.engineList.item(item))
                 break
 
-    def display(self):
+    def display(self, menu = False, x = 0, y = 0, width = 0, height = 0):
         self.reload()
         self.expEntry.setFocus()
+        if menu == True:
+            self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Popup)
+            self.setStyleSheet("QMainWindow { border: 1px solid palette(shadow); }")
+        else:
+            self.setWindowFlags(QtCore.Qt.Widget)
+            self.setStyleSheet("")
         self.show()
+        if x - self.width() + width < 0:
+            x = 0
+        else:
+            x = x - self.width() + width
+        if y + height + self.height() >= QtGui.QApplication.desktop().size().height():
+            y = y - self.height()
+        else:
+            y = y + height
+        self.move(x, y)
 
     def addSearch(self):
         if "%s" in self.expEntry.text():
@@ -823,7 +860,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.webView.load(url)
 
     def editSearch(self):
-        self.parent.searchEditor.display()
+        self.parent.searchEditor.display(True, self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).x(), self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).y(), self.searchEditButton.width(), self.searchEditButton.height())
 
     def focusURLBar(self):
         self.urlBar.setFocus()
@@ -968,25 +1005,7 @@ class CDialog(QtGui.QMainWindow):
             doNothing()
         self.layout.addWidget(self.editSearchButton)
         self.cToolBar = QtGui.QToolBar()
-        self.cToolBar.setStyleSheet("""
-        QToolBar {
-        border: 0;
-        background: transparent;
-        }
-
-        QToolButton, QPushButton {
-        padding: 4px;
-        margin-left: 2px;
-        border-radius: 4px;
-        border: 1px solid palette(shadow);
-        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(light), stop:1 palette(button));
-        }
-
-        QToolButton:pressed, QPushButton:pressed {
-        border: 1px solid palette(shadow);
-        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shadow), stop:1 palette(button));
-        }
-        """)
+        self.cToolBar.setStyleSheet(dialogToolBarSheet)
         self.cToolBar.setMovable(False)
         self.cToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         applyAction = QtGui.QAction("&Apply", self)
@@ -1143,7 +1162,7 @@ class TabBrowser(QtGui.QMainWindow):
 
     def initUI(self):
 
-        self.searchEditor = SearchEditor(self)
+        self.searchEditor = SearchEditor()
 
         # Quit action
         quitAction = QtGui.QAction(self)
