@@ -1606,6 +1606,7 @@ class TabBrowser(QtGui.QMainWindow):
         if self.tabs.count() > 1:
             if not self.tabs.widget(index).pb:
                 self.closedTabList.append(self.tabs.widget(index))
+            self.tabs.widget(index).webView.stop()
             self.tabs.removeTab(index)
     def undoCloseTab(self, index=False):
         if len(self.closedTabList) > 0:
@@ -1613,6 +1614,7 @@ class TabBrowser(QtGui.QMainWindow):
             del self.closedTabList[len(self.closedTabList) - 1]
             self.updateTitles()
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
+            self.tabs.widget(self.tabs.currentIndex()).webView.reload()
     def updateIcons(self):
         for tab in range(self.tabs.count()):
             self.tabs.setTabIcon(tab, self.tabs.widget(tab).webView.icon())
