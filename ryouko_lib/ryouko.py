@@ -659,6 +659,9 @@ class HistoryCompletionList(QtGui.QListWidget):
         super(HistoryCompletionList, self).__init__()
         self.parent = parent
         self.setMouseTracking(True)
+        self.currentRowChanged.connect(self.sendStatusMessage)
+    def sendStatusMessage(self, row):
+        self.statusMessage.emit(self.parent.tempHistory[self.row(self.currentItem())]['url'])
     def mouseMoveEvent(self, ev):
         try: self.statusMessage.emit(qstring(self.parent.tempHistory[self.row(self.itemAt(QtGui.QCursor().pos().x() - self.mapToGlobal(QtCore.QPoint(0,0)).x(), QtGui.QCursor().pos().y() - self.mapToGlobal(QtCore.QPoint(0,0)).y()))]['url']))
         except:
@@ -703,12 +706,21 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.webView.statusBarMessage.connect(self.statusMessage.setText)
         self.mainLayout.addWidget(self.webView, 2, 0)
         self.historyCompletionBox = QtGui.QWidget()
+        self.downArrowAction = QtGui.QAction(self)
+        self.downArrowAction.setShortcut("Down")
+        self.downArrowAction.triggered.connect(self.historyDown)
+        self.historyCompletionBox.addAction(self.downArrowAction)
+        self.upArrowAction = QtGui.QAction(self)
+        self.upArrowAction.setShortcut("Up")
+        self.upArrowAction.triggered.connect(self.historyUp)
+        self.historyCompletionBox.addAction(self.upArrowAction)
         self.historyCompletionBoxLayout = QtGui.QVBoxLayout()
         self.historyCompletionBoxLayout.setContentsMargins(0,0,0,0)
         self.historyCompletionBoxLayout.setSpacing(0)
         self.historyCompletionBox.setLayout(self.historyCompletionBoxLayout)
         self.historyCompletionBox.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Popup)
         self.historyCompletion = HistoryCompletionList(self)
+        self.historyCompletion.setWordWrap(True)
         self.historyCompletion.itemActivated.connect(self.openHistoryItem)
         self.historyCompletion.statusMessage.connect(self.statusMessage.setText)
 #        self.mainLayout.addWidget(self.historyCompletion, 3, 0)
@@ -819,6 +831,28 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.zoomSlider.valueChanged.connect(self.zoom)
         self.webView.show()
 
+    def historyUp(self):
+        if self.historyCompletion.currentRow() == 0 and self.historyCompletion.hasFocus():
+            self.historyCompletion.setFocus(False)
+            self.urlBar2.setFocus(True)
+        elif not self.urlBar2.hasFocus():
+            self.historyCompletion.setCurrentRow(self.historyCompletion.currentRow() - 1)
+        else:
+            self.urlBar2.setFocus(False)
+            self.historyCompletion.setFocus(True)
+            self.historyCompletion.setCurrentRow(self.historyCompletion.count() - 1)
+
+    def historyDown(self):
+        if self.urlBar2.hasFocus():
+            self.historyCompletion.setCurrentRow(0)
+            self.urlBar2.setFocus(False)
+            self.historyCompletion.setFocus(True)
+        elif not self.historyCompletion.currentRow() == self.historyCompletion.count() - 1:
+            self.historyCompletion.setCurrentRow(self.historyCompletion.currentRow() + 1)
+        else:
+            self.historyCompletion.setFocus(False)
+            self.urlBar2.setFocus(True)
+
     def zoomIn(self):
         self.zoomSlider.setValue(self.zoomSlider.value() + 1)
 
@@ -862,10 +896,8 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
                     history.append(item)
                     self.historyCompletion.addItem(item['name'])
             self.tempHistory = history
-#            self.webView.hide()
         else:
             self.historyCompletionBox.hide()
-#            self.webView.show()
     def openHistoryItem(self, item):
         self.webView.load(QtCore.QUrl(self.tempHistory[self.historyCompletion.row(item)]['url']))
         self.historyCompletionBox.hide()
