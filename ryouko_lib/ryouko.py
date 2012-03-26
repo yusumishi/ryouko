@@ -165,10 +165,13 @@ class RTabWidget(QtGui.QTabWidget):
         self.parent.newTab()
 
     def mousePressEvent(self, ev):
-        self.mouseX = ev.globalX()
-        self.origX = self.parent.x()
-        self.mouseY = ev.globalY()
-        self.origY = self.parent.y()
+        if ev.button() == QtCore.Qt.RightButton:
+            self.parent.showTabsContextMenu()
+        else:
+            self.mouseX = ev.globalX()
+            self.origX = self.parent.x()
+            self.mouseY = ev.globalY()
+            self.origY = self.parent.y()
 
     def mouseMoveEvent(self, ev):
         if self.mouseX and self.mouseY and not self.isMaximized():
