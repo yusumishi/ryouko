@@ -237,7 +237,12 @@ class SearchEditor(QtGui.QMainWindow):
         self.setWindowTitle(tr('searchEditor'))
 
         self.entryBar = QtGui.QToolBar()
-        self.entryBar.setStyleSheet(dialogToolBarSheet)
+        self.entryBar.setStyleSheet(dialogToolBarSheet + """
+        QToolBar {
+            margin-left: 4px;
+            margin-right: 4px;
+        }
+        """)
         self.entryBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.entryBar.setMovable(False)
         self.addToolBar(self.entryBar)
