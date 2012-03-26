@@ -585,7 +585,7 @@ class RWebView(QtWebKit.QWebView):
 
     def checkForAds(self):
         if settingsManager.settings['adBlock']:
-            elements = self.page().mainFrame().findAllElements("iframe, frame, img, object, embed").toList()
+            elements = self.page().mainFrame().findAllElements("iframe, frame, object, embed").toList()
             for element in elements:
                 for attribute in element.attributeNames():
                     e = unicode(element.attribute(attribute))
@@ -1264,7 +1264,7 @@ class CDialog(QtGui.QMainWindow):
         except:
             doNothing()
     def saveSettings(self):
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked()}
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked()}
         settingsManager.settings = self.settings
         settingsManager.setBackend(unicode(self.selectBackend.currentText()).lower())
         settingsManager.saveSettings()
