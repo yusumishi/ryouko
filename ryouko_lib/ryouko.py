@@ -588,27 +588,6 @@ class RWebView(QtWebKit.QWebView):
 <script text=\"text/javascript\">
 var userAgent = navigator.userAgent.toLowerCase();
 
-function stopPlayer() {
-    document.getElementById(\"audioPlayer\").pause();
-}
-
-function vorbis() {
-  var foo,i,player;
-  player=\"http://www.jcraft.com/jorbis/player/JOrbisPlayer.php?play=\"; 
-  foo=document.getElementsByTagName(\"a\");
-  for(i=0;i<foo.length;i++){
-    try {
-    var href=foo[i].getAttribute('ogg');
-    if((href.search(/.oga$/)!=-1 || href.search(/.ogg$/)!=-1 || href.indexOf(\"soundcloud\")!=-1) && href.search(/JOrbisPlayer.php/)==-1){
-      foo[i].target=\"JOrbisPlayer\";
-    }
-    }
-    catch(err) {
-      var hello = 'dummy';
-    }
-  }
-}
-
 window.onload = function browserDetect() {
     var foo,i; 
     foo=document.getElementsByTagName(\"a\"); 
@@ -626,15 +605,13 @@ window.onload = function browserDetect() {
         var hello = 'dummy';
       }
     }
-    document.getElementById(\"linkBox\").removeChild(document.getElementById(\"stopLink\"));
     document.getElementById(\"playerBox\").removeChild(document.getElementById(\"JOrbisPlayer\"));
 }
 </script>
 <div id=\"nowPlaying\" style=\"font-weight: bold;\">No track selected</div>
 <audio controls=\"controls\" style=\"border: 0; width: 100%;\" id=\"audioPlayer\" src=\"\"></audio>
 <iframe style=\"border: 0; width: 99%; height: 152; margin: 8px; margin-left: 0; margin-right: 0; border: 1px solid ThreeDShadow;\" id=\"JOrbisPlayer\" name=\"JOrbisPlayer\" src=\"about:blank\"></iframe>
-<div id=\"linkBox\" style=\"margin: 8px; margin-left: 0; margin-right: 0; border: 1px solid ThreeDShadow; padding: 8px; overflow: auto; height: 200px;\">
-<a id=\"stopLink\" href=\"http://www.jcraft.com/jorbis/player/JOrbisPlayer.php\" target=\"JOrbisPlayer\" onclick=\"stopPlayer();\"><b>Stop playing</b><br/><br/></a>"""
+<div id=\"linkBox\" style=\"margin: 8px; margin-left: 0; margin-right: 0; border: 1px solid ThreeDShadow; padding: 8px; overflow: auto; height: 200px;\">"""
         for item in xspfReader.playlist:
             if item['title'] == "":
                 item['title'] = "(Untitled)"
