@@ -20,6 +20,7 @@
 "enableJS": "Enable &Javascript",
 "enablePlugins": "Enable &plugins",
 "enablePB": "Enable private &browsing mode",
+"enableAB": "Enable ad-blocking (warning: very slow!)",
 "loginToDownload": "&Login to download? [aria2 only]",
 "lastMin": "Last minute",
 "last2Min": "Last 2 minutes",

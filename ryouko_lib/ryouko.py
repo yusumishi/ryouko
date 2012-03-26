@@ -412,7 +412,7 @@ browserHistory = BrowserHistory()
 
 class SettingsManager():
     def __init__(self):
-        self.settings = {'openInTabs' : True, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'python', 'loginToDownload' : False}
+        self.settings = {'openInTabs' : True, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'python', 'loginToDownload' : False, 'adBlock' : False}
         self.filters = []
         self.loadSettings()
     def loadSettings(self):
@@ -427,7 +427,7 @@ class SettingsManager():
                 f = open(os.path.join(app_home, "adblock", fname))
                 contents = f.readlines()
                 f.close()
-                for g in f:
+                for g in contents:
                     self.filters.append(g.rstrip("\n"))
     def saveSettings(self):
         settingsFile = os.path.join(app_home, "settings.json")
@@ -483,14 +483,14 @@ def runThroughFilters(url):
             if not word in url:
                 remove = False
             else:
-                h++
+                h += 1
         if h >= len(g):
             remove = True
             if invert == True:
                 remove = False
             else:
                 break
-   return remove
+    return remove
 
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
@@ -579,15 +579,19 @@ class RWebView(QtWebKit.QWebView):
         self.page().setForwardUnsupportedContent(True)
         self.page().unsupportedContent.connect(self.checkContentType)
         self.page().downloadRequested.connect(self.downloadFile)
-        self.page().frameCreated.connect(self.checkForAds)
+        self.loadFinished.connect(self.checkForAds)
         self.updateSettings()
         self.establishParent(parent)
 
-    def checkForAds(self, frame):
-        url = unicode(frame.url().toString())
-        delete = runThroughFilters(url)
-        if delete:
-            frame.setUrl("about:blank")
+    def checkForAds(self):
+        if settingsManager.settings['adBlock']:
+            elements = self.page().mainFrame().findAllElements("iframe, frame, img, object, embed").toList()
+            for element in elements:
+                for attribute in element.attributeNames():
+                    e = unicode(element.attribute(attribute))
+                    delete = runThroughFilters(e)
+                    if delete:
+                        element.removeFromDocument()
 
     def establishParent(self, parent):
         if parent == False:
@@ -1175,6 +1179,8 @@ class CDialog(QtGui.QMainWindow):
         self.layout.addWidget(self.pluginsBox)
         self.pbBox = QtGui.QCheckBox(tr('enablePB'))
         self.layout.addWidget(self.pbBox)
+        self.aBBox = QtGui.QCheckBox(tr('enableAB'))
+        self.layout.addWidget(self.aBBox)
         backendBox = QtGui.QLabel("Default backend for downloads:")
         self.layout.addWidget(backendBox)
         self.selectBackend = QtGui.QComboBox()
@@ -1237,6 +1243,11 @@ class CDialog(QtGui.QMainWindow):
             self.lDBox.setChecked(False)
         else:
             self.lDBox.setChecked(self.settings['loginToDownload'])
+        try: self.settings['adBlock']
+        except: 
+            self.aBBox.setChecked(False)
+        else:
+            self.aBBox.setChecked(self.settings['adBlock'])
         try: self.settings['backend']
         except:
             doNothing()
