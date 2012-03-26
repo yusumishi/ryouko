@@ -157,6 +157,33 @@ class RTabWidget(QtGui.QTabWidget):
     def __init__(self, parent=None):
         super(RTabWidget, self).__init__(parent)
         self.parent = parent
+        self.setDocumentMode(True)
+        self.setStyleSheet("""
+QTabBar {
+border-top: 1px solid palette(shadow);
+border-right: 1px solid palette(shadow);
+border-top-right-radius:4px;
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(midlight), stop:1 palette(window));
+}
+
+QTabBar::tab {
+padding: 4px;
+border: 1px solid palette(shadow);
+}
+
+QTabBar::tab:top {
+border-top-left-radius: 4px;
+border-top-right-radius:4px;
+border-bottom: 1px solid palette(shadow);
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(window), stop:1 palette(midlight));
+}
+
+QTabBar::tab:top:selected {
+border-bottom: 0;
+padding-bottom: 5px;
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(light), stop:1 palette(window));
+}
+""")
         self.mouseX = False
         self.mouseY = False
 
@@ -1456,6 +1483,7 @@ class TabBrowser(QtGui.QMainWindow):
 
         # "Toolbar" for top right corner
         self.cornerWidgets = QtGui.QWidget()
+        self.cornerWidgets.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         self.cornerWidgets.setStyleSheet("""
         QToolButton, QPushButton {
         min-width: 24px;
@@ -1572,10 +1600,10 @@ class TabBrowser(QtGui.QMainWindow):
     def showTabsContextMenu(self):
         x = QtCore.QPoint(QtGui.QCursor.pos()).x()
         if x + self.tabsContextMenu.width() > QtGui.QApplication.desktop().size().width():
-            x = x - tabsContextMenu.width()
+            x = x - self.tabsContextMenu.width()
         y = QtCore.QPoint(QtGui.QCursor.pos()).y()
         if y + self.tabsContextMenu.height() > QtGui.QApplication.desktop().size().height():
-            y = y - tabsContextMenu.height()
+            y = y - self.tabsContextMenu.height()
         self.tabsContextMenu.move(x, y)
         self.tabsContextMenu.show()
 
