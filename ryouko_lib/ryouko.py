@@ -1924,6 +1924,7 @@ win = None
 
 def main():
     global win
+    global reset
     if not os.path.isdir(app_home):
         os.mkdir(app_home)
     if not os.path.isdir(os.path.join(app_home, "temp")):
@@ -1932,7 +1933,6 @@ def main():
         os.mkdir(os.path.join(app_home, "adblock"))
     app = QtGui.QApplication(sys.argv)
     if reset == True:
-        global reset
         browserHistory.reset()
         reset = False
     win = TabBrowser()
