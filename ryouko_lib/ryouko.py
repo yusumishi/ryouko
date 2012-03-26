@@ -1181,6 +1181,7 @@ class CDialog(QtGui.QMainWindow):
         self.mainWidget = QtGui.QWidget()
         self.setCentralWidget(self.mainWidget)
         self.layout = QtGui.QVBoxLayout()
+        self.filterListCount = 0
         self.mainWidget.setLayout(self.layout)
         self.openTabsBox = QtGui.QCheckBox(tr('newWindowOption'))
         self.layout.addWidget(self.openTabsBox)
@@ -1194,7 +1195,7 @@ class CDialog(QtGui.QMainWindow):
         self.layout.addWidget(self.pbBox)
         self.aBBox = QtGui.QCheckBox(tr('enableAB'))
         self.aBBox.stateChanged.connect(self.tryDownload)
-        self.aBBox.stateChanged.connect(settingsManager.applyFilters)
+        downloaderThread.fileDownloaded.connect(self.applyFilters)
         self.layout.addWidget(self.aBBox)
         backendBox = QtGui.QLabel("Default backend for downloads:")
         self.layout.addWidget(backendBox)
@@ -1225,6 +1226,11 @@ class CDialog(QtGui.QMainWindow):
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.cToolBar)
         self.loadSettings()
         settingsManager.saveSettings()
+    def applyFilters(self):
+        l = os.listdir(os.path.join(app_home, "adblock"))
+        if len(l) != self.filterListCount:
+            settingsManager.applyFilters()
+            self.filterListCount = len(l)
     def tryDownload(self):
         if self.aBBox.isChecked():
             l = os.listdir(os.path.join(app_home, "adblock"))
