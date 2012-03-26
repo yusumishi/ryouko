@@ -586,8 +586,6 @@ class RWebView(QtWebKit.QWebView):
         <body style=\"font-family: sans-serif;\">
         <div id=\"playerBox\" valign=\"top\">
 <script text=\"text/javascript\">
-var userAgent = navigator.userAgent.toLowerCase();
-
 window.onload = function browserDetect() {
     var foo,i; 
     foo=document.getElementsByTagName(\"a\"); 
