@@ -605,17 +605,15 @@ window.onload = function browserDetect() {
         var hello = 'dummy';
       }
     }
-    document.getElementById(\"playerBox\").removeChild(document.getElementById(\"JOrbisPlayer\"));
 }
 </script>
 <div id=\"nowPlaying\" style=\"font-weight: bold;\">No track selected</div>
 <audio controls=\"controls\" style=\"border: 0; width: 100%;\" id=\"audioPlayer\" src=\"\"></audio>
-<iframe style=\"border: 0; width: 99%; height: 152; margin: 8px; margin-left: 0; margin-right: 0; border: 1px solid ThreeDShadow;\" id=\"JOrbisPlayer\" name=\"JOrbisPlayer\" src=\"about:blank\"></iframe>
 <div id=\"linkBox\" style=\"margin: 8px; margin-left: 0; margin-right: 0; border: 1px solid ThreeDShadow; padding: 8px; overflow: auto; height: 200px;\">"""
         for item in xspfReader.playlist:
             if item['title'] == "":
                 item['title'] = "(Untitled)"
-            html = html + "<a href=\"http://www.jcraft.com/jorbis/player/JOrbisPlayer.php?play=" + item['location'] + "\" ogg=\"" + item['location'] + "\">" + item['title'] + "</a><br/>"
+            html = html + "<a ogg=\"" + item['location'] + "\">" + item['title'] + "</a><br/>"
         html = html + """
         </div>
         </div>
