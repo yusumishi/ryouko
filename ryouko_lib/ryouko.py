@@ -813,6 +813,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.urlBar.textChanged.connect(self.showHistoryBox)
         self.urlBar2.textChanged.connect(self.syncText)
         self.urlBar2.returnPressed.connect(self.updateWeb)
+        self.urlBar.returnPressed.connect(self.updateWeb)
         if not self.pb:
             self.urlBar2.textChanged.connect(self.searchHistory)
         self.webView.urlChanged.connect(self.updateText)
@@ -939,11 +940,11 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
 
     def showHistoryBox(self):
         if not self.historyCompletionBox.isVisible():
-            self.urlBar2.setFocus(True)
-#            self.urlBar2.selectAll()
-            self.historyCompletionBox.move(self.urlBar.mapToGlobal(QtCore.QPoint(0,0)).x(), self.urlBar.mapToGlobal(QtCore.QPoint(0,0)).y())
-            self.historyCompletionBox.show()
-            self.historyCompletionBox.resize(self.urlBar.width(), self.historyCompletionBox.height())
+            if not self.urlBar.text() == self.webView.url().toString():
+                self.urlBar2.setFocus(True)
+                self.historyCompletionBox.move(self.urlBar.mapToGlobal(QtCore.QPoint(0,0)).x(), self.urlBar.mapToGlobal(QtCore.QPoint(0,0)).y())
+                self.historyCompletionBox.show()
+                self.historyCompletionBox.resize(self.urlBar.width(), self.historyCompletionBox.height())
 
     def searchHistory(self, string):
         string = unicode(string)
