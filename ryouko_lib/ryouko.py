@@ -427,6 +427,13 @@ class SettingsManager():
             fstream = open(settingsFile, "r")
             self.settings = json.load(fstream)
             fstream.close()
+        self.applyFilters()
+    def saveSettings(self):
+        settingsFile = os.path.join(app_home, "settings.json")
+        fstream = open(settingsFile, "w")
+        json.dump(self.settings, fstream)
+        fstream.close()
+    def applyFilters(self):
         if os.path.isdir(os.path.join(app_home, "adblock")):
             l = os.listdir(os.path.join(app_home, "adblock"))
             for fname in l:
@@ -435,11 +442,6 @@ class SettingsManager():
                 f.close()
                 for g in contents:
                     self.filters.append(g.rstrip("\n"))
-    def saveSettings(self):
-        settingsFile = os.path.join(app_home, "settings.json")
-        fstream = open(settingsFile, "w")
-        json.dump(self.settings, fstream)
-        fstream.close()
     def setBackend(self, backend = "python"):
         check = False
         if backend == "aria2":
@@ -1192,6 +1194,7 @@ class CDialog(QtGui.QMainWindow):
         self.layout.addWidget(self.pbBox)
         self.aBBox = QtGui.QCheckBox(tr('enableAB'))
         self.aBBox.stateChanged.connect(self.tryDownload)
+        self.aBBox.stateChanged.connect(settingsManager.applyFilters)
         self.layout.addWidget(self.aBBox)
         backendBox = QtGui.QLabel("Default backend for downloads:")
         self.layout.addWidget(backendBox)
