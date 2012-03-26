@@ -55,6 +55,7 @@ from ryouko_common import *
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
 app_logo = os.path.join(app_lib, "icons", "logo.svg")
 
+reset = False
 terminals=[ ["terminator",      "-x "],
             ["sakura",          "--execute="],
             ["roxterm",         "--execute "],
@@ -336,7 +337,10 @@ class BrowserHistory(QtCore.QObject):
     def reload(self):
         if os.path.exists(os.path.join(self.app_home, "history.json")):
             history = open(os.path.join(self.app_home, "history.json"), "r")
-            self.history = json.load(history)
+            try: self.history = json.load(history)
+            except:
+                global reset
+                reset = True
             history.close()
     def save(self):
         history = open(os.path.join(self.app_home, "history.json"), "w")
@@ -1819,6 +1823,10 @@ def main():
     if not os.path.isdir(os.path.join(app_home, "adblock")):
         os.mkdir(os.path.join(app_home, "adblock"))
     app = QtGui.QApplication(sys.argv)
+    if reset == True:
+        global reset
+        browserHistory.reset()
+        reset = False
     win = TabBrowser()
     if os.path.exists(app_logo):
         if not sys.platform.startswith("win"):
