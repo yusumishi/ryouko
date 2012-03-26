@@ -343,6 +343,8 @@ class BrowserHistory(QtCore.QObject):
                 reset = True
             history.close()
     def save(self):
+        if not os.path.isdir(app_home):
+            os.mkdir(app_home)
         history = open(os.path.join(self.app_home, "history.json"), "w")
         json.dump(self.history, history)
         history.close()
