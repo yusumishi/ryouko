@@ -82,6 +82,8 @@ dialogToolBarSheet = """QToolBar {
                         background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(shadow), stop:1 palette(button));
                         }"""
 
+xspfReader = XSPFReader()
+
 trManager = translate.TranslationManager()
 trManager.setDirectory(os.path.join(app_lib, "translations"))
 trManager.loadTranslation()
@@ -413,6 +415,8 @@ class RWebView(QtWebKit.QWebView):
         super(RWebView, self).__init__()
         self.newWindows = [0]
         self.openInTabs = True
+        self.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
+        downloaderThread.fileDownloaded.connect(self.loadXspf)
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
         if parent == False or parent == None:
@@ -490,7 +494,7 @@ class RWebView(QtWebKit.QWebView):
         self.addAction(self.zoomResetAction)
 
         self.page().setForwardUnsupportedContent(True)
-        self.page().unsupportedContent.connect(self.downloadFile)
+        self.page().unsupportedContent.connect(self.checkContentType)
         self.page().downloadRequested.connect(self.downloadFile)
         self.updateSettings()
         self.establishParent(parent)
@@ -557,8 +561,96 @@ class RWebView(QtWebKit.QWebView):
         saveDialog = QtGui.QFileDialog.getSaveFileName(None, "Save As", os.path.join(os.getcwd(), fname), filters)
         return saveDialog
 
-    def downloadFile(self, request):
-        fname = self.saveDialog(os.path.split(unicode(request.url().toString()))[1])
+    def checkContentType(self, request):
+        mimetype = get_mimetype(unicode(request.url().toString()))
+        if "xspf" in mimetype:
+            self.downloadFile(request, os.path.join(app_home, "temp", "playlist.tmp.xspf"))
+        else:
+            self.downloadFile(request)
+
+    def loadXspf(self):
+        self.load(QtCore.QUrl("about:blank"))
+        l = os.listdir(os.path.join(app_home, "temp"))
+        f = open(os.path.join(app_home, "temp", l[0]), "r")
+        contents = f.readlines()
+        f.close()
+        nucontents = ""
+        for line in contents:
+            nucontents = nucontents + line
+        xspfReader.feed(nucontents)
+        html = """
+        <html>
+        <head>
+        <title>Playlist</title>
+        </head>
+        <body>
+        <div id=\"playerBox\" valign=\"top\">
+<script text=\"text/javascript\">
+var userAgent = navigator.userAgent.toLowerCase();
+
+function stopPlayer() {
+    document.getElementById(\"audioPlayer\").pause();
+}
+
+function vorbis() {
+  var foo,i,player;
+  player=\"http://www.jcraft.com/jorbis/player/JOrbisPlayer.php?play=\"; 
+  foo=document.getElementsByTagName(\"a\");
+  for(i=0;i<foo.length;i++){
+    try {
+    var href=foo[i].getAttribute('ogg');
+    if((href.search(/.oga$/)!=-1 || href.search(/.ogg$/)!=-1 || href.indexOf(\"soundcloud\")!=-1) && href.search(/JOrbisPlayer.php/)==-1){
+      foo[i].target=\"JOrbisPlayer\";
+    }
+    }
+    catch(err) {
+      var hello = 'dummy';
+    }
+  }
+}
+
+window.onload = function browserDetect() {
+    var foo,i; 
+    foo=document.getElementsByTagName(\"a\"); 
+    for(i=0;i<foo.length;i++){
+      try {
+      var href=foo[i].getAttribute('ogg');
+        if((href.search(/.ogv$/)!=-1 || href.search(/.oga$/)!=-1 || href.search(/.mp4$/)!=-1 || href.search(/.m4a$/)!=-1 || href.search(/.m3a$/)!=-1 || href.search(/.wav$/)!=-1 || href.search(/.webm$/)!=-1 || href.search(/.flac$/)!=-1 || href.search(/.mp3$/)!=-1 || href.search(/.ogg$/)!=-1 || href.indexOf(\"soundcloud\")!=-1) && href.search(/JOrbisPlayer.php/)==-1) {
+          foo[i].href = \"javascript:document.getElementById('audioPlayer').setAttribute('src', '\" + href + \"'); document.getElementById('audioPlayer').load(); document.getElementById('audioPlayer').play();\";
+          if (userAgent.indexOf(\"firefox\") == -1) {
+            foo[i].href = foo[i].href + \" document.getElementById('nowPlaying').innerHTML = '\" + foo[i].innerHTML + \"';\";
+          }
+        }
+      }
+      catch(err) {
+        var hello = 'dummy';
+      }
+    }
+    document.getElementById(\"linkBox\").removeChild(document.getElementById(\"stopLink\"));
+    document.getElementById(\"playerBox\").removeChild(document.getElementById(\"JOrbisPlayer\"));
+}
+</script>
+<div id=\"nowPlaying\" style=\"font-weight: bold;\">No track selected</div>
+<audio controls=\"controls\" style=\"border: 0; width: 100%;\" id=\"audioPlayer\" src=\"\"></audio>
+<iframe style=\"border: 0; width: 99%; height: 152; margin: 8px; margin-left: 0; margin-right: 0; border: 1px solid ThreeDShadow;\" id=\"JOrbisPlayer\" name=\"JOrbisPlayer\" src=\"about:blank\"></iframe>
+<div id=\"linkBox\" style=\"margin: 8px; margin-left: 0; margin-right: 0; border: 1px solid ThreeDShadow; padding: 8px; overflow: auto; height: 200px;\">
+<a id=\"stopLink\" href=\"http://www.jcraft.com/jorbis/player/JOrbisPlayer.php\" target=\"JOrbisPlayer\" onclick=\"stopPlayer();\"><b>Stop playing</b><br/><br/></a>"""
+        for item in xspfReader.playlist:
+            if item['title'] == "":
+                item['title'] = "(Untitled)"
+            html = html + "<a href=\"http://www.jcraft.com/jorbis/player/JOrbisPlayer.php?play=" + item['location'] + "\" ogg=\"" + item['location'] + "\">" + item['title'] + "</a><br/>"
+        html = html + """
+        </div>
+        </div>
+        </body>
+        </html>
+        """
+        self.setHtml(html)
+        shred_directory(os.path.join(app_home, "temp"))
+
+    def downloadFile(self, request, fname = False):
+        if not os.path.isdir(os.path.dirname(fname)):
+            fname = self.saveDialog(os.path.split(unicode(request.url().toString()))[1])
         if fname:
             downloaderThread.setUrl(unicode(request.url().toString()))
             downloaderThread.setDestination(fname)
@@ -676,8 +768,6 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.pb = pb
         self.app_home = app_home
         self.tempHistory = []
-        if not os.path.exists(self.app_home):
-            os.mkdir(self.app_home)
         self.app_lib = app_lib
         self.findText = ""
         self.version = "N/A"
@@ -992,6 +1082,7 @@ class SettingsManager():
 settingsManager = SettingsManager()
 
 class DownloaderThread(QtCore.QThread):
+    fileDownloaded = QtCore.pyqtSignal()
     def __init__(self, parent=None):
         QtCore.QThread.__init__(self, parent)
         self.url = ""
@@ -1024,6 +1115,7 @@ class DownloaderThread(QtCore.QThread):
         print(command)
         self.username = False
         self.password = False
+        self.fileDownloaded.emit()
 
 downloaderThread = DownloaderThread()
 
@@ -1144,6 +1236,7 @@ class TabBrowser(QtGui.QMainWindow):
             self.cookieFile = os.path.join(app_home, "cookies-py2.pkl")
         self.tabCount = 0
         self.killCookies = False
+        self.killTempFiles = False
         self.closedTabList = []
         self.app_home = app_home
         if not os.path.exists(self.app_home):
@@ -1159,6 +1252,10 @@ class TabBrowser(QtGui.QMainWindow):
         self.cookies.setAllCookies(cookies)
 
         self.initUI()
+
+    def checkTempFiles(self):
+        if self.killTempFiles == True:
+            shred_directory(os.path.join(app_home, "temp"))
 
     def saveCookies(self):
         if self.killCookies == False:
@@ -1191,6 +1288,7 @@ class TabBrowser(QtGui.QMainWindow):
 
     def closeEvent(self, ev):
         self.saveCookies()
+        self.checkTempFiles()
         return QtGui.QMainWindow.closeEvent(self, ev)
 
     def createClearHistoryDialog(self):
@@ -1201,7 +1299,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.clearHistoryToolBar.hide()
         self.selectRange = QtGui.QComboBox()
         self.selectRange.addItem(tr('lastMin'))
-        self.selectRange.addItem(tr('last2Minutes'))
+        self.selectRange.addItem(tr('last2Min'))
         self.selectRange.addItem(tr('last5Min'))
         self.selectRange.addItem(tr('last10Min'))
         self.selectRange.addItem(tr('last15Min'))
@@ -1215,6 +1313,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.selectRange.addItem(tr('everything'))
         self.selectRange.addItem("----------------")
         self.selectRange.addItem(tr('cookies'))
+        self.selectRange.addItem(tr('tempFiles'))
         self.clearHistoryToolBar.addWidget(self.selectRange)
         self.clearHistoryButton = QtGui.QPushButton(tr('clear'))
         self.clearHistoryButton.clicked.connect(self.clearHistory)
@@ -1593,6 +1692,9 @@ class TabBrowser(QtGui.QMainWindow):
         elif self.selectRange.currentIndex() == 14:
             self.killCookies = True
             message(tr('ryoukoSays'), tr('clearCookiesMsg'), "warn")
+        elif self.selectRange.currentIndex() == 15:
+            self.killTempFiles = True
+            message(tr('ryoukoSays'), tr('clearTempFilesMsg'), "warn")
     def historyToggle(self):
         self.historyDock.setVisible(not self.historyDock.isVisible())
         if self.historyDock.isVisible():
@@ -1649,10 +1751,14 @@ class TabBrowser(QtGui.QMainWindow):
                 if tab == self.tabs.currentIndex():
                     self.setWindowTitle(self.tabs.widget(tab).webView.title() + " - Ryouko")
 
-win = ""
+win = None
 
 def main():
     global win
+    if not os.path.isdir(app_home):
+        os.mkdir(app_home)
+    if not os.path.isdir(os.path.join(app_home, "temp")):
+        os.mkdir(os.path.join(app_home, "temp"))
     app = QtGui.QApplication(sys.argv)
     win = TabBrowser()
     if os.path.exists(app_logo):

@@ -51,7 +51,9 @@ if sys.version_info[0] >= 3:
     def unichr(data):
         return chr(data)
     from html.entities import name2codepoint
+    from html.parser import HTMLParser
 else:
+    import HTMLParser
     from htmlentitydefs import name2codepoint
 
 import re
@@ -73,15 +75,23 @@ except ImportError:
 _entity_re = re.compile(r'&(?:(#)(\d+)|([^;]+));')
 
 def get_mimetype(filename):
-    if os.path.exists(metaunquote(filename).replace("file://", "")):
-        try: f = urlopen("file://" + metaunquote(filename).replace("file://",""))
-        except:
-            print("Error! Something went wrong!")
-        else:
-            return f.headers['content-type']
-    else:
-        print("Error! File does not exist!")
+    try: f = urlopen("file://" + metaunquote(filename).replace("file://",""))
+    except:
+        print("Error! Something went wrong!")
         return None
+    else:
+        return f.headers['content-type']
+
+def shred_directory(directory):
+    if os.path.isdir(directory):
+        d = os.listdir(directory)
+        for f in d:
+            fname = os.path.join(directory, f)
+            if sys.platform.startswith("linux") and not os.path.isdir(fname):
+                os.system("shred -v \"" + fname + "\"")
+            try: os.remove(fname)
+            except:
+                do_nothing()
 
 def _repl_func(match):
     if match.group(1): # Numeric character reference
@@ -131,3 +141,62 @@ def unescape(text):
             pass
       return text # leave as is
    return re.sub("&#?\w+;", fixup, text)
+
+if sys.version_info[0] >= 3:
+    class XSPFReader(HTMLParser):
+        event_list = []
+        event_contents = ""
+        in_track = False
+        tag = ""
+        data = {"title": "", "location": ""}
+        playlist = []
+        def handle_starttag(self, tag, attrs):
+            self.tag = tag
+            if tag == "track":
+                self.in_track = True
+                self.data = {"title": "", "location": ""}
+        def handle_startendtag(self, tag, attrs):
+            self.tag = tag
+            self.attributes = attrs
+        def handle_endtag(self, tag):
+            self.tag = ""
+            if tag == "track":
+                self.in_track = False
+                self.playlist.append(self.data)
+        def handle_data(self, data):
+            if self.tag == "playlist":
+                self.playlist = []
+            elif self.in_track == True:
+                if self.tag == "title":
+                    self.data['title'] = data
+                elif self.tag == "location":
+                    self.data['location'] = data
+else:
+    class XSPFReader(HTMLParser.HTMLParser):
+        event_list = []
+        event_contents = ""
+        in_track = False
+        tag = ""
+        data = {"title": "", "location": ""}
+        playlist = []
+        def handle_starttag(self, tag, attrs):
+            self.tag = tag
+            if tag == "track":
+                self.in_track = True
+                self.data = {"title": "", "location": ""}
+        def handle_startendtag(self, tag, attrs):
+            self.tag = tag
+            self.attributes = attrs
+        def handle_endtag(self, tag):
+            self.tag = ""
+            if tag == "track":
+                self.in_track = False
+                self.playlist.append(self.data)
+        def handle_data(self, data):
+            if self.tag == "playlist":
+                self.playlist = []
+            elif self.in_track == True:
+                if self.tag == "title":
+                    self.data['title'] = data
+                elif self.tag == "location":
+                    self.data['location'] = data
