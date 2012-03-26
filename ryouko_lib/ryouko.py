@@ -665,14 +665,18 @@ class RWebView(QtWebKit.QWebView):
     def loadXspf(self):
         self.load(QtCore.QUrl("about:blank"))
         l = os.listdir(os.path.join(app_home, "temp"))
-        f = open(os.path.join(app_home, "temp", l[0]), "r")
-        contents = f.readlines()
-        f.close()
-        nucontents = ""
-        for line in contents:
-            nucontents = nucontents + line
-        xspfReader.feed(nucontents)
-        html = """
+        try: l[0]
+        except:
+            doNothing()
+        else:
+            f = open(os.path.join(app_home, "temp", l[0]), "r")
+            contents = f.readlines()
+            f.close()
+            nucontents = ""
+            for line in contents:
+                nucontents = nucontents + line
+            xspfReader.feed(nucontents)
+            html = """
         <html>
         <head>
         <title>Playlist</title>
@@ -704,18 +708,18 @@ window.onload = function browserDetect() {
 <audio controls=\"controls\" style=\"border: 0; width: 100%;\" id=\"audioPlayer\" src=\"\"></audio>
 </div>
 <div id=\"linkBox\" style=\"margin-bottom: 64px;\">"""
-        for item in xspfReader.playlist:
-            if item['title'] == "":
-                item['title'] = "(Untitled)"
-            html = html + "<a media=\"" + item['location'] + "\">" + item['title'] + "</a><a style='float: right;' href=\"" + item['location'] + "\">[Download]</a><br/>"
-        html = html + """
+            for item in xspfReader.playlist:
+                if item['title'] == "":
+                    item['title'] = "(Untitled)"
+                html = html + "<a media=\"" + item['location'] + "\">" + item['title'] + "</a><a style='float: right;' href=\"" + item['location'] + "\">[Download]</a><br/>"
+            html = html + """
         </div>
         </div>
         </body>
         </html>
         """
-        self.setHtml(html)
-        shred_directory(os.path.join(app_home, "temp"))
+            self.setHtml(html)
+            shred_directory(os.path.join(app_home, "temp"))
 
     def downloadFile(self, request, fname = ""):
         if not os.path.isdir(os.path.dirname(fname)):
@@ -1180,6 +1184,7 @@ class CDialog(QtGui.QMainWindow):
         self.pbBox = QtGui.QCheckBox(tr('enablePB'))
         self.layout.addWidget(self.pbBox)
         self.aBBox = QtGui.QCheckBox(tr('enableAB'))
+        self.aBBox.stateChanged.connect(self.tryDownload)
         self.layout.addWidget(self.aBBox)
         backendBox = QtGui.QLabel("Default backend for downloads:")
         self.layout.addWidget(backendBox)
@@ -1210,6 +1215,13 @@ class CDialog(QtGui.QMainWindow):
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.cToolBar)
         self.loadSettings()
         settingsManager.saveSettings()
+    def tryDownload(self):
+        if self.aBBox.isChecked():
+            l = os.listdir(os.path.join(app_home, "adblock"))
+            if len(l) == 0:
+                downloaderThread.setUrl("https://easylist-downloads.adblockplus.org/easylist.txt")
+                downloaderThread.setDestination(os.path.join(app_home, "adblock", "easylist.txt"))
+                downloaderThread.start()
     def loadSettings(self):
         settingsManager.loadSettings()
         self.settings = settingsManager.settings
