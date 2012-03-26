@@ -583,7 +583,7 @@ class RWebView(QtWebKit.QWebView):
         <head>
         <title>Playlist</title>
         </head>
-        <body>
+        <body style=\"font-family: sans-serif;\">
         <div id=\"playerBox\" valign=\"top\">
 <script text=\"text/javascript\">
 var userAgent = navigator.userAgent.toLowerCase();
@@ -593,7 +593,7 @@ window.onload = function browserDetect() {
     foo=document.getElementsByTagName(\"a\"); 
     for(i=0;i<foo.length;i++){
       try {
-      var href=foo[i].getAttribute('ogg');
+      var href=foo[i].getAttribute('media');
         if((href.search(/.ogv$/)!=-1 || href.search(/.oga$/)!=-1 || href.search(/.mp4$/)!=-1 || href.search(/.m4a$/)!=-1 || href.search(/.m3a$/)!=-1 || href.search(/.wav$/)!=-1 || href.search(/.webm$/)!=-1 || href.search(/.flac$/)!=-1 || href.search(/.mp3$/)!=-1 || href.search(/.ogg$/)!=-1 || href.indexOf(\"soundcloud\")!=-1) && href.search(/JOrbisPlayer.php/)==-1) {
           foo[i].href = \"javascript:document.getElementById('audioPlayer').setAttribute('src', '\" + href + \"'); document.getElementById('audioPlayer').load(); document.getElementById('audioPlayer').play();\";
           if (userAgent.indexOf(\"firefox\") == -1) {
@@ -607,13 +607,15 @@ window.onload = function browserDetect() {
     }
 }
 </script>
+<div id=\"controlsBox\" style=\"background: Window; color: WindowText; width: 100%; position: fixed; border-top: 1px solid ThreeDShadow; bottom: 0; left: 0; right: 0;\">
 <div id=\"nowPlaying\" style=\"font-weight: bold;\">No track selected</div>
 <audio controls=\"controls\" style=\"border: 0; width: 100%;\" id=\"audioPlayer\" src=\"\"></audio>
-<div id=\"linkBox\" style=\"margin: 8px; margin-left: 0; margin-right: 0; border: 1px solid ThreeDShadow; padding: 8px; overflow: auto; height: 200px;\">"""
+</div>
+<div id=\"linkBox\" style=\"margin-bottom: 64px;\">"""
         for item in xspfReader.playlist:
             if item['title'] == "":
                 item['title'] = "(Untitled)"
-            html = html + "<a ogg=\"" + item['location'] + "\">" + item['title'] + "</a><br/>"
+            html = html + "<a media=\"" + item['location'] + "\">" + item['title'] + "</a><a style='float: right;' href=\"" + item['location'] + "\">[Download]</a><br/>"
         html = html + """
         </div>
         </div>
@@ -623,7 +625,7 @@ window.onload = function browserDetect() {
         self.setHtml(html)
         shred_directory(os.path.join(app_home, "temp"))
 
-    def downloadFile(self, request, fname = False):
+    def downloadFile(self, request, fname = ""):
         if not os.path.isdir(os.path.dirname(fname)):
             fname = self.saveDialog(os.path.split(unicode(request.url().toString()))[1])
         if fname:
