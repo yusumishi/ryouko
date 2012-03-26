@@ -153,10 +153,20 @@ def inputDialog(title=tr('query'), content=tr('enterValue'), value=""):
     else:
         return ""
 
+class RTabBar(QtGui.QTabBar):
+    def __init__(self, parent=None):
+        super(RTabBar, self).__init__(parent)
+        self.parent = parent
+    def mouseDoubleClickEvent(self, e):
+        e.accept()
+        self.parent.newTab()
+
 class RTabWidget(QtGui.QTabWidget):
     def __init__(self, parent=None):
         super(RTabWidget, self).__init__(parent)
         self.parent = parent
+        self.nuTabBar = RTabBar(self.parent)
+        self.setTabBar(self.nuTabBar)
         self.setDocumentMode(True)
         self.setStyleSheet("""
 QTabBar {
@@ -1811,11 +1821,13 @@ class TabBrowser(QtGui.QMainWindow):
     def closeTab(self, index=False):
         if not index:
             index = self.tabs.currentIndex()
-        if self.tabs.count() > 1:
-            if not self.tabs.widget(index).pb:
+        if self.tabs.count() > 0:
+            if not self.tabs.widget(index).pb and not unicode(self.tabs.widget(index).webView.url().toString()) == "" and not unicode(self.tabs.widget(index).webView.url().toString()) == "about:blank":
                 self.closedTabList.append(self.tabs.widget(index))
             self.tabs.widget(index).webView.stop()
             self.tabs.removeTab(index)
+            if self.tabs.count() == 0:
+                self.newTab()
     def undoCloseTab(self, index=False):
         if len(self.closedTabList) > 0:
             self.tabs.addTab(self.closedTabList[len(self.closedTabList) - 1], self.closedTabList[len(self.closedTabList) - 1].webView.icon(), self.closedTabList[len(self.closedTabList) - 1].webView.title())
