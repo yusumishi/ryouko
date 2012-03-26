@@ -235,6 +235,8 @@ class SearchEditor(QtGui.QMainWindow):
         super(SearchEditor, self).__init__(parent)
         self.parent = parent
         self.setWindowTitle(tr('searchEditor'))
+        if os.path.exists(app_logo):
+            self.setWindowIcon(QtGui.QIcon(app_logo))
 
         self.entryBar = QtGui.QToolBar()
         self.entryBar.setStyleSheet(dialogToolBarSheet)
@@ -758,7 +760,7 @@ window.onload = function browserDetect() {
         self.setHtml(tr('shortcutsPage'))
 
     def locationEdit(self):
-        url = inputDialog(tr('openLocaation'), tr('enterURL'), self.url().toString())
+        url = inputDialog(tr('openLocation'), tr('enterURL'), self.url().toString())
         if url:
             header = ""
             if not unicode(url).startswith("about:") and not "://" in unicode(url):
