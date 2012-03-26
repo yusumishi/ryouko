@@ -29,7 +29,7 @@ SOFTWARE.
 
 from __future__ import print_function
 
-import os, sys, pickle, json, time, datetime
+import os, sys, pickle, json, time, datetime, string
 from subprocess import Popen, PIPE
 from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 if not sys.platform.startswith("win"):
@@ -64,6 +64,7 @@ terminals=[ ["terminator",      "-x "],
             ["idle3",           "-r "],
             ["xterm",           ""],
             ["konsole",         "-e="] ]
+
 dialogToolBarSheet = """QToolBar {
                         border: 0;
                         background: transparent;
@@ -409,6 +410,88 @@ class BrowserHistory(QtCore.QObject):
 
 browserHistory = BrowserHistory()
 
+class SettingsManager():
+    def __init__(self):
+        self.settings = {'openInTabs' : True, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'python', 'loginToDownload' : False}
+        self.filters = []
+        self.loadSettings()
+    def loadSettings(self):
+        settingsFile = os.path.join(app_home, "settings.json")
+        if os.path.exists(settingsFile):
+            fstream = open(settingsFile, "r")
+            self.settings = json.load(fstream)
+            fstream.close()
+        if os.path.isdir(os.path.join(app_home, "adblock")):
+            l = os.listdir(os.path.join(app_home, "adblock"))
+            for fname in l:
+                f = open(os.path.join(app_home, "adblock", fname))
+                contents = f.readlines()
+                f.close()
+                for g in f:
+                    self.filters.append(g.rstrip("\n"))
+    def saveSettings(self):
+        settingsFile = os.path.join(app_home, "settings.json")
+        fstream = open(settingsFile, "w")
+        json.dump(self.settings, fstream)
+        fstream.close()
+    def setBackend(self, backend = "python"):
+        check = False
+        if backend == "aria2":
+            check = Popen(["which", "aria2c"], stdout=PIPE).communicate()[0]
+        elif backend != "python":
+            check = Popen(["which", backend], stdout=PIPE).communicate()[0]
+        else:
+            check = True
+        if check:
+            self.settings['backend'] = backend
+        else:
+            message("Error!", "Backend " + backend + " could not be found!", "warn")
+            self.settings['backend'] = "python"
+        
+settingsManager = SettingsManager()
+
+def runThroughFilters(url):
+    remove = False
+    invert = False
+    for f in settingsManager.filters:
+        exception = f.startswith("@@")
+        ending = f.endswith("|")
+        beginning = f.startswith("||")
+        if exception:
+            f = f.strip("@@")
+            invert = True
+        if beginning:
+            f = f.strip("||")
+            string.split(f, "://")
+            if url.startswith(f):
+                remove = True
+                if invert == True:
+                    remove = False
+                else:
+                    break
+        if ending:
+            f = f.rstrip("|")
+            if url.endswith(f):
+                remove = True
+                if invert == True:
+                    remove = False
+                else:
+                    break
+        g = string.split(f, "*")
+        h = 0
+        for word in g:
+            if not word in url:
+                remove = False
+            else:
+                h++
+        if h >= len(g):
+            remove = True
+            if invert == True:
+                remove = False
+            else:
+                break
+   return remove
+
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
     def __init__(self, parent=False):
@@ -496,8 +579,15 @@ class RWebView(QtWebKit.QWebView):
         self.page().setForwardUnsupportedContent(True)
         self.page().unsupportedContent.connect(self.checkContentType)
         self.page().downloadRequested.connect(self.downloadFile)
+        self.page().frameCreated.connect(self.checkForAds)
         self.updateSettings()
         self.establishParent(parent)
+
+    def checkForAds(self, frame):
+        url = unicode(frame.url().toString())
+        delete = runThroughFilters(url)
+        if delete:
+            frame.setUrl("about:blank")
 
     def establishParent(self, parent):
         if parent == False:
@@ -788,8 +878,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.historyCompletion.setWordWrap(True)
         self.historyCompletion.itemActivated.connect(self.openHistoryItem)
         self.historyCompletion.statusMessage.connect(self.statusMessage.setText)
-#        self.mainLayout.addWidget(self.historyCompletion, 3, 0)
-#        self.progressBar.hide()
+        self.progressBar.hide()
         self.mainLayout.setSpacing(0);
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
         self.mainToolBarLayout.setSpacing(0)
@@ -879,7 +968,6 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.urlBar.setText(qstring(url))
             self.updateWeb()
         self.updateText()
-#        self.historyCompletion.hide()
         self.zoomOutAction = QtGui.QAction(self)
         self.zoomOutAction.setShortcut("Ctrl+-")
         self.zoomOutAction.triggered.connect(self.zoomOut)
@@ -1025,37 +1113,6 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         url = self.webView.url()
         texturl = url.toString()
         self.urlBar2.setText(texturl)
-
-class SettingsManager():
-    def __init__(self):
-        self.settings = {'openInTabs' : True, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'python', 'loginToDownload' : False}
-        self.loadSettings()
-    def loadSettings(self):
-        settingsFile = os.path.join(app_home, "settings.json")
-        if os.path.exists(settingsFile):
-            fstream = open(settingsFile, "r")
-            self.settings = json.load(fstream)
-            fstream.close()
-    def saveSettings(self):
-        settingsFile = os.path.join(app_home, "settings.json")
-        fstream = open(settingsFile, "w")
-        json.dump(self.settings, fstream)
-        fstream.close()
-    def setBackend(self, backend = "python"):
-        check = False
-        if backend == "aria2":
-            check = Popen(["which", "aria2c"], stdout=PIPE).communicate()[0]
-        elif backend != "python":
-            check = Popen(["which", backend], stdout=PIPE).communicate()[0]
-        else:
-            check = True
-        if check:
-            self.settings['backend'] = backend
-        else:
-            message("Error!", "Backend " + backend + " could not be found!", "warn")
-            self.settings['backend'] = "python"
-        
-settingsManager = SettingsManager()
 
 class DownloaderThread(QtCore.QThread):
     fileDownloaded = QtCore.pyqtSignal()
@@ -1735,6 +1792,8 @@ def main():
         os.mkdir(app_home)
     if not os.path.isdir(os.path.join(app_home, "temp")):
         os.mkdir(os.path.join(app_home, "temp"))
+    if not os.path.isdir(os.path.join(app_home, "adblock")):
+        os.mkdir(os.path.join(app_home, "adblock"))
     app = QtGui.QApplication(sys.argv)
     win = TabBrowser()
     if os.path.exists(app_logo):
