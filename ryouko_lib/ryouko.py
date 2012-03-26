@@ -84,6 +84,27 @@ dialogToolBarSheet = """QToolBar {
                         background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(shadow), stop:1 palette(button));
                         }"""
 
+cornerWidgetsSheet = """
+        QToolButton, QPushButton {
+        min-width: 24px;
+		icon-size: 16px;
+        border: 1px solid transparent;
+        padding: 4px;
+        border-radius: 4px;
+        background-color: transparent;
+        }
+
+        QToolButton:hover, QPushButton:hover {
+        border: 1px solid palette(shadow);
+        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(light), stop:1 palette(button));
+        }
+
+        QToolButton:pressed, QPushButton:pressed {
+        border: 1px solid palette(shadow);
+        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shadow), stop:1 palette(button));
+        }
+        """
+
 xspfReader = XSPFReader()
 
 trManager = translate.TranslationManager()
@@ -288,7 +309,7 @@ class RMenuPopupWindow(QtGui.QMainWindow):
         self.primeDisplay()
         if menu == True:
             self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Popup)
-            self.setStyleSheet("QMainWindow { border: 1px solid palette(shadow);}")
+            self.setStyleSheet("QMainWindow { border: 1px solid palette(shadow);} " + cornerWidgetsSheet.replace("min-width: 24px;", "text-align: left;") + " QToolButton:focus, QPushButton:focus { background: palette(highlight); border: 1px solid palette(highlight); color: palette(highlighted-text); }")
         else:
             self.setWindowFlags(QtCore.Qt.Widget)
             self.setStyleSheet("")
@@ -992,9 +1013,10 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.searchButton.setShortcut("Ctrl+K")
         self.searchEditButton.clicked.connect(self.editSearch)
         self.searchEditButton.setShortcut("Ctrl+Shift+K")
+        self.searchEditButton.setToolTip(tr("editSearchTT"))
         historySearchAction = QtGui.QAction(self)
         historySearchAction.triggered.connect(self.parent.focusHistorySearch)
-        historySearchAction.setShortcuts(["Ctrl+Shift+K", "Ctrl+Shift+H"])
+        historySearchAction.setShortcuts(["Ctrl+Shift+H"])
         self.addAction(historySearchAction)
         if sys.platform.startswith("win"):
             self.reloadButton.setIconSize(QtCore.QSize(22, 22))
@@ -1511,37 +1533,23 @@ class TabBrowser(QtGui.QMainWindow):
         # "Toolbar" for top right corner
         self.cornerWidgets = QtGui.QWidget()
         self.cornerWidgets.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
-        self.cornerWidgets.setStyleSheet("""
-        QToolButton, QPushButton {
-        min-width: 24px;
-		icon-size: 16px;
-        border: 1px solid transparent;
-        padding: 4px;
-        border-radius: 4px;
-        background-color: transparent;
-        }
-
-        QToolButton:hover, QPushButton:hover {
-        border: 1px solid palette(shadow);
-        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(light), stop:1 palette(button));
-        }
-
-        QToolButton:pressed, QPushButton:pressed {
-        border: 1px solid palette(shadow);
-        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shadow), stop:1 palette(button));
-        }
-        """)
+#        self.cornerWidgets.setStyleSheet(cornerWidgetsSheet)
         self.tabs.setCornerWidget(self.cornerWidgets,QtCore.Qt.TopRightCorner)
         self.cornerWidgetsLayout = QtGui.QHBoxLayout()
         self.cornerWidgetsLayout.setContentsMargins(0,0,0,0)
         self.cornerWidgetsLayout.setSpacing(0)
         self.cornerWidgets.setLayout(self.cornerWidgetsLayout)
+        self.cornerWidgetsToolBar = QtGui.QToolBar()
+        self.cornerWidgetsToolBar.setStyleSheet("QToolBar { border: 0; background: transparent; padding: 0; margin: 0; }")
+        self.cornerWidgetsLayout.addWidget(self.cornerWidgetsToolBar)
 
         self.showCornerWidgetsMenuAction = QtGui.QAction(self)
+        self.showCornerWidgetsMenuAction.setShortcut("Alt+M")
+        self.showCornerWidgetsMenuAction.setToolTip(tr("cornerWidgetsMenuTT"))
         self.showCornerWidgetsMenuAction.triggered.connect(self.showCornerWidgetsMenu)
         self.cornerWidgetsMenuButton = QtGui.QToolButton(self)
         self.cornerWidgetsMenuButton.setDefaultAction(self.showCornerWidgetsMenuAction)
-        self.cornerWidgetsMenuButton.setStyleSheet("max-width: 16px;")
+        self.cornerWidgetsMenuButton.setStyleSheet("QToolButton { min-width: 8px; max-width: 16px; }")
         self.cornerWidgetsMenuButton.setArrowType(QtCore.Qt.DownArrow)
         self.cornerWidgetsMenu = RMenuPopupWindow(self)
 
@@ -1554,16 +1562,21 @@ class TabBrowser(QtGui.QMainWindow):
         self.newTabButton = QtGui.QToolButton()
         self.newTabButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.newTabButton.setDefaultAction(newTabAction)
-        self.cornerWidgetsLayout.addWidget(self.newTabButton)
+        self.cornerWidgetsToolBar.addWidget(self.newTabButton)
 
-        self.cornerWidgetsLayout.addWidget(self.cornerWidgetsMenuButton)
+        self.cornerWidgetsToolBar.addWidget(self.cornerWidgetsMenuButton)
+
+        dummyButton = QtGui.QPushButton()
+        self.cornerWidgetsMenu.layout().addWidget(dummyButton)
+        dummyButton.setStyleSheet("border: 0; background: transparent; padding: 0; margin: 0; max-width: 0; max-height: 0;")
 
         # New window button
         newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), tr("newWindowBtn"), self)
         newWindowAction.setShortcut('Ctrl+N')
         newWindowAction.triggered.connect(self.newWindow)
         self.addAction(newWindowAction)
-        self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), '', self)
+        self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), tr('newWindow'), self)
+        self.newWindowButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         self.newWindowButton.setToolTip(tr('newWindowBtnTT'))
         self.newWindowButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.newWindowButton.clicked.connect(self.newWindow)
@@ -1576,6 +1589,8 @@ class TabBrowser(QtGui.QMainWindow):
         undoCloseTabAction.triggered.connect(self.undoCloseTab)
         self.addAction(undoCloseTabAction)
         self.undoCloseTabButton = QtGui.QToolButton()
+        self.undoCloseTabButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.undoCloseTabButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         self.undoCloseTabButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.undoCloseTabButton.setDefaultAction(undoCloseTabAction)
         self.cornerWidgetsMenu.layout().addWidget(self.undoCloseTabButton)
@@ -1588,6 +1603,8 @@ class TabBrowser(QtGui.QMainWindow):
         historyToggleAction.setShortcut("Ctrl+H")
         self.addAction(historyToggleAction)
         self.historyToggleButton = QtGui.QToolButton()
+        self.historyToggleButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.historyToggleButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         self.historyToggleButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.historyToggleButton.setDefaultAction(historyToggleAction)
         self.cornerWidgetsMenu.layout().addWidget(self.historyToggleButton)
@@ -1599,6 +1616,8 @@ class TabBrowser(QtGui.QMainWindow):
         newpbTabAction.triggered.connect(self.newpbTab)
         self.addAction(newpbTabAction)
         self.newpbTabButton = QtGui.QToolButton()
+        self.newpbTabButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.newpbTabButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         self.newpbTabButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.newpbTabButton.setDefaultAction(newpbTabAction)
         self.cornerWidgetsMenu.layout().addWidget(self.newpbTabButton)
@@ -1619,6 +1638,8 @@ class TabBrowser(QtGui.QMainWindow):
         configAction.triggered.connect(self.showSettings)
         self.addAction(configAction)
         self.settingsButton = QtGui.QToolButton()
+        self.settingsButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.settingsButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         self.settingsButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.settingsButton.setDefaultAction(configAction)
         self.cornerWidgetsMenu.layout().addWidget(self.settingsButton)

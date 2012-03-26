@@ -231,7 +231,7 @@ background: transparent;</string>
          <item>
           <widget class="QToolButton" name="searchEditButton">
            <property name="styleSheet">
-            <string notr="true">max-width: 16px;</string>
+            <string notr="true">QToolButton { max-width: 16px; }</string>
            </property>
            <property name="text">
             <string>...</string>
