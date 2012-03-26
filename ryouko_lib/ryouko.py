@@ -657,10 +657,11 @@ class RWebView(QtWebKit.QWebView):
 
     def checkContentType(self, request):
         mimetype = get_mimetype(unicode(request.url().toString()))
-        if "xspf" in mimetype:
-            self.downloadFile(request, os.path.join(app_home, "temp", "playlist.tmp.xspf"))
-        else:
-            self.downloadFile(request)
+        if mimetype != None:
+            if "xspf" in mimetype:
+                self.downloadFile(request, os.path.join(app_home, "temp", "playlist.tmp.xspf"))
+            else:
+                self.downloadFile(request)
 
     def loadXspf(self):
         self.load(QtCore.QUrl("about:blank"))
