@@ -435,6 +435,7 @@ class SettingsManager():
         fstream.close()
     def applyFilters(self):
         if os.path.isdir(os.path.join(app_home, "adblock")):
+            self.filters = []
             l = os.listdir(os.path.join(app_home, "adblock"))
             for fname in l:
                 f = open(os.path.join(app_home, "adblock", fname))
