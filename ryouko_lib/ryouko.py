@@ -270,7 +270,40 @@ class SearchManager(QtCore.QObject):
 
 searchManager = SearchManager()
 
-class SearchEditor(QtGui.QMainWindow):
+class RMenuPopupWindow(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        super(RMenuPopupWindow, self).__init__(parent)
+        self.parent = parent
+        self.widget = QtGui.QWidget(self)
+        self.setCentralWidget(self.widget)
+        self.mainLayout = QtGui.QVBoxLayout()
+        self.mainLayout.setContentsMargins(0,0,0,0)
+        self.mainLayout.setSpacing(0)
+        self.widget.setLayout(self.mainLayout)
+    def layout(self):
+        return self.mainLayout
+    def primeDisplay(self):
+        return
+    def display(self, menu = False, x = 0, y = 0, width = 0, height = 0):
+        self.primeDisplay()
+        if menu == True:
+            self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Popup)
+            self.setStyleSheet("QMainWindow { border: 1px solid palette(shadow);}")
+        else:
+            self.setWindowFlags(QtCore.Qt.Widget)
+            self.setStyleSheet("")
+        self.show()
+        if x - self.width() + width < 0:
+            x = 0
+        else:
+            x = x - self.width() + width
+        if y + height + self.height() >= QtGui.QApplication.desktop().size().height():
+            y = y - self.height()
+        else:
+            y = y + height
+        self.move(x, y)
+
+class SearchEditor(RMenuPopupWindow):
     def __init__(self, parent=None):
         super(SearchEditor, self).__init__(parent)
         self.parent = parent
@@ -307,6 +340,10 @@ class SearchEditor(QtGui.QMainWindow):
         self.hideAction.setShortcut("Esc")
         self.addAction(self.hideAction)
 
+    def primeDisplay(self):
+        self.reload()
+        self.expEntry.setFocus()
+
     def focusOutEvent(self, e):
         e.accept()
         self.hide()
@@ -322,26 +359,6 @@ class SearchEditor(QtGui.QMainWindow):
             if searchManager.searchEngines[unicode(self.engineList.item(item).text()).split("\n")[0]]['expression'] == searchManager.currentSearch:
                 self.engineList.setCurrentItem(self.engineList.item(item))
                 break
-
-    def display(self, menu = False, x = 0, y = 0, width = 0, height = 0):
-        self.reload()
-        self.expEntry.setFocus()
-        if menu == True:
-            self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Popup)
-            self.setStyleSheet("QMainWindow { border: 1px solid palette(shadow); }")
-        else:
-            self.setWindowFlags(QtCore.Qt.Widget)
-            self.setStyleSheet("")
-        self.show()
-        if x - self.width() + width < 0:
-            x = 0
-        else:
-            x = x - self.width() + width
-        if y + height + self.height() >= QtGui.QApplication.desktop().size().height():
-            y = y - self.height()
-        else:
-            y = y + height
-        self.move(x, y)
 
     def addSearch(self):
         if "%s" in self.expEntry.text():
@@ -1520,6 +1537,14 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsLayout.setSpacing(0)
         self.cornerWidgets.setLayout(self.cornerWidgetsLayout)
 
+        self.showCornerWidgetsMenuAction = QtGui.QAction(self)
+        self.showCornerWidgetsMenuAction.triggered.connect(self.showCornerWidgetsMenu)
+        self.cornerWidgetsMenuButton = QtGui.QToolButton(self)
+        self.cornerWidgetsMenuButton.setDefaultAction(self.showCornerWidgetsMenuAction)
+        self.cornerWidgetsMenuButton.setStyleSheet("max-width: 16px;")
+        self.cornerWidgetsMenuButton.setArrowType(QtCore.Qt.DownArrow)
+        self.cornerWidgetsMenu = RMenuPopupWindow(self)
+
         # New tab button
         newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newtab.png'))), tr('newTabBtn'), self)
         newTabAction.setToolTip(tr('newTabBtnTT'))
@@ -1531,6 +1556,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.newTabButton.setDefaultAction(newTabAction)
         self.cornerWidgetsLayout.addWidget(self.newTabButton)
 
+        self.cornerWidgetsLayout.addWidget(self.cornerWidgetsMenuButton)
+
         # New window button
         newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), tr("newWindowBtn"), self)
         newWindowAction.setShortcut('Ctrl+N')
@@ -1540,7 +1567,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.newWindowButton.setToolTip(tr('newWindowBtnTT'))
         self.newWindowButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.newWindowButton.clicked.connect(self.newWindow)
-        self.cornerWidgetsLayout.addWidget(self.newWindowButton)
+        self.cornerWidgetsMenu.layout().addWidget(self.newWindowButton)
 
         # Undo closed tab button
         undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(app_lib, 'icons', 'undo.png'))), tr('undoCloseTabBtn'), self)
@@ -1551,7 +1578,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.undoCloseTabButton = QtGui.QToolButton()
         self.undoCloseTabButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.undoCloseTabButton.setDefaultAction(undoCloseTabAction)
-        self.cornerWidgetsLayout.addWidget(self.undoCloseTabButton)
+        self.cornerWidgetsMenu.layout().addWidget(self.undoCloseTabButton)
 
         # History sidebar button
         historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(app_lib, "icons", "history.png"))), tr('viewHistoryBtn'), self)
@@ -1563,7 +1590,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.historyToggleButton = QtGui.QToolButton()
         self.historyToggleButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.historyToggleButton.setDefaultAction(historyToggleAction)
-        self.cornerWidgetsLayout.addWidget(self.historyToggleButton)
+        self.cornerWidgetsMenu.layout().addWidget(self.historyToggleButton)
 
         # New private browsing tab button
         newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(app_lib, 'icons', 'pb.png'))), tr('newPBTabBtn'), self)
@@ -1574,7 +1601,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.newpbTabButton = QtGui.QToolButton()
         self.newpbTabButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.newpbTabButton.setDefaultAction(newpbTabAction)
-        self.cornerWidgetsLayout.addWidget(self.newpbTabButton)
+        self.cornerWidgetsMenu.layout().addWidget(self.newpbTabButton)
 
         self.cDialog = CDialog(self)
 
@@ -1594,7 +1621,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.settingsButton = QtGui.QToolButton()
         self.settingsButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.settingsButton.setDefaultAction(configAction)
-        self.cornerWidgetsLayout.addWidget(self.settingsButton)
+        self.cornerWidgetsMenu.layout().addWidget(self.settingsButton)
 
         closeTabAction = QtGui.QAction(self)
         closeTabAction.setShortcuts(['Ctrl+W'])
@@ -1616,6 +1643,9 @@ class TabBrowser(QtGui.QMainWindow):
             y = y - self.tabsContextMenu.height()
         self.tabsContextMenu.move(x, y)
         self.tabsContextMenu.show()
+
+    def showCornerWidgetsMenu(self):
+        self.cornerWidgetsMenu.display(True, self.cornerWidgetsMenuButton.mapToGlobal(QtCore.QPoint(0,0)).x(), self.cornerWidgetsMenuButton.mapToGlobal(QtCore.QPoint(0,0)).y(), self.cornerWidgetsMenuButton.width(), self.cornerWidgetsMenuButton.height())
 
     def showSettings(self):
         self.cDialog.show()
