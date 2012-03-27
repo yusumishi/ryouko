@@ -847,8 +847,18 @@ window.onload = function browserDetect() {
         else:
             if len(self.parent.closedTabList) > 0:
                 html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><h1 style='margin-bottom: 0;'>" + tr('rCTabs') + "</h1>"
+            urls = []
             for link in self.parent.closedTabList:
-                html = html + "<a href=\"" + link['url'] + "\">" + link['title'] + "</a><br/>"
+                breakyes = False
+                for item in urls:
+                    if item == link['url']:
+                        breakyes = True
+                        break
+                if breakyes == True:
+                    doNothing()
+                else:
+                    html = html + "<a href=\"" + link['url'] + "\">" + link['title'] + "</a><br/>"
+                    urls.append(link['url'])
             if len(self.parent.closedTabList) > 0:
                 html = html + "</td>"
             if not len(self.parent.closedTabList) > 0:
