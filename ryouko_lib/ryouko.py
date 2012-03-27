@@ -300,6 +300,7 @@ class RMenuPopupWindow(QtGui.QMainWindow):
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setContentsMargins(0,0,0,0)
         self.mainLayout.setSpacing(0)
+        self.styleSheet = "QMainWindow { border: 1px solid palette(shadow);} " + cornerWidgetsSheet.replace("min-width: 24px;", "text-align: left;") + " QToolButton:focus, QPushButton:focus { background: palette(highlight); border: 1px solid palette(highlight); color: palette(highlighted-text); }"
         self.widget.setLayout(self.mainLayout)
     def layout(self):
         return self.mainLayout
@@ -309,7 +310,7 @@ class RMenuPopupWindow(QtGui.QMainWindow):
         self.primeDisplay()
         if menu == True:
             self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Popup)
-            self.setStyleSheet("QMainWindow { border: 1px solid palette(shadow);} " + cornerWidgetsSheet.replace("min-width: 24px;", "text-align: left;") + " QToolButton:focus, QPushButton:focus { background: palette(highlight); border: 1px solid palette(highlight); color: palette(highlighted-text); }")
+            self.setStyleSheet(self.styleSheet)
         else:
             self.setWindowFlags(QtCore.Qt.Widget)
             self.setStyleSheet("")
@@ -329,6 +330,7 @@ class SearchEditor(RMenuPopupWindow):
         super(SearchEditor, self).__init__(parent)
         self.parent = parent
         self.setWindowTitle(tr('searchEditor'))
+        self.styleSheet = "QMainWindow { border: 1px solid palette(shadow);} " + cornerWidgetsSheet.replace("min-width: 24px;", "text-align: left;")
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
 
