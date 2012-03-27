@@ -1,4 +1,9 @@
 {
+"back": "Go Back",
+"next": "Go Next",
+"stop": "Stop",
+"reload": "Reload",
+"inspect": "Inspect Element",
 "error": "Error",
 "query": "Query",
 "enterValue": "Enter a value here:",

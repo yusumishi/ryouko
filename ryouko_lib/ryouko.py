@@ -672,8 +672,6 @@ class RWebView(QtWebKit.QWebView):
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
             self.showShortcuts()
 
-        self.loadFinished.connect(self.aboutBlank)
-
     def checkForAds(self):
         if settingsManager.settings['adBlock']:
             elements = self.page().mainFrame().findAllElements("iframe, frame, object, embed").toList()
@@ -837,11 +835,6 @@ window.onload = function browserDetect() {
                 self.setWindowTitle(qstring(unicode(self.title()) + " (PB)"))
             else:
                 self.setWindowTitle(self.title())
-
-    def aboutBlank(self):
-        if self.title() != self.windowTitle():
-            if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
-                self.showShortcuts(False)
 
     def showShortcuts(self, forceLoad = True):
         if forceLoad == True:
