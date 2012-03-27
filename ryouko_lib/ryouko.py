@@ -600,12 +600,10 @@ class RWebView(QtWebKit.QWebView):
         self.app_home = app_home
         self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
-        self.titleChanged.connect(self.updateTitle)
-
         self.text = ""
         self.zoomFactor = 1.0
 
-        #self.urlChanged.connect(self.aboutBlank)
+        self.titleChanged.connect(self.updateTitle)
 
         self.showShortcutsAction = QtGui.QAction(self)
         self.showShortcutsAction.setShortcut("F1")
@@ -671,8 +669,10 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.checkForAds)
         self.updateSettings()
         self.establishParent(parent)
-        if unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "" and self.parent != None and self.parent != False:
+        if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
             self.showShortcuts()
+
+        self.loadFinished.connect(self.aboutBlank)
 
     def checkForAds(self):
         if settingsManager.settings['adBlock']:
@@ -701,7 +701,7 @@ class RWebView(QtWebKit.QWebView):
             cookies = QtNetwork.QNetworkCookieJar(None)
             cookies.setAllCookies([])
             self.page().networkAccessManager().setCookieJar(cookies)
-        if unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "" and self.parent != None and self.parent != False:
+        if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
             self.showShortcuts()
 
     def updateSettings(self):
@@ -832,13 +832,20 @@ window.onload = function browserDetect() {
             downloaderThread.start()
 
     def updateTitle(self):
-        if self.parent == None or self.parent == False:
-            self.setWindowTitle(qstring(unicode(self.title()) + " (PB)"))
-        else:
-            self.setWindowTitle(self.title())
+        if self.title() != self.windowTitle():
+            if self.parent == None or self.parent == False:
+                self.setWindowTitle(qstring(unicode(self.title()) + " (PB)"))
+            else:
+                self.setWindowTitle(self.title())
 
-    def showShortcuts(self):
-        self.load(QtCore.QUrl("about:blank"))
+    def aboutBlank(self):
+        if self.title() != self.windowTitle():
+            if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
+                self.showShortcuts(False)
+
+    def showShortcuts(self, forceLoad = True):
+        if forceLoad == True:
+            self.load(QtCore.QUrl("about:blank"))
         html = "<html><head><title>" + tr('newTabTitle') + "</title></head><body style='font-family: sans-serif;'><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
         h = tr('newTabShortcuts')
         try: self.parent.closedTabList
@@ -1226,7 +1233,8 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
     def syncText(self):
         self.urlBar.setText(self.urlBar2.text())
     def rSyncText(self):
-        self.urlBar2.setText(self.urlBar.text())
+        if self.urlBar2.text() != self.urlBar.text():
+            self.urlBar2.setText(self.urlBar.text())
     def updateText(self):
         url = self.webView.url()
         texturl = url.toString()
