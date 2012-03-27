@@ -595,8 +595,6 @@ class RWebView(QtWebKit.QWebView):
             self.setWindowTitle("Ryouko (PB)")
         else:
             self.setWindowTitle("Ryouko")
-        if unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "":
-            self.showShortcuts()
         if parent == False:
             self.parent = None
         self.app_home = app_home
@@ -606,6 +604,8 @@ class RWebView(QtWebKit.QWebView):
 
         self.text = ""
         self.zoomFactor = 1.0
+
+        #self.urlChanged.connect(self.aboutBlank)
 
         self.showShortcutsAction = QtGui.QAction(self)
         self.showShortcutsAction.setShortcut("F1")
@@ -671,6 +671,8 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.checkForAds)
         self.updateSettings()
         self.establishParent(parent)
+        if unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "" and self.parent != None and self.parent != False:
+            self.showShortcuts()
 
     def checkForAds(self):
         if settingsManager.settings['adBlock']:
@@ -699,6 +701,8 @@ class RWebView(QtWebKit.QWebView):
             cookies = QtNetwork.QNetworkCookieJar(None)
             cookies.setAllCookies([])
             self.page().networkAccessManager().setCookieJar(cookies)
+        if unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "" and self.parent != None and self.parent != False:
+            self.showShortcuts()
 
     def updateSettings(self):
         settingsFile = os.path.join(app_home, "settings.json")
@@ -835,7 +839,22 @@ window.onload = function browserDetect() {
 
     def showShortcuts(self):
         self.load(QtCore.QUrl("about:blank"))
-        self.setHtml(tr('shortcutsPage'))
+        html = "<html><head><title>" + tr('newTabTitle') + "</title></head><body style='font-family: sans-serif;'><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
+        h = tr('newTabShortcuts')
+        try: self.parent.closedTabList
+        except:
+            doNothing()
+        else:
+            if len(self.parent.closedTabList) > 0:
+                html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><h1 style='margin-bottom: 0;'>" + tr('rCTabs') + "</h1>"
+            for link in self.parent.closedTabList:
+                html = html + "<a href=\"" + link['url'] + "\">" + link['title'] + "</a><br/>"
+            if len(self.parent.closedTabList) > 0:
+                html = html + "</td>"
+            if not len(self.parent.closedTabList) > 0:
+                h = h.replace("style='padding-left: 4px;'", "")
+        html = html + h + "</tr></body></html>"
+        self.setHtml(html)
 
     def locationEdit(self):
         url = inputDialog(tr('openLocation'), tr('enterURL'), self.url().toString())
@@ -1874,14 +1893,14 @@ class TabBrowser(QtGui.QMainWindow):
             index = self.tabs.currentIndex()
         if self.tabs.count() > 0:
             if not self.tabs.widget(index).pb and not unicode(self.tabs.widget(index).webView.url().toString()) == "" and not unicode(self.tabs.widget(index).webView.url().toString()) == "about:blank":
-                self.closedTabList.append(self.tabs.widget(index))
+                self.closedTabList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
             self.tabs.widget(index).webView.stop()
             self.tabs.removeTab(index)
             if self.tabs.count() == 0:
                 self.newTab()
     def undoCloseTab(self, index=False):
         if len(self.closedTabList) > 0:
-            self.tabs.addTab(self.closedTabList[len(self.closedTabList) - 1], self.closedTabList[len(self.closedTabList) - 1].webView.icon(), self.closedTabList[len(self.closedTabList) - 1].webView.title())
+            self.tabs.addTab(self.closedTabList[len(self.closedTabList) - 1]['widget'], self.closedTabList[len(self.closedTabList) - 1]['widget'].webView.icon(), self.closedTabList[len(self.closedTabList) - 1]['widget'].webView.title())
             del self.closedTabList[len(self.closedTabList) - 1]
             self.updateTitles()
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
