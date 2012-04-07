@@ -881,16 +881,15 @@ window.onload = function browserDetect() {
         find = inputDialog(tr('find'), tr('searchFor'), self.text)
         if find:
             self.text = find
-            self.findText(self.text)
         else:
             self.text = ""
-            self.findText(self.text)
+        self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument)
 
     def findNext(self):
         if not self.text:
             self.find()
         else:
-            self.findText(self.text)
+            self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument)
 
     def zoom(self, value=1.0):
         self.zoomFactor = value
