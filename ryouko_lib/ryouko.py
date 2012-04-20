@@ -43,6 +43,10 @@ except ImportError:
     try: from urllib import urlretrieve
     except:
         print("", end="")
+    else:
+        import urllib
+else:
+    import urllib.request
 
 try:
     __file__
@@ -110,6 +114,18 @@ xspfReader = XSPFReader()
 trManager = translate.TranslationManager()
 trManager.setDirectory(os.path.join(app_lib, "translations"))
 trManager.loadTranslation()
+
+# From http://stackoverflow.com/questions/448207/python-downloading-a-file-over-http-with-progress-bar-and-basic-authentication
+def urlretrieve_adv(url, filename=None, reporthook=None, data=None, username="", password=""):
+    if sys.version_info[0] < 3:
+        class OpenerWithAuth(urllib.FancyURLopener):
+            def prompt_user_passwd(self, host, realm):
+                return username, password
+    else:
+        class OpenerWithAuth(urllib.request.FancyURLopener):
+            def prompt_user_passwd(self, host, realm):
+                return username, password
+    return OpenerWithAuth().retrieve(url, filename, reporthook, data)
 
 def tr(key):
     return trManager.tr(key)
@@ -827,8 +843,10 @@ window.onload = function browserDetect() {
             password = False
             if settingsManager.settings['loginToDownload'] == True:
                 username = inputDialog("Enter a username", "Enter a username here [optional]:")
-                if username != "":
+                if username.replace(" ", "") != "":
                     password = inputDialog("Enter a username", "Enter a password here [optional]:")
+                else:
+                    username = False
             downloaderThread.username = username
             downloaderThread.password = password
             downloaderThread.start()
@@ -1265,8 +1283,8 @@ class DownloaderThread(QtCore.QThread):
         self.url = url
     def setDestination(self, destination):
         self.destination = destination
-    def exec_(self):
-        urlretrieve(self.url, self.destination)
+#    def exec_(self):
+#        urlretrieve(self.url, self.destination)
     def run(self):
         command = ""
         if settingsManager.settings['backend'] == "aria2":
@@ -1283,7 +1301,10 @@ class DownloaderThread(QtCore.QThread):
             command = command + " '" + self.url + "'"
             system_terminal(command)
         else:
-            urlretrieve(self.url, self.destination)
+            if self.username and self.password:
+                urlretrieve_adv(self.url, self.destination, None, None, self.username, self.password)
+            else:
+                urlretrieve(self.url, self.destination)
         print(command)
         self.username = False
         self.password = False

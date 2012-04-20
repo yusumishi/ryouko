@@ -30,7 +30,7 @@
 "enablePlugins": "Enable &plugins",
 "enablePB": "Enable private &browsing mode",
 "enableAB": "Enable &ad-blocking (warning: experimental!)",
-"loginToDownload": "&Login to download? [aria2 only]",
+"loginToDownload": "&Login to download? [does not work in axel]",
 "lastMin": "Last minute",
 "last2Min": "Last 2 minutes",
 "last5Min": "Last 5 minutes",
