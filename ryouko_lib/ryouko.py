@@ -244,7 +244,7 @@ class SearchManager(QtCore.QObject):
     def __init__(self, parent=None):
         super(SearchManager, self).__init__(parent)
         self.parent = parent
-        self.searchEngines = {"DuckDuckGo": {"expression" : "http://duckduckgo.com/?q=%s", "keyword" : "d"}, "Wikipedia": {"expression" : "http://wikipedia.org/w/index.php?title=Special:Search&search=%s", "keyword" : "w"}, "YouTube" : {"expression" : "http://www.youtube.com/results?search_query=%s", "keyword" : "y"}, "Google" : {"expression" : "http://www.google.com/#q=%s", "keyword" : "g"}, "deviantART" : {"expression" : "http://browse.deviantart.com/?qh=&section=&q=%s", "keyword" : "da"}}
+        self.searchEngines = {"DuckDuckGo": {"expression" : "http://duckduckgo.com/?q=%s", "keyword" : "d"}, "Wikipedia": {"expression" : "http://wikipedia.org/w/index.php?title=Special:Search&search=%s", "keyword" : "w"}, "YouTube" : {"expression" : "http://www.youtube.com/results?search_query=%s", "keyword" : "y"}, "Google" : {"expression" : "http://www.google.com/?q=%s", "keyword" : "g"}, "deviantART" : {"expression" : "http://browse.deviantart.com/?qh=&section=&q=%s", "keyword" : "da"}}
         self.currentSearch = "http://duckduckgo.com/?q=%s"
         self.searchEnginesFile = os.path.join(app_home, "search-engines.json")
         self.load()
@@ -431,37 +431,38 @@ class BrowserHistory(QtCore.QObject):
         json.dump(self.history, history)
         history.close()
     def append(self, url, name=""):
-        try:
-            self.reload()
-            self.url = unicode(url.toString())
-            url = unicode(url.toString())
-            if url != "about:blank":
-                now = datetime.datetime.now()
-                add = True
-                index = 0
-                count = 1
-                for item in self.history:
-                    if item['url'].lower() == url:
-                        add = False
-                        index = self.history.index(item)
-                        break
-                if add == True:
-                    self.history.insert(0, {'url' : url, 'name' : name, 'count' : count, 'time' : time.time(), 'weekday' : time.strftime("%A"), 'month' : time.strftime("%B"), 'monthday' : time.strftime("%d"), 'year' : "%d" % now.year, 'timestamp' : time.strftime("%H:%M:%S")})
-                else:
-                    if not 'count' in self.history[index]:
-                        self.history[index]['count'] = 1
-                    if not type(self.history[index]['count']) is int:
-                        self.history[index]['count'] = 1
-                    count = self.history[index]['count'] + 1
-                    self.history[index]['count'] = count
-                    self.history[index]['time'] = time.time()
-                    tempIndex = self.history[index]
-                    del self.history[index]
-                    self.history.insert(0, tempIndex)
-            self.save()
-            self.historyChanged.emit()
-        except:
-            self.reset()
+        if unicode(url.toString()) != "about:blank":
+            try:
+                self.reload()
+                self.url = unicode(url.toString())
+                url = unicode(url.toString())
+                if url != "about:blank":
+                    now = datetime.datetime.now()
+                    add = True
+                    index = 0
+                    count = 1
+                    for item in self.history:
+                        if item['url'].lower() == url:
+                            add = False
+                            index = self.history.index(item)
+                            break
+                    if add == True:
+                        self.history.insert(0, {'url' : url, 'name' : name, 'count' : count, 'time' : time.time(), 'weekday' : time.strftime("%A"), 'month' : time.strftime("%B"), 'monthday' : time.strftime("%d"), 'year' : "%d" % now.year, 'timestamp' : time.strftime("%H:%M:%S")})
+                    else:
+                        if not 'count' in self.history[index]:
+                            self.history[index]['count'] = 1
+                        if not type(self.history[index]['count']) is int:
+                            self.history[index]['count'] = 1
+                        count = self.history[index]['count'] + 1
+                        self.history[index]['count'] = count
+                        self.history[index]['time'] = time.time()
+                        tempIndex = self.history[index]
+                        del self.history[index]
+                        self.history.insert(0, tempIndex)
+                self.save()
+                self.historyChanged.emit()
+            except:
+                self.reset()
     def reset(self):
         message(tr('error'), tr('historyError'), "critical")
         self.history = []
@@ -589,6 +590,7 @@ class RWebView(QtWebKit.QWebView):
         super(RWebView, self).__init__()
         self.newWindows = [0]
         self.openInTabs = True
+        self.oldURL = False
         self.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
         downloaderThread.fileDownloaded.connect(self.loadXspf)
         if os.path.exists(app_logo):
@@ -607,10 +609,10 @@ class RWebView(QtWebKit.QWebView):
 
         self.titleChanged.connect(self.updateTitle)
 
-        self.showShortcutsAction = QtGui.QAction(self)
-        self.showShortcutsAction.setShortcut("F1")
-        self.showShortcutsAction.triggered.connect(self.showShortcuts)
-        self.addAction(self.showShortcutsAction)
+        self.buildNewTabPageAction = QtGui.QAction(self)
+        self.buildNewTabPageAction.setShortcut("F1")
+        self.buildNewTabPageAction.triggered.connect(self.buildNewTabPage)
+        self.addAction(self.buildNewTabPageAction)
 
         self.newWindowAction = QtGui.QAction(self)
         self.newWindowAction.triggered.connect(self.newWindow)
@@ -672,7 +674,7 @@ class RWebView(QtWebKit.QWebView):
         self.updateSettings()
         self.establishParent(parent)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
-            self.showShortcuts()
+            self.buildNewTabPage()
 
     def checkForAds(self):
         if settingsManager.settings['adBlock']:
@@ -702,7 +704,7 @@ class RWebView(QtWebKit.QWebView):
             cookies.setAllCookies([])
             self.page().networkAccessManager().setCookieJar(cookies)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
-            self.showShortcuts()
+            self.buildNewTabPage()
 
     def updateSettings(self):
         settingsFile = os.path.join(app_home, "settings.json")
@@ -832,23 +834,24 @@ window.onload = function browserDetect() {
             downloaderThread.start()
 
     def updateTitle(self):
-        if self.title() != self.windowTitle():
+        if self.title() != self.windowTitle() and self.oldURL != unicode(self.url().toString()):
             if self.parent == None or self.parent == False:
                 self.setWindowTitle(qstring(unicode(self.title()) + " (PB)"))
             else:
                 self.setWindowTitle(self.title())
+            self.oldURL = unicode(self.url().toString())
 
-    def showShortcuts(self, forceLoad = True):
+    def buildNewTabPage(self, forceLoad = True):
         if forceLoad == True:
             self.load(QtCore.QUrl("about:blank"))
-        html = "<html><head><title>" + tr('newTabTitle') + "</title></head><body style='font-family: sans-serif;'><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
+        html = "<!DOCTYPE html><html><head><title>" + tr('newTabTitle') + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><h1 style='display: inline-block;'>" + tr('search') + "</h1><form method='get' action='" + searchManager.currentSearch.replace("%s", "") + "' style='display: inline-block;'><input type='text'   name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
         h = tr('newTabShortcuts')
         try: self.parent.closedTabList
         except:
             doNothing()
         else:
             if len(self.parent.closedTabList) > 0:
-                html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><h1 style='margin-bottom: 0;'>" + tr('rCTabs') + "</h1>"
+                html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><h1>" + tr('rCTabs') + "</h1>"
             urls = []
             for link in self.parent.closedTabList:
                 breakyes = False
@@ -1059,6 +1062,12 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.findButton.clicked.connect(self.webView.find)
         self.findButton.setText("")
         self.findButton.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_lib, "icons", 'find.png'))))
+
+        if sys.platform.startswith("win"):
+            self.findNextButton.setIconSize(QtCore.QSize(22, 22))
+        self.findNextButton.clicked.connect(self.webView.findNext)
+        self.findNextButton.setText("")
+        self.findNextButton.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(os.path.join(app_lib, "icons", 'find-next.png'))))
 
         self.stopAction = QtGui.QAction(self)
         self.stopAction.triggered.connect(self.webView.stop)
@@ -1310,7 +1319,7 @@ class CDialog(QtGui.QMainWindow):
         self.aBBox.stateChanged.connect(self.tryDownload)
         downloaderThread.fileDownloaded.connect(self.applyFilters)
         self.layout.addWidget(self.aBBox)
-        backendBox = QtGui.QLabel("Default backend for downloads:")
+        backendBox = QtGui.QLabel(tr('downloadBackend'))
         self.layout.addWidget(backendBox)
         self.selectBackend = QtGui.QComboBox()
         self.selectBackend.addItem('python')
@@ -1682,6 +1691,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.setCentralWidget(self.tabs)
         if len(sys.argv) == 1:
             self.newTab()
+            self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
         elif len(sys.argv) > 1:
             for arg in range(1, len(sys.argv)):
                 self.newTab(sys.argv[arg])
