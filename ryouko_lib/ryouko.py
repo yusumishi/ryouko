@@ -691,6 +691,47 @@ class RWebView(QtWebKit.QWebView):
         self.establishParent(parent)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
             self.buildNewTabPage()
+            self.loadControls()
+
+    def enableControls(self):
+        self.loadFinished.connect(self.loadControls)
+
+    def loadControls(self):
+        if self.page().mainFrame().findFirstElement("#ryouko-browser-controls").isNull() == True:
+            self.evaluateJavaScript("""
+ryoukoStyle = document.createElement('style');
+ryoukoStyle.appendChild(document.createTextNode("#ryouko-browser-controls {top: 2px;padding: 2px;background: rgba(0,0,0,0.75);color: white;border-radius: 2px;position: fixed;visibility: visible;font-size: 10pt;z-index: 9001;}#ryouko-browser-controls > input[type='button'] {-webkit-appearance: none;background: rgba(255,255,255,0.75);border: 1px solid black;color: black;}"));
+document.getElementsByTagName('body')[0].appendChild(ryoukoStyle);
+ryoukoBrowserControls = document.createElement('span');
+ryoukoBrowserControls.setAttribute('id','ryouko-browser-controls');
+ryoukoBrowserControls.setAttribute('style','right: 2px;');
+document.getElementsByTagName('body')[0].appendChild(ryoukoBrowserControls);
+ryoukoBackButton = document.createElement('input');
+ryoukoBackButton.setAttribute('type','button');
+ryoukoBackButton.setAttribute('value','Back');
+ryoukoBackButton.setAttribute('onclick','history.go(-1);');
+ryoukoBrowserControls.appendChild(ryoukoBackButton);
+ryoukoNextButton = document.createElement('input');
+ryoukoNextButton.setAttribute('value','Next');
+ryoukoNextButton.setAttribute('type','button');
+ryoukoNextButton.setAttribute('onclick','history.go(+1);');
+ryoukoBrowserControls.appendChild(ryoukoNextButton);
+ryoukoURLEdit = document.createElement('input');
+ryoukoURLEdit.setAttribute('id','ryouko-url-edit');
+ryoukoURLEdit.setAttribute('value','Open');
+ryoukoURLEdit.setAttribute('type','button');
+ryoukoURLEdit.setAttribute('onclick',"url = prompt('You are currently at:\\\\n' + window.location.href + '\\\\n\\\\nEnter a URL here:', 'http://'); if (url != null && url != '') {if (url.indexOf('://') == -1) {url = 'http://' + url;}window.location.href = url; }");
+ryoukoBrowserControls.appendChild(ryoukoURLEdit);
+ryoukoSwitchButton = document.createElement('input');
+ryoukoSwitchButton.setAttribute('id','ryouko-switch-button');
+ryoukoSwitchButton.setAttribute('value','<--');
+ryoukoSwitchButton.setAttribute('type','button');
+ryoukoSwitchButton.setAttribute('onclick',"if (document.getElementById('ryouko-browser-controls').getAttribute('style')=='right: 2px;') { document.getElementById('ryouko-browser-controls').setAttribute('style', 'left: 2px;'); document.getElementById('ryouko-switch-button').setAttribute('value','-->'); } else { document.getElementById('ryouko-browser-controls').setAttribute('style', 'right: 2px;'); document.getElementById('ryouko-switch-button').setAttribute('value','<--'); }");
+ryoukoBrowserControls.appendChild(ryoukoSwitchButton);
+            """)
+
+    def evaluateJavaScript(self, script):
+        self.page().mainFrame().evaluateJavaScript(script)
 
     def checkForAds(self):
         if settingsManager.settings['adBlock']:
@@ -862,14 +903,14 @@ window.onload = function browserDetect() {
     def buildNewTabPage(self, forceLoad = True):
         if forceLoad == True:
             self.load(QtCore.QUrl("about:blank"))
-        html = "<!DOCTYPE html><html><head><title>" + tr('newTabTitle') + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><h1 style='display: inline-block;'>" + tr('search') + "</h1><form method='get' action='" + searchManager.currentSearch.replace("%s", "") + "' style='display: inline-block;'><input type='text'   name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
+        html = "<!DOCTYPE html><html><head><title>" + tr('newTabTitle') + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('enterURL4Page') + "</b><br/><form method='' action='' style='display: inline-block;'><input type='text'   name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><b style='display: inline-block;'>" + tr('search') + "</b><br/><form method='get' action='" + searchManager.currentSearch.replace("%s", "") + "' style='display: inline-block;'><input type='text'   name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
         h = tr('newTabShortcuts')
         try: self.parent.closedTabList
         except:
             doNothing()
         else:
             if len(self.parent.closedTabList) > 0:
-                html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><h1>" + tr('rCTabs') + "</h1>"
+                html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><b>" + tr('rCTabs') + "</b>"
             urls = []
             for link in self.parent.closedTabList:
                 breakyes = False
@@ -946,6 +987,7 @@ window.onload = function browserDetect() {
             exec("self.newWindow" + str(len(self.newWindows)) + ".zoomInAction.setShortcuts(['Ctrl+Shift+=', 'Ctrl+='])")
             exec("self.newWindow" + str(len(self.newWindows)) + ".zoomOutAction.setShortcut('Ctrl+-')")
             exec("self.newWindow" + str(len(self.newWindows)) + ".zoomResetAction.setShortcut('Ctrl+0')")
+            exec("self.newWindow" + str(len(self.newWindows)) + ".enableControls()")
             exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
         exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
         self.createNewWindow.emit(windowType)
