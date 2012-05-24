@@ -67,9 +67,9 @@ class TranslationManager():
             f.close()
             #newTranslationStrings = newTranslationStrings.replace('\n', ' ')
             newTranslationStrings = loads(newTranslationStrings)
-            if type(newTranslationStrings) is str:
+            if not type(newTranslationStrings) is dict:
                 self.loadTranslation(os.path.join(self.directory, unicode(newTranslationStrings) + ".json"))
-            elif type(newTranslationStrings) is dict:
+            else:
                 for key in newTranslationStrings:
                     self.translationStrings[key] = newTranslationStrings[key]
     def tr(self, key):
