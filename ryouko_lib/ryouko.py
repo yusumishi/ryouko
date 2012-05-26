@@ -910,7 +910,7 @@ window.onload = function browserDetect() {
             doNothing()
         else:
             if len(self.parent.closedTabList) > 0:
-                html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><b>" + tr('rCTabs') + "</b>"
+                html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><b>" + tr('rCTabs') + "</b><br/>"
             urls = []
             for link in self.parent.closedTabList:
                 breakyes = False
