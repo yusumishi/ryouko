@@ -517,7 +517,7 @@ browserHistory = BrowserHistory()
 
 class SettingsManager():
     def __init__(self):
-        self.settings = {'openInTabs' : True, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'python', 'loginToDownload' : False, 'adBlock' : False}
+        self.settings = {'openInTabs' : True, 'oldSchoolWindows' : False, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'python', 'loginToDownload' : False, 'adBlock' : False}
         self.filters = []
         self.loadSettings()
     def loadSettings(self):
@@ -605,7 +605,6 @@ class RWebView(QtWebKit.QWebView):
     def __init__(self, parent=False):
         super(RWebView, self).__init__()
         self.newWindows = [0]
-        self.openInTabs = True
         self.oldURL = False
         self.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
         downloaderThread.fileDownloaded.connect(self.loadXspf)
@@ -764,39 +763,27 @@ ryoukoBrowserControls.appendChild(ryoukoSwitchButton);
             self.buildNewTabPage()
 
     def updateSettings(self):
-        settingsFile = os.path.join(app_home, "settings.json")
-        if os.path.exists(settingsFile):
-            fstream = open(settingsFile, "r")
-            settings = json.load(fstream)
-            fstream.close()
-        else:
-            settings = {'openInTabs' : True, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False}
-        try: settings['openInTabs']
-        except:
-            doNothing()
-        else:
-            self.openInTabs = settings['openInTabs']
-        try: settings['loadImages']
+        try: settingsManager.settings['loadImages']
         except: 
             print("", end = "")
         else:
-            self.settings().setAttribute(QtWebKit.QWebSettings.AutoLoadImages, settings['loadImages'])
-        try: settings['jsEnabled']
+            self.settings().setAttribute(QtWebKit.QWebSettings.AutoLoadImages, settingsManager.settings['loadImages'])
+        try: settingsManager.settings['jsEnabled']
         except: 
             print("", end = "")
         else:
-            self.settings().setAttribute(QtWebKit.QWebSettings.JavascriptEnabled, settings['jsEnabled'])
-        try: self.settings['pluginsEnabled']
+            self.settings().setAttribute(QtWebKit.QWebSettings.JavascriptEnabled, settingsManager.settings['jsEnabled'])
+        try: settingsManager.settings['pluginsEnabled']
         except: 
             print("", end = "")
         else:
-            self.settings().setAttribute(QtWebKit.QWebSettings.PluginsEnabled, settings['pluginsEnabled'])
-        try: settings['privateBrowsing']
+            self.settings().setAttribute(QtWebKit.QWebSettings.PluginsEnabled, settingsManager.settings['pluginsEnabled'])
+        try: settingsManager.settings['privateBrowsing']
         except: 
             print("", end = "")
         else:
-            self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, settings['privateBrowsing'])
-            if not settings['privateBrowsing'] and not (self.parent == False or self.parent == None):
+            self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, settingsManager.settings['privateBrowsing'])
+            if not settingsManager.settings['privateBrowsing'] and not (self.parent == False or self.parent == None):
                 self.establishParent(self.parent)
         for child in range(1, len(self.newWindows)):
             try: self.newWindows[child].updateSettings()
@@ -974,29 +961,40 @@ window.onload = function browserDetect() {
     def newWindow(self):
        self.createWindow(QtWebKit.QWebPage.WebBrowserWindow)
 
+    def applyShortcuts(self):
+        self.closeWindowAction.setShortcut('Ctrl+W')
+        self.newWindowAction.setShortcut('Ctrl+N')
+        self.stopAction.setShortcut('Esc')
+        self.locationEditAction.setShortcuts(['Ctrl+L', 'Alt+D'])
+        self.zoomInAction.setShortcuts(['Ctrl+Shift+=', 'Ctrl+='])
+        self.zoomOutAction.setShortcut('Ctrl+-')
+        self.zoomResetAction.setShortcut('Ctrl+0')
+
     def createWindow(self, windowType):
-        if not self.parent == None:
-            exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(self.parent)")
-        else:
-            exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(None)")
-        if self.openInTabs == False:
-            exec("self.newWindow" + str(len(self.newWindows)) + ".closeWindowAction.setShortcut('Ctrl+W')")
-            exec("self.newWindow" + str(len(self.newWindows)) + ".newWindowAction.setShortcut('Ctrl+N')")
-            exec("self.newWindow" + str(len(self.newWindows)) + ".stopAction.setShortcut('Esc')")
-            exec("self.newWindow" + str(len(self.newWindows)) + ".locationEditAction.setShortcuts(['Ctrl+L', 'Alt+D'])")
-            exec("self.newWindow" + str(len(self.newWindows)) + ".zoomInAction.setShortcuts(['Ctrl+Shift+=', 'Ctrl+='])")
-            exec("self.newWindow" + str(len(self.newWindows)) + ".zoomOutAction.setShortcut('Ctrl+-')")
-            exec("self.newWindow" + str(len(self.newWindows)) + ".zoomResetAction.setShortcut('Ctrl+0')")
-            exec("self.newWindow" + str(len(self.newWindows)) + ".enableControls()")
-            exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
-        exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
-        self.createNewWindow.emit(windowType)
-        if self.openInTabs == True:
+        if settingsManager.settings['oldSchoolWindows']:
             if not self.parent == None:
-                exec("win.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
+                exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(self.parent)")
             else:
-                exec("win.newpbTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
-        return self.newWindows[len(self.newWindows) - 1]
+                exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(None)")
+            if settingsManager.settings['openInTabs'] == False:
+                exec("self.newWindow" + str(len(self.newWindows)) + ".applyShortcuts()")
+                exec("self.newWindow" + str(len(self.newWindows)) + ".enableControls()")
+                exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
+            exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
+            self.createNewWindow.emit(windowType)
+            if self.openInTabs == True:
+                if not self.parent == None:
+                    exec("win.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
+                else:
+                    exec("win.newpbTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
+            return self.newWindows[len(self.newWindows) - 1]
+        else:
+            if not self.parent == None:
+                exec("self.newWindow" + str(len(self.newWindows)) + " = TabBrowser(self)")
+            else:
+                exec("self.newWindow" + str(len(self.newWindows)) + " = TabBrowser()")
+            exec("n = self.newWindow" + str(len(self.newWindows)))
+            return n.tabs.widget(n.tabs.currentIndex()).webView
 
 class HistoryCompletionList(QtGui.QListWidget):
     if sys.version_info[0] <= 2:
@@ -1370,6 +1368,8 @@ class CDialog(QtGui.QMainWindow):
         self.mainWidget.setLayout(self.layout)
         self.openTabsBox = QtGui.QCheckBox(tr('newWindowOption'))
         self.layout.addWidget(self.openTabsBox)
+        self.oswBox = QtGui.QCheckBox(tr('newWindowOption2'))
+        self.layout.addWidget(self.oswBox)
         self.imagesBox = QtGui.QCheckBox(tr('autoLoadImages'))
         self.layout.addWidget(self.imagesBox)
         self.jsBox = QtGui.QCheckBox(tr('enableJS'))
@@ -1431,6 +1431,11 @@ class CDialog(QtGui.QMainWindow):
             self.openTabsBox.setChecked(True)
         else:
             self.openTabsBox.setChecked(self.settings['openInTabs'])
+        try: self.settings['oldSchoolWindows']
+        except:
+            self.oswBox.setChecked(False)
+        else:
+            self.oswBox.setChecked(self.settings['oldSchoolWindows'])
         try: self.settings['loadImages']
         except: 
             self.imagesBox.setChecked(True)
@@ -1477,7 +1482,7 @@ class CDialog(QtGui.QMainWindow):
         except:
             doNothing()
     def saveSettings(self):
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked()}
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked()}
         settingsManager.settings = self.settings
         settingsManager.setBackend(unicode(self.selectBackend.currentText()).lower())
         settingsManager.saveSettings()
@@ -1982,7 +1987,10 @@ class TabBrowser(QtGui.QMainWindow):
             self.tabs.widget(index).webView.stop()
             self.tabs.removeTab(index)
             if self.tabs.count() == 0:
-                self.newTab()
+                if self.parent == None:
+                    self.newpbTab()
+                else:
+                    self.newTab()
     def undoCloseTab(self, index=False):
         if len(self.closedTabList) > 0:
             self.tabs.addTab(self.closedTabList[len(self.closedTabList) - 1]['widget'], self.closedTabList[len(self.closedTabList) - 1]['widget'].webView.icon(), self.closedTabList[len(self.closedTabList) - 1]['widget'].webView.title())
