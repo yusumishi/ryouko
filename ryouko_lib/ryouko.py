@@ -982,7 +982,7 @@ window.onload = function browserDetect() {
                 exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
             exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
             self.createNewWindow.emit(windowType)
-            if self.openInTabs == True:
+            if settingsManager.settings['openInTabs'] == True:
                 if not self.parent == None:
                     exec("win.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
                 else:
