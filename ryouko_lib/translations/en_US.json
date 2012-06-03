@@ -1,6 +1,11 @@
 {
 "help": "ryouko [-h|--help] [-pb|--pb] [URLs]\n\n-h or --help: This help screen\n-pb or --pb: Opens [URLs] in private browsing mode",
-"aboutRyouko": "About &Ryouko",
+"aboutRyouko": "About Ryouko",
+"aboutRyoukoHKey": "About &Ryouko",
+"codename": "Codename",
+"userAgent": "User Agent",
+"commandLine": "Command Line",
+"executablePath": "Executable path",
 "menu": "&Menu",
 "quit": "&Quit",
 "back": "Go Back",

@@ -1298,7 +1298,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
                 command_line = ""
                 for arg in sys.argv:
                     command_line = command_line + arg + " "
-                self.webView.setHtml("<html><head><title>About Ryouko</title>\
+                self.webView.setHtml("<html><head><title>" + tr('aboutRyouko') + "</title>\
             <script type='text/javascript'>window.onload = function() {\
             document.getElementById(\"userAgent\").innerHTML = \
             navigator.userAgent;\
@@ -1308,19 +1308,19 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             </head><body style='font-family: sans-serif; font-size: 11pt;'>\
             <center>\
             <div style=\"max-width: 640px;\">\
-            <h1 style='margin-bottom: 0;'>About Ryouko</h1><img src='file://" \
+            <h1 style='margin-bottom: 0;'>" + tr('aboutRyouko') + "</h1><img src='file://" \
             + os.path.join(app_lib, "icons", "about-logo.png") + "'></img><br>\
             <div style=\"text-align: left;\">\
             <b>Ryouko:</b> "+self.version+"<br>\
-            <b>Codename:</b> \""+self.codename+"\"<br>\
+            <b>" + tr('codename') + ":</b> \""+self.codename+"\"<br>\
             <b>OS:</b> "+sys.platform+"<br>\
             <b>Qt:</b> "+QtCore.qVersion()+"<br>\
             <b>Python:</b> "+str(\
             sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(\
             sys.version_info[2])+"<br>\
-            <b>User Agent:</b> <span id=\"userAgent\">JavaScript must be enabled to display the user agent!</span><br>\
-            <b>Command Line:</b> " + command_line + "<br>\
-            <b>Executable Path:</b> " + os.path.realpath(__file__) + "<br>\
+            <b>" + tr("userAgent") + ":</b> <span id=\"userAgent\">JavaScript must be enabled to display the user agent!</span><br>\
+            <b>" + tr("commandLine") + ":</b> " + command_line + "<br>\
+            <b>" + tr('executablePath') + ":</b> " + os.path.realpath(__file__) + "<br>\
             </div>\
             </div>\
             </center></body></html>")
@@ -1587,7 +1587,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.checkTempFiles()
         return QtGui.QMainWindow.closeEvent(self, ev)
 
-    def aboutRyouko(self):
+    def aboutRyoukoHKey(self):
         self.tabs.widget(self.tabs.currentIndex()).urlBar.setText("about:version")
         self.tabs.widget(self.tabs.currentIndex()).updateWeb()
 
@@ -1784,8 +1784,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsMenu.addAction(configAction)
 
         # About Action
-        aboutAction = QtGui.QAction(tr('aboutRyouko'), self)
-        aboutAction.triggered.connect(self.aboutRyouko)
+        aboutAction = QtGui.QAction(tr('aboutRyoukoHKey'), self)
+        aboutAction.triggered.connect(self.aboutRyoukoHKey)
         self.cornerWidgetsMenu.addAction(aboutAction)
 
         self.cornerWidgetsMenu.addAction(quitAction)

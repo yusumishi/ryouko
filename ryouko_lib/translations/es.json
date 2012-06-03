@@ -1,6 +1,11 @@
 {
 "help": "ryouko [-h|--help] [-pb|--pb] [URLs]\n\n-h o --help: Este ayuda\n-pb o --pb: Abrir las [URLs] en el modo de navegación privada",
-"aboutRyouko": "Sobre &Ryouko",
+"aboutRyouko": "Sobre Ryouko",
+"aboutRyoukoHKey": "Sobre &Ryouko",
+"codename": "Nombre en clave",
+"userAgent": "Agente de usuario",
+"commandLine": "Línea de comandos",
+"executablePath": "Ruta de ejecutable",
 "menu": "&Menú",
 "quit": "Dejar",
 "back": "Previo",
