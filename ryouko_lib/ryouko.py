@@ -1311,7 +1311,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             <h1 style='margin-bottom: 0;'>About Ryouko</h1><img src='file://" \
             + os.path.join(app_lib, "icons", "about-logo.png") + "'></img><br>\
             <div style=\"text-align: left;\">\
-            <b>Ryouko version:</b> "+self.version+"<br>\
+            <b>Ryouko:</b> "+self.version+"<br>\
             <b>Codename:</b> \""+self.codename+"\"<br>\
             <b>OS:</b> "+sys.platform+"<br>\
             <b>Qt:</b> "+QtCore.qVersion()+"<br>\
