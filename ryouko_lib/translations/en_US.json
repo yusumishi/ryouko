@@ -1,4 +1,5 @@
 {
+"help": "ryouko [-h|--help] [-pb|--pb] [URLs]\n\n-h or --help: This help screen\n-pb or --pb: Opens [URLs] in private browsing mode",
 "back": "Go Back",
 "next": "Go Next",
 "stop": "Stop",

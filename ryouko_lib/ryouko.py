@@ -1774,7 +1774,11 @@ class TabBrowser(QtGui.QMainWindow):
                 self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
         elif len(sys.argv) > 1:
             for arg in range(1, len(sys.argv)):
-                self.newTab(sys.argv[arg])
+                if not "--pb" in sys.argv and not "-pb" in sys.argv:
+                    self.newTab(sys.argv[arg])
+                else:
+                    if not sys.argv[arg] == "--pb" and not sys.argv[arg] == "-pb":
+                        self.newpbTab(sys.argv[arg])
 
     def showTabsContextMenu(self):
         x = QtCore.QPoint(QtGui.QCursor.pos()).x()
@@ -2060,20 +2064,23 @@ class Ryouko(QtGui.QWidget):
         win.show()
 
 def main():
-    global reset
-    if not os.path.isdir(app_home):
-        os.mkdir(app_home)
-    if not os.path.isdir(os.path.join(app_home, "temp")):
-        os.mkdir(os.path.join(app_home, "temp"))
-    if not os.path.isdir(os.path.join(app_home, "adblock")):
-        os.mkdir(os.path.join(app_home, "adblock"))
-    app = QtGui.QApplication(sys.argv)
-    if reset == True:
-        browserHistory.reset()
-        reset = False
-    ryouko = Ryouko()
-    ryouko.primeBrowser()
-    app.exec_()
+    if "--help" in sys.argv or "-h" in sys.argv:
+        print(tr("help"))
+    else:
+        global reset
+        if not os.path.isdir(app_home):
+            os.mkdir(app_home)
+        if not os.path.isdir(os.path.join(app_home, "temp")):
+            os.mkdir(os.path.join(app_home, "temp"))
+        if not os.path.isdir(os.path.join(app_home, "adblock")):
+            os.mkdir(os.path.join(app_home, "adblock"))
+        app = QtGui.QApplication(sys.argv)
+        if reset == True:
+            browserHistory.reset()
+            reset = False
+        ryouko = Ryouko()
+        ryouko.primeBrowser()
+        app.exec_()
 
 if __name__ == "__main__":
     main()
