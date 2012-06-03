@@ -1,4 +1,5 @@
 {
+"help": "ryouko [-h|--help] [-pb|--pb] [URLs]\n\n-h o --help: Este ayuda\n-pb o --pb: Abrir las [URLs] en el modo de navegación privada",
 "back": "Previo",
 "next": "Próximo",
 "stop": "Detener",
