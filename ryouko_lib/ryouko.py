@@ -1318,7 +1318,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             <b>Python:</b> "+str(\
             sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(\
             sys.version_info[2])+"<br>\
-            <b>User Agent:</b> <span id=\"userAgent\"></span><br>\
+            <b>User Agent:</b> <span id=\"userAgent\">JavaScript must be enabled to display the user agent!</span><br>\
             <b>Command Line:</b> " + command_line + "<br>\
             <b>Executable Path:</b> " + os.path.realpath(__file__) + "<br>\
             </div>\
