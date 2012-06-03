@@ -2049,6 +2049,7 @@ class TabBrowser(QtGui.QMainWindow):
                     self.newpbTab()
                 else:
                     self.newTab()
+                    self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
     def undoCloseTab(self, index=False):
         if len(self.closedTabList) > 0:
             self.tabs.addTab(self.closedTabList[len(self.closedTabList) - 1]['widget'], self.closedTabList[len(self.closedTabList) - 1]['widget'].webView.icon(), self.closedTabList[len(self.closedTabList) - 1]['widget'].webView.title())
