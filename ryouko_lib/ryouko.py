@@ -1767,8 +1767,11 @@ class TabBrowser(QtGui.QMainWindow):
         self.addAction(closeTabAction)
         self.setCentralWidget(self.tabs)
         if len(sys.argv) == 1:
-            self.newTab()
-            self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
+            if self.parent == None:
+                self.newpbTab()
+            else:
+                self.newTab()
+                self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
         elif len(sys.argv) > 1:
             for arg in range(1, len(sys.argv)):
                 self.newTab(sys.argv[arg])
