@@ -80,7 +80,7 @@ dialogToolBarSheet = """QToolBar {
                         margin-left: 2px;
                         border-radius: 4px;
                         border: 1px solid palette(shadow);
-                        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(light), stop:1 palette(button));
+                        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(light), stop:1 palette(button));
                         }
 
                         QToolButton:pressed, QPushButton:pressed {
@@ -1664,10 +1664,32 @@ class TabBrowser(QtGui.QMainWindow):
         self.showCornerWidgetsMenuAction.setShortcut("Alt+M")
         self.showCornerWidgetsMenuAction.setToolTip(tr("cornerWidgetsMenuTT"))
         self.showCornerWidgetsMenuAction.triggered.connect(self.showCornerWidgetsMenu)
-        self.cornerWidgetsMenuButton = QtGui.QToolButton(self)
-        self.cornerWidgetsMenuButton.setDefaultAction(self.showCornerWidgetsMenuAction)
-        self.cornerWidgetsMenuButton.setStyleSheet("QToolButton { min-width: 8px; max-width: 16px; }")
-        self.cornerWidgetsMenuButton.setArrowType(QtCore.Qt.DownArrow)
+        self.cornerWidgetsMenuButton = QtGui.QPushButton(self)
+        self.cornerWidgetsMenuButton.setText("Menu")
+        self.cornerWidgetsMenuButton.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.cornerWidgetsMenuButton.clicked.connect(self.showCornerWidgetsMenu)
+        self.cornerWidgetsMenuButton.setStyleSheet("""
+        QPushButton {
+        padding: 4px;
+        padding-left: 8px;
+        padding-right: 8px;
+        border-radius: 4px;
+        border: 1px solid navy;
+        color: white;
+        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 cornflowerblue, stop:1 midnightblue);
+        }
+
+        QPushButton:hover {
+        border: 1px solid steelblue;
+        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 lightsteelblue, stop:1 dodgerblue);
+        }
+        
+        QPushButton:pressed {
+        border: 1px solid navy;
+        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 midnightblue, stop:1 dodgerblue);
+        }
+        """)
+#        self.cornerWidgetsMenuButton.setArrowType(QtCore.Qt.DownArrow)
         self.cornerWidgetsMenu = RMenuPopupWindow(self)
 
         # New tab button
