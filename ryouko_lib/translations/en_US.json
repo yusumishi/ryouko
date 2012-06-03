@@ -71,7 +71,7 @@
 "newWindowBtnTT": "<b>New Window</b><br>Ctrl+N",
 "undoCloseTabBtn": "&Undo Close Tab",
 "undoCloseTabBtnTT": "<b>Undo Close Tab</b><br>Ctrl+Shift+T",
-"viewHistoryBtn": "Toggle History Sidebar",
+"viewHistoryBtn": "View &History",
 "viewHistoryBtnTT": "<b>View History</b><br>Ctrl+H",
 "newPBTabBtn": "&New Private Browsing Tab",
 "newPBTabBtnTT": "<b>New Private Browsing Tab</b><br>Ctrl+Shift+N",
