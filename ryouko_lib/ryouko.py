@@ -994,6 +994,7 @@ window.onload = function browserDetect() {
             else:
                 exec("self.newWindow" + str(len(self.newWindows)) + " = TabBrowser()")
             exec("n = self.newWindow" + str(len(self.newWindows)))
+            n.show()
             return n.tabs.widget(n.tabs.currentIndex()).webView
 
 class HistoryCompletionList(QtGui.QListWidget):
@@ -1552,6 +1553,10 @@ class TabBrowser(QtGui.QMainWindow):
         else:
             return []
 
+    def quit(self):
+        self.close()
+        QtCore.QCoreApplication.instance().quit()
+
     def closeEvent(self, ev):
         self.saveCookies()
         self.checkTempFiles()
@@ -1592,7 +1597,7 @@ class TabBrowser(QtGui.QMainWindow):
         # Quit action
         quitAction = QtGui.QAction(self)
         quitAction.setShortcut("Ctrl+Shift+Q")
-        quitAction.triggered.connect(self.close)
+        quitAction.triggered.connect(self.quit)
         self.addAction(quitAction)
 
         # History sidebar
