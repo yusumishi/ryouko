@@ -197,6 +197,7 @@ class RTabBar(QtGui.QTabBar):
     def mouseDoubleClickEvent(self, e):
         e.accept()
         self.parent.newTab()
+        self.parent.tabs.widget(self.parent.tabs.currentIndex()).webView.buildNewTabPage()
 
 class RTabWidget(QtGui.QTabWidget):
     def __init__(self, parent=None):
@@ -1101,8 +1102,12 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             self.webView.titleChanged.connect(browserHistory.reload)
             self.webView.urlChanged.connect(browserHistory.append)
             self.webView.titleChanged.connect(browserHistory.updateTitles)
+        searchAction = QtGui.QAction(self)
+        searchAction.setShortcut("Ctrl+K")
+        searchAction.triggered.connect(self.searchWeb)
+        self.addAction(searchAction)
+        self.historyCompletionBox.addAction(searchAction)
         self.searchButton.clicked.connect(self.searchWeb)
-        self.searchButton.setShortcut("Ctrl+K")
         self.searchEditButton.clicked.connect(self.editSearch)
         self.searchEditButton.setShortcut("Ctrl+Shift+K")
         self.searchEditButton.setToolTip(tr("editSearchTT"))
@@ -1290,15 +1295,35 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
                 header = "http://"
             url = qstring(header + unicode(urlBar))
             if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
+                command_line = ""
+                for arg in sys.argv:
+                    command_line = command_line + arg + " "
                 self.webView.setHtml("<html><head><title>About Ryouko</title>\
-            </head><body style='font-family: sans-serif;'><center>\
+            <script type='text/javascript'>window.onload = function() {\
+            document.getElementById(\"userAgent\").innerHTML = \
+            navigator.userAgent;\
+            }\
+            </script>\
+            <style type=\"text/css\">b, h1 { font-family: sans-serif; } *:not(b):not(h1) { font-family: monospace; }</style>\
+            </head><body style='font-family: sans-serif; font-size: 11pt;'>\
+            <center>\
+            <div style=\"max-width: 640px;\">\
             <h1 style='margin-bottom: 0;'>About Ryouko</h1><img src='file://" \
             + os.path.join(app_lib, "icons", "about-logo.png") + "'></img><br>\
-            <b>Ryouko version:</b> "+self.version+"<br><b>Release series:</b> \
-            \""+self.codename+"\"<br><b>Python version:</b> "+str(\
+            <div style=\"text-align: left;\">\
+            <b>Ryouko version:</b> "+self.version+"<br>\
+            <b>Codename:</b> \""+self.codename+"\"<br>\
+            <b>OS:</b> \""+sys.platform+"\"<br>\
+            <b>Qt:</b> "+QtCore.qVersion()+"<br>\
+            <b>Python:</b> "+str(\
             sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(\
-            sys.version_info[2])+"<br><b>Qt version:</b> "+QtCore.qVersion()+"\
-            <br></center></body></html>")
+            sys.version_info[2])+"<br>\
+            <b>User Agent:</b> <span id=\"userAgent\"></span><br>\
+            <b>Command Line:</b> " + command_line + "<br>\
+            <b>Executable Path:</b> " + os.path.realpath(__file__) + "<br>\
+            </div>\
+            </div>\
+            </center></body></html>")
             else:
                 url = QtCore.QUrl(url)
                 self.webView.load(url)
@@ -1562,6 +1587,10 @@ class TabBrowser(QtGui.QMainWindow):
         self.checkTempFiles()
         return QtGui.QMainWindow.closeEvent(self, ev)
 
+    def aboutRyouko(self):
+        self.tabs.widget(self.tabs.currentIndex()).urlBar.setText("about:version")
+        self.tabs.widget(self.tabs.currentIndex()).updateWeb()
+
     def createClearHistoryDialog(self):
         self.clearHistoryToolBar = QtGui.QToolBar("Clear History Dialog Toolbar")
         self.clearHistoryToolBar.setMovable(False)
@@ -1595,7 +1624,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.searchEditor = SearchEditor()
 
         # Quit action
-        quitAction = QtGui.QAction(self)
+        quitAction = QtGui.QAction(tr("quit"), self)
         quitAction.setShortcut("Ctrl+Shift+Q")
         quitAction.triggered.connect(self.quit)
         self.addAction(quitAction)
@@ -1660,12 +1689,13 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsToolBar.setStyleSheet("QToolBar { border: 0; background: transparent; padding: 0; margin: 0; }")
         self.cornerWidgetsLayout.addWidget(self.cornerWidgetsToolBar)
 
-        self.showCornerWidgetsMenuAction = QtGui.QAction(self)
+        """self.showCornerWidgetsMenuAction = QtGui.QAction(self)
         self.showCornerWidgetsMenuAction.setShortcut("Alt+M")
         self.showCornerWidgetsMenuAction.setToolTip(tr("cornerWidgetsMenuTT"))
-        self.showCornerWidgetsMenuAction.triggered.connect(self.showCornerWidgetsMenu)
+        self.showCornerWidgetsMenuAction.triggered.connect(self.showCornerWidgetsMenu)"""
         self.cornerWidgetsMenuButton = QtGui.QPushButton(self)
-        self.cornerWidgetsMenuButton.setText("Menu")
+        self.cornerWidgetsMenuButton.setText(tr("menu"))
+        self.cornerWidgetsMenuButton.setShortcut("Alt+M")
         self.cornerWidgetsMenuButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.cornerWidgetsMenuButton.clicked.connect(self.showCornerWidgetsMenu)
         self.cornerWidgetsMenuButton.setStyleSheet("""
@@ -1673,24 +1703,23 @@ class TabBrowser(QtGui.QMainWindow):
         padding: 4px;
         padding-left: 8px;
         padding-right: 8px;
-        border-radius: 4px;
-        border: 1px solid navy;
-        color: white;
-        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 cornflowerblue, stop:1 midnightblue);
+        border-top-left-radius: 4px;
+        border-bottom: 1px solid palette(shadow);
+        background-color: transparent;
         }
 
         QPushButton:hover {
-        border: 1px solid steelblue;
-        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 lightsteelblue, stop:1 dodgerblue);
+        color: palette(highlighted-text);
+        background-color: palette(highlight);
         }
         
         QPushButton:pressed {
-        border: 1px solid navy;
-        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 midnightblue, stop:1 dodgerblue);
+        color: palette(highlighted-text);
+        background-color: palette(highlight);
         }
         """)
 #        self.cornerWidgetsMenuButton.setArrowType(QtCore.Qt.DownArrow)
-        self.cornerWidgetsMenu = RMenuPopupWindow(self)
+        self.cornerWidgetsMenu = QtGui.QMenu(self)
 
         # New tab button
         newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newtab.png'))), tr('newTabBtn'), self)
@@ -1705,21 +1734,12 @@ class TabBrowser(QtGui.QMainWindow):
 
         self.cornerWidgetsToolBar.addWidget(self.cornerWidgetsMenuButton)
 
-        dummyButton = QtGui.QPushButton()
-        self.cornerWidgetsMenu.layout().addWidget(dummyButton)
-        dummyButton.setStyleSheet("border: 0; background: transparent; padding: 0; margin: 0; max-width: 0; max-height: 0;")
-
         # New window button
         newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), tr("newWindowBtn"), self)
         newWindowAction.setShortcut('Ctrl+N')
         newWindowAction.triggered.connect(self.newWindow)
         self.addAction(newWindowAction)
-        self.newWindowButton = QtGui.QPushButton(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), tr('newWindow'), self)
-        self.newWindowButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
-        self.newWindowButton.setToolTip(tr('newWindowBtnTT'))
-        self.newWindowButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.newWindowButton.clicked.connect(self.newWindow)
-        self.cornerWidgetsMenu.layout().addWidget(self.newWindowButton)
+        self.cornerWidgetsMenu.addAction(newWindowAction)
 
         # Undo closed tab button
         undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(app_lib, 'icons', 'undo.png'))), tr('undoCloseTabBtn'), self)
@@ -1727,12 +1747,7 @@ class TabBrowser(QtGui.QMainWindow):
         undoCloseTabAction.setShortcuts(['Ctrl+Shift+T'])
         undoCloseTabAction.triggered.connect(self.undoCloseTab)
         self.addAction(undoCloseTabAction)
-        self.undoCloseTabButton = QtGui.QToolButton()
-        self.undoCloseTabButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
-        self.undoCloseTabButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
-        self.undoCloseTabButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.undoCloseTabButton.setDefaultAction(undoCloseTabAction)
-        self.cornerWidgetsMenu.layout().addWidget(self.undoCloseTabButton)
+        self.cornerWidgetsMenu.addAction(undoCloseTabAction)
 
         # History sidebar button
         historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(app_lib, "icons", "history.png"))), tr('viewHistoryBtn'), self)
@@ -1741,12 +1756,7 @@ class TabBrowser(QtGui.QMainWindow):
         historyToggleAction.triggered.connect(self.historyToolBar.show)
         historyToggleAction.setShortcut("Ctrl+H")
         self.addAction(historyToggleAction)
-        self.historyToggleButton = QtGui.QToolButton()
-        self.historyToggleButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
-        self.historyToggleButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
-        self.historyToggleButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.historyToggleButton.setDefaultAction(historyToggleAction)
-        self.cornerWidgetsMenu.layout().addWidget(self.historyToggleButton)
+        self.cornerWidgetsMenu.addAction(historyToggleAction)
 
         # New private browsing tab button
         newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(app_lib, 'icons', 'pb.png'))), tr('newPBTabBtn'), self)
@@ -1754,12 +1764,7 @@ class TabBrowser(QtGui.QMainWindow):
         newpbTabAction.setShortcuts(['Ctrl+Shift+N'])
         newpbTabAction.triggered.connect(self.newpbTab)
         self.addAction(newpbTabAction)
-        self.newpbTabButton = QtGui.QToolButton()
-        self.newpbTabButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
-        self.newpbTabButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
-        self.newpbTabButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.newpbTabButton.setDefaultAction(newpbTabAction)
-        self.cornerWidgetsMenu.layout().addWidget(self.newpbTabButton)
+        self.cornerWidgetsMenu.addAction(newpbTabAction)
 
         self.cDialog = CDialog(self)
 
@@ -1776,12 +1781,14 @@ class TabBrowser(QtGui.QMainWindow):
         configAction.setShortcuts(['Ctrl+Shift+P'])
         configAction.triggered.connect(self.showSettings)
         self.addAction(configAction)
-        self.settingsButton = QtGui.QToolButton()
-        self.settingsButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
-        self.settingsButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
-        self.settingsButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.settingsButton.setDefaultAction(configAction)
-        self.cornerWidgetsMenu.layout().addWidget(self.settingsButton)
+        self.cornerWidgetsMenu.addAction(configAction)
+
+        # About Action
+        aboutAction = QtGui.QAction(tr('aboutRyouko'), self)
+        aboutAction.triggered.connect(self.aboutRyouko)
+        self.cornerWidgetsMenu.addAction(aboutAction)
+
+        self.cornerWidgetsMenu.addAction(quitAction)
 
         closeTabAction = QtGui.QAction(self)
         closeTabAction.setShortcuts(['Ctrl+W'])
@@ -1813,7 +1820,20 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabsContextMenu.show()
 
     def showCornerWidgetsMenu(self):
-        self.cornerWidgetsMenu.display(True, self.cornerWidgetsMenuButton.mapToGlobal(QtCore.QPoint(0,0)).x(), self.cornerWidgetsMenuButton.mapToGlobal(QtCore.QPoint(0,0)).y(), self.cornerWidgetsMenuButton.width(), self.cornerWidgetsMenuButton.height())
+        x = self.cornerWidgetsMenuButton.mapToGlobal(QtCore.QPoint(0,0)).x()
+        y = self.cornerWidgetsMenuButton.mapToGlobal(QtCore.QPoint(0,0)).y()
+        width = self.cornerWidgetsMenuButton.width()
+        height = self.cornerWidgetsMenuButton.height()
+        self.cornerWidgetsMenu.show()
+        if x - self.cornerWidgetsMenu.width() + width < 0:
+            x = 0
+        else:
+            x = x - self.cornerWidgetsMenu.width() + width
+        if y + height + self.cornerWidgetsMenu.height() >= QtGui.QApplication.desktop().size().height():
+            y = y - self.cornerWidgetsMenu.height()
+        else:
+            y = y + height
+        self.cornerWidgetsMenu.move(x, y)
 
     def showSettings(self):
         self.cDialog.show()
