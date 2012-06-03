@@ -2046,8 +2046,20 @@ class TabBrowser(QtGui.QMainWindow):
 
 win = None
 
+class Ryouko(QtGui.QWidget):
+    def __init__(self):
+        global win
+        win = TabBrowser(self)
+    def primeBrowser(self):
+        global win
+        if os.path.exists(app_logo):
+            if not sys.platform.startswith("win"):
+                win.setWindowIcon(QtGui.QIcon(app_logo))
+            else:
+                win.setWindowIcon(QtGui.QIcon(os.path.join(app_lib, 'icons', 'about-logo.png')))
+        win.show()
+
 def main():
-    global win
     global reset
     if not os.path.isdir(app_home):
         os.mkdir(app_home)
@@ -2059,13 +2071,8 @@ def main():
     if reset == True:
         browserHistory.reset()
         reset = False
-    win = TabBrowser()
-    if os.path.exists(app_logo):
-        if not sys.platform.startswith("win"):
-            win.setWindowIcon(QtGui.QIcon(app_logo))
-        else:
-            win.setWindowIcon(QtGui.QIcon(os.path.join(app_lib, 'icons', 'about-logo.png')))
-    win.show()
+    ryouko = Ryouko()
+    ryouko.primeBrowser()
     app.exec_()
 
 if __name__ == "__main__":
