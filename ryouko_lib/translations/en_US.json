@@ -26,6 +26,7 @@
 "searchFor": "Search for:",
 "preferences": "Preferences",
 "newWindowOption": "Open new windows as &tabs",
+"newWindowOption2": "Open new windows as &popups",
 "autoLoadImages": "Automatically load &images",
 "enableJS": "Enable &Javascript",
 "enablePlugins": "Enable &plugins",

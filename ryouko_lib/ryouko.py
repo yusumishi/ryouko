@@ -971,7 +971,7 @@ window.onload = function browserDetect() {
         self.zoomResetAction.setShortcut('Ctrl+0')
 
     def createWindow(self, windowType):
-        if settingsManager.settings['oldSchoolWindows']:
+        if settingsManager.settings['oldSchoolWindows'] or settingsManager.settings['openInTabs']:
             if not self.parent == None:
                 exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(self.parent)")
             else:
@@ -1367,6 +1367,7 @@ class CDialog(QtGui.QMainWindow):
         self.filterListCount = 0
         self.mainWidget.setLayout(self.layout)
         self.openTabsBox = QtGui.QCheckBox(tr('newWindowOption'))
+        self.openTabsBox.stateChanged.connect(self.checkOSWBox)
         self.layout.addWidget(self.openTabsBox)
         self.oswBox = QtGui.QCheckBox(tr('newWindowOption2'))
         self.layout.addWidget(self.oswBox)
@@ -1411,6 +1412,9 @@ class CDialog(QtGui.QMainWindow):
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.cToolBar)
         self.loadSettings()
         settingsManager.saveSettings()
+    def checkOSWBox(self):
+        if self.openTabsBox.isChecked():
+            self.oswBox.setCheckState(QtCore.Qt.Unchecked)
     def applyFilters(self):
         l = os.listdir(os.path.join(app_home, "adblock"))
         if len(l) != self.filterListCount:
