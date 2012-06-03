@@ -1313,7 +1313,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             <div style=\"text-align: left;\">\
             <b>Ryouko version:</b> "+self.version+"<br>\
             <b>Codename:</b> \""+self.codename+"\"<br>\
-            <b>OS:</b> \""+sys.platform+"\"<br>\
+            <b>OS:</b> "+sys.platform+"<br>\
             <b>Qt:</b> "+QtCore.qVersion()+"<br>\
             <b>Python:</b> "+str(\
             sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(\
