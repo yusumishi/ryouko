@@ -1073,22 +1073,31 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.mainLayout.setSpacing(0);
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
         self.mainToolBarLayout.setSpacing(0)
+
         self.goButton.clicked.connect(self.updateWeb)
         self.goButton.setText("")
+        self.goButton.setToolTip(tr("go"))
         self.goButton.setIconSize(QtCore.QSize(16, 16))
         self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(os.path.join(app_lib, "icons", 'go.png'))))
+
+        self.backButton.setText(tr("backBtn"))
+        self.backButton.setToolTip(tr("backBtnTT"))
         if sys.platform.startswith("win"):
             self.backButton.setIconSize(QtCore.QSize(22, 22))
         self.backButton.clicked.connect(self.webView.back)
         self.backButton.setIcon(QtGui.QIcon().fromTheme("go-previous", QtGui.QIcon(os.path.join(app_lib, "icons", 'back.png'))))
+
+        self.nextButton.setToolTip(tr("nextBtnTT"))
         if sys.platform.startswith("win"):
             self.nextButton.setIconSize(QtCore.QSize(22, 22))
         self.nextButton.clicked.connect(self.webView.forward)
         self.nextButton.setText("")
         self.nextButton.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_lib, "icons", 'next.png'))))
+
         self.urlBar2 = QtGui.QLineEdit()
         self.historyCompletionBoxLayout.addWidget(self.urlBar2)
         self.historyCompletionBoxLayout.addWidget(self.historyCompletion)
+        self.urlBar.setToolTip(tr("locationBarTT"))
         self.urlBar.textChanged.connect(self.rSyncText)
         self.urlBar.textChanged.connect(self.showHistoryBox)
         self.urlBar2.textChanged.connect(self.syncText)
@@ -1108,6 +1117,9 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.addAction(searchAction)
         self.historyCompletionBox.addAction(searchAction)
         self.searchButton.clicked.connect(self.searchWeb)
+        self.searchButton.setText(tr("searchBtn"))
+        self.searchButton.setToolTip(tr("searchBtnTT"))
+        self.searchEditButton.setToolTip(tr("searchBtnTT"))
         self.searchEditButton.clicked.connect(self.editSearch)
         self.searchEditButton.setShortcut("Ctrl+Shift+K")
         self.searchEditButton.setToolTip(tr("editSearchTT"))
@@ -1117,20 +1129,24 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.addAction(historySearchAction)
         if sys.platform.startswith("win"):
             self.reloadButton.setIconSize(QtCore.QSize(22, 22))
+
         self.reloadButton.clicked.connect(self.webView.reload)
         self.reloadButton.setText("")
+        self.reloadButton.setToolTip(tr("reloadBtnTT"))
         self.reloadButton.setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_lib, "icons", 'reload.png'))))
 
         if sys.platform.startswith("win"):
             self.findButton.setIconSize(QtCore.QSize(22, 22))
         self.findButton.clicked.connect(self.webView.find)
         self.findButton.setText("")
+        self.findButton.setToolTip(tr("findBtnTT"))
         self.findButton.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_lib, "icons", 'find.png'))))
 
         if sys.platform.startswith("win"):
             self.findNextButton.setIconSize(QtCore.QSize(22, 22))
         self.findNextButton.clicked.connect(self.webView.findNext)
         self.findNextButton.setText("")
+        self.findNextButton.setToolTip(tr("findNextBtnTT"))
         self.findNextButton.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(os.path.join(app_lib, "icons", 'find-next.png'))))
 
         self.stopAction = QtGui.QAction(self)
@@ -1145,6 +1161,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.stopButton.clicked.connect(self.historyCompletionBox.hide)
         self.stopButton.clicked.connect(self.updateText)
         self.stopButton.setText("")
+        self.stopButton.setToolTip(tr("stopBtnTT"))
         self.stopButton.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_lib, "icons", 'stop.png'))))
         self.focusURLBarButton.clicked.connect(self.focusURLBar)
         self.focusURLBarButton.setStyleSheet("""
