@@ -891,7 +891,7 @@ window.onload = function browserDetect() {
     def buildNewTabPage(self, forceLoad = True):
         if forceLoad == True:
             self.load(QtCore.QUrl("about:blank"))
-        html = "<!DOCTYPE html><html><head><title>" + tr('newTabTitle') + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('search') + "</b><form method='get' action='" + searchManager.currentSearch.replace("%s", "") + "' style='display: inline-block;'><input type='text'   name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
+        html = "<!DOCTYPE html><html><head><title>" + tr('newTabTitle') + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('search') + ":</b><form method='get' action='" + searchManager.currentSearch.replace("%s", "") + "' style='display: inline-block;'><input type='text'   name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
         h = tr('newTabShortcuts')
         try: self.parent.closedTabList
         except:
