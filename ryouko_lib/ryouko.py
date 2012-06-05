@@ -1449,7 +1449,7 @@ class CDialog(QtGui.QMainWindow):
     def checkOSWBox(self):
         if self.openTabsBox.isChecked():
             self.oswBox.setCheckState(QtCore.Qt.Unchecked)
-        elif self.oswBox.isChecked()
+        elif self.oswBox.isChecked():
             self.openTabsBox.setCheckState(QtCore.Qt.Unchecked)
     def applyFilters(self):
         l = os.listdir(os.path.join(app_home, "adblock"))
