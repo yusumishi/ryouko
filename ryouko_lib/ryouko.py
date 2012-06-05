@@ -1403,6 +1403,7 @@ class CDialog(QtGui.QMainWindow):
         self.openTabsBox.stateChanged.connect(self.checkOSWBox)
         self.layout.addWidget(self.openTabsBox)
         self.oswBox = QtGui.QCheckBox(tr('newWindowOption2'))
+        self.oswBox.stateChanged.connect(self.checkOSWBox)
         self.layout.addWidget(self.oswBox)
         self.imagesBox = QtGui.QCheckBox(tr('autoLoadImages'))
         self.layout.addWidget(self.imagesBox)
@@ -1448,6 +1449,8 @@ class CDialog(QtGui.QMainWindow):
     def checkOSWBox(self):
         if self.openTabsBox.isChecked():
             self.oswBox.setCheckState(QtCore.Qt.Unchecked)
+        elif self.oswBox.isChecked()
+            self.openTabsBox.setCheckState(QtCore.Qt.Unchecked)
     def applyFilters(self):
         l = os.listdir(os.path.join(app_home, "adblock"))
         if len(l) != self.filterListCount:
