@@ -711,14 +711,14 @@ class RWebView(QtWebKit.QWebView):
 
     def buildToolBar(self):
         if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
-            self.page().mainFrame().findFirstElement("body").appendInside("""<style type="text/css">html{padding-bottom: 38px;}#ryouko-toolbar {overflow-y: auto; height: 36px; width: 100%; left: 0;padding: 2px;background: ThreeDFace;border-radius: 2px;position: fixed;visibility: visible;z-index: 9001;}#ryouko-toolbar a{height: 1.25em !important; text-decoration: none; -webkit-appearance: button; color: ButtonText;}</style><span id='ryouko-toolbar' style='bottom: 0;'><span id='ryouko-browser-controls'></span><span id='ryouko-link-bar-container'></span><input id='ryouko-switch-button' value='^' type='button' onclick="if (document.getElementById('ryouko-toolbar').getAttribute('style')=='top: 0;') { document.getElementById('ryouko-toolbar').setAttribute('style', 'bottom: 0;'); document.getElementsByTagName('html')[0].setAttribute('style', 'padding-top: 0; padding-bottom: 38px;'); document.getElementById('ryouko-switch-button').setAttribute('value','^'); } else { document.getElementById('ryouko-toolbar').setAttribute('style', 'top: 0;'); document.getElementsByTagName('html')[0].setAttribute('style', 'padding-top: 38px; padding-bottom: 0;'); document.getElementById('ryouko-switch-button').setAttribute('value','v'); }"></input></span>""")
+            self.page().mainFrame().findFirstElement("body").appendInside("""<style type="text/css">html{padding-bottom: 1.75em;}#ryouko-toolbar {font-family: sans-serif; font-size: 11pt; overflow-y: auto; height: 1.75em; width: 100%; left: 0;padding: 2px;background: white;border-radius: 2px;position: fixed;visibility: visible;z-index: 9001;}#ryouko-toolbar *{background: transparent; padding: 0; border: 0; color: blue; text-decoration: none; -webkit-appearance: none;} #ryouko-toolbar a:hover, #ryouko-toolbar input:hover{text-decoration: underline; }</style><span id='ryouko-toolbar' style='bottom: 0; border-top: 1px solid black;'><span id='ryouko-browser-controls'></span><span id='ryouko-link-bar-container'></span><input id='ryouko-switch-button' style='float: right;' value='Move up' type='button' onclick="if (document.getElementById('ryouko-toolbar').getAttribute('style')=='top: 0; border-bottom: 1px solid black;') { document.getElementById('ryouko-toolbar').setAttribute('style', 'bottom: 0; border-top: 1px solid black;'); document.getElementsByTagName('html')[0].setAttribute('style', 'padding-top: 0; padding-bottom: 1.75em;'); document.getElementById('ryouko-switch-button').setAttribute('value','Move up'); } else { document.getElementById('ryouko-toolbar').setAttribute('style', 'top: 0; border-bottom: 1px solid black;'); document.getElementsByTagName('html')[0].setAttribute('style', 'padding-top: 1.75em; padding-bottom: 0;'); document.getElementById('ryouko-switch-button').setAttribute('value','Move down'); }"></input></span>""")
 
     def loadControls(self):
         if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
             self.buildToolBar()
         if self.page().mainFrame().findFirstElement("#ryouko-url-edit").isNull():
             self.page().mainFrame().findFirstElement("#ryouko-browser-controls").appendInside("""<input type='button' value='Back' onclick='history.go(-1);'></input><input type='button' value='Next' onclick='history.go(+1);'></input><input id='ryouko-url-edit' type='button' value='Open' onclick="url = prompt('You are currently at:\\n' + window.location.href + '\\n\\nEnter a URL here:', 'http://'); if (url != null && url != '') {if (url.indexOf('://') == -1) {url = 'http://' + url;}window.location.href = url; }");
-ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input>""")
+ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input><span style='margin: -2px; padding-left: 6px; padding-right: 6px;'><span style='border-right: 1px solid black;'></span></span>""")
 
     def evaluateJavaScript(self, script):
         self.page().mainFrame().evaluateJavaScript(script)
@@ -2131,7 +2131,7 @@ def main():
             links.sort()
         global user_links
         for link in links:
-            user_links = user_links + "<a href=\"" + link[0] + "\">" + link[1] + "</a>\n"
+            user_links = user_links + "<a href=\"" + link[0] + "\">" + link[1] + "</a> \n"
         global reset
         if not os.path.isdir(app_home):
             os.mkdir(app_home)
