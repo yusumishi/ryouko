@@ -693,8 +693,47 @@ class RWebView(QtWebKit.QWebView):
             self.buildNewTabPage()
             self.loadControls()
 
+        self.loadFinished.connect(self.loadUserBar)
+
     def enableControls(self):
         self.loadFinished.connect(self.loadControls)
+
+    def loadUserBar(self):
+        if os.path.isdir(os.path.join(app_home, "links")):
+            l = os.listdir(os.path.join(app_home, "links"))
+            links = []
+            for fname in l:
+                f = os.path.join(app_home, "links", fname)
+                fi = open(f, "r")
+                contents = fi.read()
+                fi.close()
+                contents = contents.rstrip("\n")
+                links.append([contents, fname.rstrip(".txt")])
+            links.sort()
+            if self.page().mainFrame().findFirstElement("#ryouko-link-bar").isNull() == True:
+                self.evaluateJavaScript("""
+ryoukoStyle = document.createElement('style');
+ryoukoStyle.appendChild(document.createTextNode("#ryouko-link-bar {bottom: 2px;padding: 2px;background: rgba(0,0,0,0.75);color: white;border-radius: 2px;position: fixed;visibility: visible;font-size: 10pt;z-index: 9001;}#ryouko-link-bar > a{padding: 2.5px;}#ryouko-link-bar > a, #ryouko-link-bar > input[type='button'] {text-decoration: none; -webkit-appearance: none;background: rgba(255,255,255,0.75);border: 1px solid black;color: black;}"));
+document.getElementsByTagName('body')[0].appendChild(ryoukoStyle);
+ryoukoUserBar = document.createElement('span');
+ryoukoUserBar.setAttribute('id','ryouko-link-bar');
+ryoukoUserBar.setAttribute('style','right: 2px;');
+document.getElementsByTagName('body')[0].appendChild(ryoukoUserBar);
+                """)
+                tot = 0
+                for link in links:
+                    self.evaluateJavaScript("link = document.createElement('a');\nlink.setAttribute('href', '" + link[0] + "');\nlink.innerHTML = '" + link[1] + "';\ndocument.getElementById('ryouko-link-bar').appendChild(link);")
+                    tot += 1
+                if tot < 1:
+                    self.evaluateJavaScript("link = document.createElement('a');\nlink.innerHTML = '" + tr("noExtensions") + "';\ndocument.getElementById('ryouko-link-bar').appendChild(link);")
+                self.evaluateJavaScript("""
+ryoukoSwitchButton = document.createElement('input');
+ryoukoSwitchButton.setAttribute('id','ryouko-switch-button-2');
+ryoukoSwitchButton.setAttribute('value','<--');
+ryoukoSwitchButton.setAttribute('type','button');
+ryoukoSwitchButton.setAttribute('onclick',"if (document.getElementById('ryouko-link-bar').getAttribute('style')=='right: 2px;') { document.getElementById('ryouko-link-bar').setAttribute('style', 'left: 2px;'); document.getElementById('ryouko-switch-button-2').setAttribute('value','-->'); } else { document.getElementById('ryouko-link-bar').setAttribute('style', 'right: 2px;'); document.getElementById('ryouko-switch-button-2').setAttribute('value','<--'); }");
+document.getElementById('ryouko-link-bar').appendChild(ryoukoSwitchButton);
+                """)
 
     def loadControls(self):
         if self.page().mainFrame().findFirstElement("#ryouko-browser-controls").isNull() == True:
@@ -922,7 +961,7 @@ window.onload = function browserDetect() {
         url = inputDialog(tr('openLocation'), tr('enterURL'), self.url().toString())
         if url:
             header = ""
-            if not unicode(url).startswith("about:") and not "://" in unicode(url):
+            if not unicode(url).startswith("about:") and not "://" in unicode(url) and not "javascript:" in unicode(url):
                 header = "http://"
             url = qstring(header + unicode(url))
             self.load(QtCore.QUrl(url))
@@ -1308,7 +1347,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             urlBar = QtCore.QUrl(search['expression'].replace("%s", urlBar))
             self.webView.load(urlBar)
         else:
-            if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar):
+            if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and not "javascript:" in unicode(urlBar):
                 header = "http://"
             url = qstring(header + unicode(urlBar))
             if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
