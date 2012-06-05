@@ -58,6 +58,7 @@ import translate
 from ryouko_common import *
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
 app_logo = os.path.join(app_lib, "icons", "logo.svg")
+user_links = ""
 
 reset = False
 terminals=[ ["terminator",      "-x "],
@@ -689,85 +690,35 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.checkForAds)
         self.updateSettings()
         self.establishParent(parent)
+        self.loadFinished.connect(self.loadLinks)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
             self.buildNewTabPage()
             self.loadControls()
 
-        self.loadFinished.connect(self.loadUserBar)
-
     def enableControls(self):
         self.loadFinished.connect(self.loadControls)
 
-    def loadUserBar(self):
+    def loadLinks(self):
         if os.path.isdir(os.path.join(app_home, "links")):
-            l = os.listdir(os.path.join(app_home, "links"))
-            links = []
-            for fname in l:
-                f = os.path.join(app_home, "links", fname)
-                fi = open(f, "r")
-                contents = fi.read()
-                fi.close()
-                contents = contents.rstrip("\n")
-                links.append([contents, fname.rstrip(".txt")])
-            links.sort()
-            if self.page().mainFrame().findFirstElement("#ryouko-link-bar").isNull() == True:
-                self.evaluateJavaScript("""
-ryoukoStyle = document.createElement('style');
-ryoukoStyle.appendChild(document.createTextNode("#ryouko-link-bar {bottom: 2px;padding: 2px;background: rgba(0,0,0,0.75);color: white;border-radius: 2px;position: fixed;visibility: visible;font-size: 10pt;z-index: 9001;}#ryouko-link-bar > a{padding: 2.5px;}#ryouko-link-bar > a, #ryouko-link-bar > input[type='button'] {text-decoration: none; -webkit-appearance: none;background: rgba(255,255,255,0.75);border: 1px solid black;color: black;}"));
-document.getElementsByTagName('body')[0].appendChild(ryoukoStyle);
-ryoukoUserBar = document.createElement('span');
-ryoukoUserBar.setAttribute('id','ryouko-link-bar');
-ryoukoUserBar.setAttribute('style','right: 2px;');
-document.getElementsByTagName('body')[0].appendChild(ryoukoUserBar);
-                """)
-                tot = 0
-                for link in links:
-                    self.evaluateJavaScript("link = document.createElement('a');\nlink.setAttribute('href', '" + link[0] + "');\nlink.innerHTML = '" + link[1] + "';\ndocument.getElementById('ryouko-link-bar').appendChild(link);")
-                    tot += 1
-                if tot < 1:
+            if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
+                self.buildToolBar()
+            if self.page().mainFrame().findFirstElement("#ryouko-link-bar").isNull():
+                self.page().mainFrame().findFirstElement("#ryouko-link-bar-container").appendInside("<span id=\"ryouko-link-bar\"></span>")
+                if not user_links == "":
+                    self.page().mainFrame().findFirstElement("#ryouko-link-bar").appendInside(user_links)
+                else:
                     self.evaluateJavaScript("link = document.createElement('a');\nlink.innerHTML = '" + tr("noExtensions") + "';\ndocument.getElementById('ryouko-link-bar').appendChild(link);")
-                self.evaluateJavaScript("""
-ryoukoSwitchButton = document.createElement('input');
-ryoukoSwitchButton.setAttribute('id','ryouko-switch-button-2');
-ryoukoSwitchButton.setAttribute('value','<--');
-ryoukoSwitchButton.setAttribute('type','button');
-ryoukoSwitchButton.setAttribute('onclick',"if (document.getElementById('ryouko-link-bar').getAttribute('style')=='right: 2px;') { document.getElementById('ryouko-link-bar').setAttribute('style', 'left: 2px;'); document.getElementById('ryouko-switch-button-2').setAttribute('value','-->'); } else { document.getElementById('ryouko-link-bar').setAttribute('style', 'right: 2px;'); document.getElementById('ryouko-switch-button-2').setAttribute('value','<--'); }");
-document.getElementById('ryouko-link-bar').appendChild(ryoukoSwitchButton);
-                """)
+
+    def buildToolBar(self):
+        if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
+            self.page().mainFrame().findFirstElement("body").appendInside("""<style type="text/css">html{padding-bottom: 38px;}#ryouko-toolbar {overflow-y: auto; height: 36px; width: 100%; left: 0;padding: 2px;background: ThreeDFace;border-radius: 2px;position: fixed;visibility: visible;z-index: 9001;}#ryouko-toolbar a{height: 1.25em !important; text-decoration: none; -webkit-appearance: button; color: ButtonText;}</style><span id='ryouko-toolbar' style='bottom: 0;'><span id='ryouko-browser-controls'></span><span id='ryouko-link-bar-container'></span><input id='ryouko-switch-button' value='^' type='button' onclick="if (document.getElementById('ryouko-toolbar').getAttribute('style')=='top: 0;') { document.getElementById('ryouko-toolbar').setAttribute('style', 'bottom: 0;'); document.getElementsByTagName('html')[0].setAttribute('style', 'padding-top: 0; padding-bottom: 38px;'); document.getElementById('ryouko-switch-button').setAttribute('value','^'); } else { document.getElementById('ryouko-toolbar').setAttribute('style', 'top: 0;'); document.getElementsByTagName('html')[0].setAttribute('style', 'padding-top: 38px; padding-bottom: 0;'); document.getElementById('ryouko-switch-button').setAttribute('value','v'); }"></input></span>""")
 
     def loadControls(self):
-        if self.page().mainFrame().findFirstElement("#ryouko-browser-controls").isNull() == True:
-            self.evaluateJavaScript("""
-ryoukoStyle = document.createElement('style');
-ryoukoStyle.appendChild(document.createTextNode("#ryouko-browser-controls {top: 2px;padding: 2px;background: rgba(0,0,0,0.75);color: white;border-radius: 2px;position: fixed;visibility: visible;font-size: 10pt;z-index: 9001;}#ryouko-browser-controls > input[type='button'] {-webkit-appearance: none;background: rgba(255,255,255,0.75);border: 1px solid black;color: black;}"));
-document.getElementsByTagName('body')[0].appendChild(ryoukoStyle);
-ryoukoBrowserControls = document.createElement('span');
-ryoukoBrowserControls.setAttribute('id','ryouko-browser-controls');
-ryoukoBrowserControls.setAttribute('style','right: 2px;');
-document.getElementsByTagName('body')[0].appendChild(ryoukoBrowserControls);
-ryoukoBackButton = document.createElement('input');
-ryoukoBackButton.setAttribute('type','button');
-ryoukoBackButton.setAttribute('value','Back');
-ryoukoBackButton.setAttribute('onclick','history.go(-1);');
-ryoukoBrowserControls.appendChild(ryoukoBackButton);
-ryoukoNextButton = document.createElement('input');
-ryoukoNextButton.setAttribute('value','Next');
-ryoukoNextButton.setAttribute('type','button');
-ryoukoNextButton.setAttribute('onclick','history.go(+1);');
-ryoukoBrowserControls.appendChild(ryoukoNextButton);
-ryoukoURLEdit = document.createElement('input');
-ryoukoURLEdit.setAttribute('id','ryouko-url-edit');
-ryoukoURLEdit.setAttribute('value','Open');
-ryoukoURLEdit.setAttribute('type','button');
-ryoukoURLEdit.setAttribute('onclick',"url = prompt('You are currently at:\\\\n' + window.location.href + '\\\\n\\\\nEnter a URL here:', 'http://'); if (url != null && url != '') {if (url.indexOf('://') == -1) {url = 'http://' + url;}window.location.href = url; }");
-ryoukoBrowserControls.appendChild(ryoukoURLEdit);
-ryoukoSwitchButton = document.createElement('input');
-ryoukoSwitchButton.setAttribute('id','ryouko-switch-button');
-ryoukoSwitchButton.setAttribute('value','<--');
-ryoukoSwitchButton.setAttribute('type','button');
-ryoukoSwitchButton.setAttribute('onclick',"if (document.getElementById('ryouko-browser-controls').getAttribute('style')=='right: 2px;') { document.getElementById('ryouko-browser-controls').setAttribute('style', 'left: 2px;'); document.getElementById('ryouko-switch-button').setAttribute('value','-->'); } else { document.getElementById('ryouko-browser-controls').setAttribute('style', 'right: 2px;'); document.getElementById('ryouko-switch-button').setAttribute('value','<--'); }");
-ryoukoBrowserControls.appendChild(ryoukoSwitchButton);
-            """)
+        if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
+            self.buildToolBar()
+        if self.page().mainFrame().findFirstElement("#ryouko-url-edit").isNull():
+            self.page().mainFrame().findFirstElement("#ryouko-browser-controls").appendInside("""<input type='button' value='Back' onclick='history.go(-1);'></input><input type='button' value='Next' onclick='history.go(+1);'></input><input id='ryouko-url-edit' type='button' value='Open' onclick="url = prompt('You are currently at:\\n' + window.location.href + '\\n\\nEnter a URL here:', 'http://'); if (url != null && url != '') {if (url.indexOf('://') == -1) {url = 'http://' + url;}window.location.href = url; }");
+ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input>""")
 
     def evaluateJavaScript(self, script):
         self.page().mainFrame().evaluateJavaScript(script)
@@ -2166,6 +2117,21 @@ def main():
     if "--help" in sys.argv or "-h" in sys.argv:
         print(tr("help"))
     else:
+        links = []
+        if os.path.isdir(os.path.join(app_home, "links")):
+            l = os.listdir(os.path.join(app_home, "links"))
+            links = []
+            for fname in l:
+                f = os.path.join(app_home, "links", fname)
+                fi = open(f, "r")
+                contents = fi.read()
+                fi.close()
+                contents = contents.rstrip("\n")
+                links.append([contents, fname.rstrip(".txt")])
+            links.sort()
+        global user_links
+        for link in links:
+            user_links = user_links + "<a href=\"" + link[0] + "\">" + link[1] + "</a>\n"
         global reset
         if not os.path.isdir(app_home):
             os.mkdir(app_home)
