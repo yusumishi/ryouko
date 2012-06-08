@@ -29,7 +29,7 @@ SOFTWARE.
 
 from __future__ import print_function
 
-import os, sys, pickle, json, time, datetime, string
+import os, sys, json, time, datetime, string
 from subprocess import Popen, PIPE
 from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 if not sys.platform.startswith("win"):
@@ -57,8 +57,11 @@ sys.path.append(app_lib)
 import translate
 from ryouko_common import *
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
+app_lock = os.path.join(app_home, ".lockfile")
 app_logo = os.path.join(app_lib, "icons", "logo.svg")
+app_cookies = os.path.join(app_home, "cookies.json")
 user_links = ""
+app_instance2 = os.path.join(app_home, "instance2-says.txt")
 
 reset = False
 terminals=[ ["terminator",      "-x "],
@@ -1344,6 +1347,12 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         texturl = url.toString()
         self.urlBar2.setText(texturl)
 
+class CheckForURLs(QtCore.QThread):
+    def __init__(self, parent=None):
+        QtCore.QThread.__init__(self, parent)
+    def run(self):
+        win.newTab
+
 class DownloaderThread(QtCore.QThread):
     fileDownloaded = QtCore.pyqtSignal()
     def __init__(self, parent=None):
@@ -1533,10 +1542,7 @@ class TabBrowser(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(TabBrowser, self).__init__()
         self.parent = parent
-        if sys.version_info[0] >= 3:
-            self.cookieFile = os.path.join(app_home, "cookies.pkl")
-        else:
-            self.cookieFile = os.path.join(app_home, "cookies-py2.pkl")
+        self.cookieFile = app_cookies
         self.tabCount = 0
         self.killCookies = False
         self.killTempFiles = False
@@ -1548,6 +1554,10 @@ class TabBrowser(QtGui.QMainWindow):
         self.app_lib = app_lib
         self.tempHistory = []
 
+        self.urlCheckTimer = QtCore.QTimer()
+        self.urlCheckTimer.timeout.connect(self.checkForURLs)
+        self.urlCheckTimer.start(1000)
+
         self.cookies = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
         cookies = []
         for c in self.loadCookies():
@@ -1555,6 +1565,19 @@ class TabBrowser(QtGui.QMainWindow):
         self.cookies.setAllCookies(cookies)
 
         self.initUI()
+
+    def checkForURLs(self):
+        if os.path.exists(app_instance2):
+            f = open(app_instance2)
+            i2contents = f.readlines()
+            f.close()
+            os.remove(app_instance2)
+            for item in i2contents:
+                item = item.replace("\n", "")
+                if not "://" in item and not "about:" in item and not item == "":
+                    item = "http://" + item
+                if not item == "":
+                    self.newTab(item)
 
     def checkTempFiles(self):
         if self.killTempFiles == True:
@@ -1565,8 +1588,8 @@ class TabBrowser(QtGui.QMainWindow):
             cookieFile = open(self.cookieFile, "wb")
             cookies = []
             for c in self.cookies.allCookies():
-                cookies.append(c.toRawForm())
-            pickle.dump(cookies, cookieFile)
+                cookies.append(unicode(qstring(c.toRawForm())))
+            json.dump(cookies, cookieFile)
             cookieFile.close()
         else:
             if sys.platform.startswith("linux"):
@@ -1579,12 +1602,14 @@ class TabBrowser(QtGui.QMainWindow):
         if os.path.exists(self.cookieFile):
             cookieFile = open(self.cookieFile, "rb")
             cookies = []
-            try: cookies = pickle.load(cookieFile)
+            try: cookies = json.load(cookieFile)
             except:
                 print("Error! Cookies could not be loaded!")
             else:
                 doNothing()
             cookieFile.close()
+            for cookie in cookies:
+                cookie = QtCore.QByteArray(cookie)
             return cookies
         else:
             return []
@@ -1594,6 +1619,7 @@ class TabBrowser(QtGui.QMainWindow):
         QtCore.QCoreApplication.instance().quit()
 
     def closeEvent(self, ev):
+        os.remove(app_lock)
         self.saveCookies()
         self.checkTempFiles()
         return QtGui.QMainWindow.closeEvent(self, ev)
@@ -1873,7 +1899,7 @@ class TabBrowser(QtGui.QMainWindow):
     def newTabWithRWebView(self, url="", widget=None):
         self.tabCount += 1
         if url != False:
-            exec("tab" + str(self.tabCount) + " = Browser(self, '"+metaunquote(url)+"', False, widget)")
+            exec("tab" + str(self.tabCount) + " = Browser(self,\"'"+metaunquote(url)+"\", False, widget)")
         else:
             exec("tab" + str(self.tabCount) + " = Browser(self)")
         exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
@@ -1902,7 +1928,7 @@ class TabBrowser(QtGui.QMainWindow):
         else:
             self.tabCount += 1
             if url != False:
-                exec("tab" + str(self.tabCount) + " = Browser(self, '"+metaunquote(url)+"')")
+                exec("tab%s = Browser(self, \"%s\")" % (str(self.tabCount), metaunquote(url)))
             else:
                 exec("tab" + str(self.tabCount) + " = Browser(self)")
             exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
@@ -2121,35 +2147,48 @@ def main():
     if "--help" in sys.argv or "-h" in sys.argv:
         print(tr("help"))
     else:
-        links = []
-        if os.path.isdir(os.path.join(app_home, "links")):
-            l = os.listdir(os.path.join(app_home, "links"))
+        if os.path.exists(app_lock):
+            f = open(app_instance2, "w")
+            f.write("")
+            f.close()
+            f = open(app_instance2, "a")
+            for arg in range(1, len(sys.argv)):
+                if not "--pb" in sys.argv and not "-pb" in sys.argv:
+                    f.write(sys.argv[arg] + "\n")
+            f.close()
+        else:
             links = []
-            for fname in l:
-                f = os.path.join(app_home, "links", fname)
-                fi = open(f, "r")
-                contents = fi.read()
-                fi.close()
-                contents = contents.rstrip("\n")
-                links.append([contents, fname.rstrip(".txt")])
-            links.sort()
-        global user_links
-        for link in links:
-            user_links = user_links + "<a href=\"" + link[0] + "\">" + link[1] + "</a> \n"
-        global reset
-        if not os.path.isdir(app_home):
-            os.mkdir(app_home)
-        if not os.path.isdir(os.path.join(app_home, "temp")):
-            os.mkdir(os.path.join(app_home, "temp"))
-        if not os.path.isdir(os.path.join(app_home, "adblock")):
-            os.mkdir(os.path.join(app_home, "adblock"))
-        app = QtGui.QApplication(sys.argv)
-        if reset == True:
-            browserHistory.reset()
-            reset = False
-        ryouko = Ryouko()
-        ryouko.primeBrowser()
-        app.exec_()
+            if os.path.isdir(os.path.join(app_home, "links")):
+                l = os.listdir(os.path.join(app_home, "links"))
+                links = []
+                for fname in l:
+                    f = os.path.join(app_home, "links", fname)
+                    fi = open(f, "r")
+                    contents = fi.read()
+                    fi.close()
+                    contents = contents.rstrip("\n")
+                    links.append([contents, fname.rstrip(".txt")])
+                links.sort()
+            global user_links
+            for link in links:
+                user_links = user_links + "<a href=\"" + link[0] + "\">" + link[1] + "</a> \n"
+            global reset
+            if not os.path.isdir(app_home):
+                os.mkdir(app_home)
+            if not os.path.isdir(os.path.join(app_home, "temp")):
+                os.mkdir(os.path.join(app_home, "temp"))
+            if not os.path.isdir(os.path.join(app_home, "adblock")):
+                os.mkdir(os.path.join(app_home, "adblock"))
+            app = QtGui.QApplication(sys.argv)
+            if reset == True:
+                browserHistory.reset()
+                reset = False
+            ryouko = Ryouko()
+            ryouko.primeBrowser()
+            f = open(app_lock, "w")
+            f.write("")
+            f.close()
+            app.exec_()
 
 if __name__ == "__main__":
     main()
