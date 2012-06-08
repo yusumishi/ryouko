@@ -1619,7 +1619,8 @@ class TabBrowser(QtGui.QMainWindow):
         QtCore.QCoreApplication.instance().quit()
 
     def closeEvent(self, ev):
-        os.remove(app_lock)
+        if os.path.exists(app_lock) and not os.path.isdir(app_lock)
+            os.remove(app_lock)
         self.saveCookies()
         self.checkTempFiles()
         return QtGui.QMainWindow.closeEvent(self, ev)
