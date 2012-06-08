@@ -210,13 +210,15 @@ class RTabWidget(QtGui.QTabWidget):
         self.nuTabBar = RTabBar(self.parent)
         self.setTabBar(self.nuTabBar)
         self.setDocumentMode(True)
-        self.setStyleSheet("""
-QTabBar {
+        lynn = ""
+        if sys.platform.startswith("linux"):
+            lynn = """QTabBar {
 border-top: 1px solid palette(shadow);
 border-right: 1px solid palette(shadow);
 border-top-right-radius:4px;
 background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(midlight), stop:1 palette(window));
-}
+}"""
+        self.setStyleSheet(lynn + """
 
 QTabBar::tab {
 padding: 4px;
