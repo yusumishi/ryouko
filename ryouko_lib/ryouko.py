@@ -1556,7 +1556,7 @@ class TabBrowser(QtGui.QMainWindow):
 
         self.urlCheckTimer = QtCore.QTimer()
         self.urlCheckTimer.timeout.connect(self.checkForURLs)
-        self.urlCheckTimer.start(1000)
+        self.urlCheckTimer.start(250)
 
         self.cookies = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
         cookies = []
