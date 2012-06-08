@@ -1736,7 +1736,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsMenuButton.setShortcut("Alt+M")
         self.cornerWidgetsMenuButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.cornerWidgetsMenuButton.clicked.connect(self.showCornerWidgetsMenu)
-		if sys.platform.startswith("win"):
+        if sys.platform.startswith("win"):
             osStyle = """
             QPushButton {
             padding: 4px;
@@ -1746,7 +1746,7 @@ class TabBrowser(QtGui.QMainWindow):
             border-bottom-left-radius: 4px;
             background-color: transparent;
             }"""
-		else:
+        else:
             osStyle = """
             QPushButton {
             padding: 4px;
