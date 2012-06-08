@@ -1742,7 +1742,7 @@ class TabBrowser(QtGui.QMainWindow):
         padding-left: 8px;
         padding-right: 8px;
         border-top-left-radius: 4px;
-        border-bottom: 1px solid palette(shadow);
+        border-bottom: 0;
         background-color: transparent;
         }
 
