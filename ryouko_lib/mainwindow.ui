@@ -243,6 +243,9 @@ background: transparent;</string>
          </item>
          <item>
           <widget class="QToolButton" name="searchEditButton">
+           <property name="focusPolicy">
+            <enum>Qt::TabFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">QToolButton { max-width: 16px; }</string>
            </property>
