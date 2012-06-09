@@ -62,6 +62,7 @@ app_icons = os.path.join(app_lib, 'icons')
 app_gui = os.path.join(app_lib, "mainwindow.ui")
 app_info = os.path.join(app_lib, "info.txt")
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
+app_links = os.path.join(app_home, "links")
 app_commandline = ""
 for arg in sys.argv:
     app_commandline = "%s%s " % (app_commandline, arg)
@@ -144,6 +145,24 @@ def tr(key):
 
 def doNothing():
     return
+
+def reload_user_links():
+    links = []
+    if os.path.isdir(os.path.join(app_home, "links")):
+        l = os.listdir(os.path.join(app_home, "links"))
+        links = []
+        for fname in l:
+            f = os.path.join(app_home, "links", fname)
+            fi = open(f, "r")
+            contents = fi.read()
+            fi.close()
+            contents = contents.rstrip("\n")
+            links.append([contents, fname.rstrip(".txt")])
+        links.sort()
+        global user_links
+        user_links = ""
+        for link in links:
+            user_links = "%s<a href=\"%s\">%s</a> \n" % (user_links, link[0], link[1])
 
 def read_terminal_output(command):
     stdout_handle = os.popen(command)
@@ -434,6 +453,127 @@ class SearchEditor(RMenuPopupWindow):
         searchManager.remove(unicode(self.engineList.currentItem().text()).split("\n")[0])
         self.reload()
 
+class BookmarksManager(QtCore.QObject):
+    bookmarksChanged = QtCore.pyqtSignal()
+    def __init__(self, parent=None):
+        super(BookmarksManager, self).__init__()
+        self.parent = parent
+        self.bookmarks = []
+        self.reload_()
+    def reload_(self, ):
+        self.bookmarks = []
+        if not os.path.isdir(app_links):
+            os.mkdir(app_links)
+        if os.path.isdir(app_links):
+            links = os.listdir(app_links)
+            for fname in links:
+                path = os.path.join(app_links, fname)
+                f = open(path)
+                link = f.read()
+                f.close()
+                link = link.replace("\n", "")
+                self.bookmarks.append({"name": fname.rstrip(".txt"), "url": link})
+            self.bookmarks.sort()
+            reload_user_links()
+            self.bookmarksChanged.emit()
+    def add(self, url, name):
+        f = open(os.path.join(app_links, name + ".txt"), "w")
+        f.write(url)
+        f.close()
+        self.reload_()
+        self.bookmarksChanged.emit()
+    def removeByName(self, path):
+        path = os.path.join(app_links, path)
+        if os.path.exists(path):
+            os.remove(path)
+        if os.path.exists(path + ".txt"):
+            os.remove(path + ".txt")
+        self.reload_()
+        self.bookmarksChanged.emit()
+
+bookmarksManager = BookmarksManager()
+
+class BookmarksManagerGUI(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        super(BookmarksManagerGUI, self).__init__()
+        self.parent = parent
+        if os.path.exists(app_logo):
+            self.setWindowIcon(QtGui.QIcon(app_logo))
+        self.setWindowTitle(tr('bookmarks'))
+        self.nameToolBar = QtGui.QToolBar("Add a bookmarky")
+        self.nameToolBar.setMovable(False)
+        self.nameToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        nameLabel = QtGui.QLabel(tr('name') + ":")
+        self.nameField = QtGui.QLineEdit()
+        self.nameField.returnPressed.connect(self.addBookmark)
+        self.nameToolBar.addWidget(nameLabel)
+        self.nameToolBar.addWidget(self.nameField)
+        self.urlToolBar = QtGui.QToolBar("Add a bookmarky")
+        self.urlToolBar.setMovable(False)
+        self.urlToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        uLabel = QtGui.QLabel(tr('url') + ":")
+        self.urlField = QtGui.QLineEdit()
+        self.urlField.returnPressed.connect(self.addBookmark)
+        self.urlToolBar.addWidget(uLabel)
+        self.urlToolBar.addWidget(self.urlField)
+        self.finishToolBar = QtGui.QToolBar()
+        self.finishToolBar.setMovable(False)
+        self.finishToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.addButton = QtGui.QPushButton(tr('add'))
+        self.addButton.clicked.connect(self.addBookmark)
+        self.finishToolBar.addWidget(self.addButton)
+        self.removeButton = QtGui.QPushButton(tr('remove'))
+        self.removeButton.clicked.connect(self.removeBookmark)
+        self.finishToolBar.addWidget(self.removeButton)
+        self.bookmarksList = QtGui.QListWidget()
+        self.bookmarksList.itemActivated.connect(self.openBookmark)
+        removeBookmarkAction = QtGui.QAction(self)
+        removeBookmarkAction.setShortcut("Del")
+        removeBookmarkAction.triggered.connect(self.removeBookmarkIfFocused)
+        self.addAction(removeBookmarkAction)
+        closeWindowAction = QtGui.QAction(self)
+        closeWindowAction.setShortcut("Ctrl+W")
+        closeWindowAction.triggered.connect(self.close)
+        self.addAction(closeWindowAction)
+        bookmarksManager.bookmarksChanged.connect(self.reload_)
+        self.addToolBar(self.nameToolBar)
+        self.addToolBarBreak()
+        self.addToolBar(self.urlToolBar)
+        self.addToolBarBreak()
+        self.addToolBar(self.finishToolBar)
+        self.setCentralWidget(self.bookmarksList)
+        self.reload_()
+    def display(self):
+        self.show()
+        self.resize(800, 480)
+        self.nameField.setFocus()
+        self.nameField.selectAll()
+    def reload_(self):
+        self.bookmarksList.clear()
+        for bookmark in bookmarksManager.bookmarks:
+            self.bookmarksList.addItem(bookmark["name"])
+    def openBookmark(self):
+        if win.closed:
+            win.show()
+            win.closed = False
+            win.resize(800, 480)
+        for bookmark in bookmarksManager.bookmarks:
+            if bookmark["name"] == unicode(self.bookmarksList.currentItem().text()):
+                win.newTab(bookmark["url"])
+                break
+    def addBookmark(self):
+        if unicode(self.nameField.text()) != "" and unicode(self.urlField.text()) != "":
+            bookmarksManager.add(unicode(self.urlField.text()), unicode(self.nameField.text()))
+        else:
+            message(tr("error"), tr('bookmarkError'))
+    def removeBookmarkIfFocused(self):
+        if self.bookmarksList.hasFocus():
+            removeBookmark()
+    def removeBookmark(self):
+        bookmarksManager.removeByName(unicode(self.bookmarksList.currentItem().text()))
+
+bookmarksManagerGUI = ""
+
 class BrowserHistory(QtCore.QObject):
     historyChanged = QtCore.pyqtSignal()
     def __init__(self, parent=None):
@@ -441,13 +581,12 @@ class BrowserHistory(QtCore.QObject):
         self.parent = parent
         self.history = []
         self.url = "about:blank"
-        self.app_home = app_home
-        if not os.path.exists(os.path.join(self.app_home, "history.json")):
+        if not os.path.exists(os.path.join(app_home, "history.json")):
             self.save()
         self.reload()
     def reload(self):
-        if os.path.exists(os.path.join(self.app_home, "history.json")):
-            history = open(os.path.join(self.app_home, "history.json"), "r")
+        if os.path.exists(os.path.join(app_home, "history.json")):
+            history = open(os.path.join(app_home, "history.json"), "r")
             try: self.history = json.load(history)
             except:
                 global reset
@@ -456,7 +595,7 @@ class BrowserHistory(QtCore.QObject):
     def save(self):
         if not os.path.isdir(app_home):
             os.mkdir(app_home)
-        history = open(os.path.join(self.app_home, "history.json"), "w")
+        history = open(os.path.join(app_home, "history.json"), "w")
         json.dump(self.history, history)
         history.close()
     def append(self, url, name=""):
@@ -629,7 +768,6 @@ class RWebView(QtWebKit.QWebView):
             self.setWindowTitle("Ryouko")
         if parent == False:
             self.parent = None
-        self.app_home = app_home
         self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
         self.text = ""
@@ -1045,7 +1183,6 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         super(Browser, self).__init__()
         self.parent = parent
         self.pb = pb
-        self.app_home = app_home
         self.tempHistory = []
         self.findText = ""
         self.version = "N/A"
@@ -1200,7 +1337,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.focusURLBarAction.setShortcut("Ctrl+L")
         self.focusURLBarAction.triggered.connect(self.focusURLBar)
         self.addAction(self.focusURLBarAction)
-        self.webView.settings().setIconDatabasePath(qstring(self.app_home))
+        self.webView.settings().setIconDatabasePath(qstring(app_home))
         self.webView.page().linkHovered.connect(self.updateStatusMessage)
         self.webView.loadFinished.connect(self.progressBar.hide)
         self.webView.loadProgress.connect(self.progressBar.setValue)
@@ -1580,15 +1717,20 @@ class TabBrowser(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(TabBrowser, self).__init__()
         self.parent = parent
+        if os.path.exists(app_logo):
+            if not sys.platform.startswith("win"):
+                self.setWindowIcon(QtGui.QIcon(app_logo))
+            else:
+                if os.path.exists(os.path.join(app_icons, 'about-logo.png')):
+                    self.setWindowIcon(QtGui.QIcon(os.path.join(app_icons, 'about-logo.png')))
         self.cookieFile = app_cookies
         self.tabCount = 0
         self.killCookies = False
         self.killTempFiles = False
         self.closed = False
         self.closedTabList = []
-        self.app_home = app_home
-        if not os.path.exists(self.app_home):
-            os.mkdir(self.app_home)
+        if not os.path.exists(app_home):
+            os.mkdir(app_home)
         self.searchOn = False
         self.tempHistory = []
 
@@ -1745,6 +1887,12 @@ class TabBrowser(QtGui.QMainWindow):
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.historyDock)
         self.historyDock.hide()
 
+        # Bookmarks manager! FINALLY! Yay!
+        manageBookmarksAction = QtGui.QAction(tr('viewBookmarks'), self)
+        manageBookmarksAction.setShortcut("Ctrl+B")
+        manageBookmarksAction.triggered.connect(bookmarksManagerGUI.display)
+        self.addAction(manageBookmarksAction)
+
         # Tabs
         self.tabs = RTabWidget(self)
         self.tabs.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -1852,6 +2000,9 @@ class TabBrowser(QtGui.QMainWindow):
         newpbTabAction.triggered.connect(self.newpbTab)
         self.addAction(newpbTabAction)
         self.mainMenu.addAction(newpbTabAction)
+        self.mainMenu.addSeparator()
+
+        self.mainMenu.addAction(manageBookmarksAction)
         self.mainMenu.addSeparator()
 
         closeTabAction = QtGui.QAction(tr('closeTab'), self)
@@ -2222,14 +2373,11 @@ win = None
 class Ryouko(QtGui.QWidget):
     def __init__(self):
         global win
+        global bookmarksManagerGUI
+        bookmarksManagerGUI = BookmarksManagerGUI()
         win = TabBrowser(self)
     def primeBrowser(self):
         global win
-        if os.path.exists(app_logo):
-            if not sys.platform.startswith("win"):
-                win.setWindowIcon(QtGui.QIcon(app_logo))
-            else:
-                win.setWindowIcon(QtGui.QIcon(os.path.join(app_icons, 'about-logo.png')))
         win.show()
 
 def main():
@@ -2259,21 +2407,7 @@ def main():
             QtCore.QCoreApplication.instance().quit()
             sys.exit()
         else:
-            links = []
-            if os.path.isdir(os.path.join(app_home, "links")):
-                l = os.listdir(os.path.join(app_home, "links"))
-                links = []
-                for fname in l:
-                    f = os.path.join(app_home, "links", fname)
-                    fi = open(f, "r")
-                    contents = fi.read()
-                    fi.close()
-                    contents = contents.rstrip("\n")
-                    links.append([contents, fname.rstrip(".txt")])
-                links.sort()
-            global user_links
-            for link in links:
-                user_links = "%s<a href=\"%s\">%s</a> \n" % (user_links, link[0], link[1])
+            reload_user_links()
             global reset
             if not os.path.isdir(app_home):
                 os.mkdir(app_home)
