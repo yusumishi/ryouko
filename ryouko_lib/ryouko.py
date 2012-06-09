@@ -532,7 +532,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         removeBookmarkAction.triggered.connect(self.removeBookmarkIfFocused)
         self.addAction(removeBookmarkAction)
         closeWindowAction = QtGui.QAction(self)
-        closeWindowAction.setShortcut("Ctrl+W")
+        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+B"])
         closeWindowAction.triggered.connect(self.close)
         self.addAction(closeWindowAction)
         bookmarksManager.bookmarksChanged.connect(self.reload_)
