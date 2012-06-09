@@ -54,11 +54,16 @@ except:
     __file__ = sys.executable
 app_lib = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(app_lib)
+
 import translate
 from ryouko_common import *
+
+app_icons = os.path.join(app_lib, 'icons')
+app_gui = os.path.join(app_lib, "mainwindow.ui")
+app_info = os.path.join(app_lib, "info.txt")
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
 app_lock = os.path.join(app_home, ".lockfile")
-app_logo = os.path.join(app_lib, "icons", "logo.svg")
+app_logo = os.path.join(app_icons, "logo.svg")
 app_cookies = os.path.join(app_home, "cookies.json")
 user_links = ""
 app_instance2 = os.path.join(app_home, "instance2-says.txt")
@@ -321,7 +326,7 @@ class RMenuPopupWindow(QtGui.QMainWindow):
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setContentsMargins(0,0,0,0)
         self.mainLayout.setSpacing(0)
-        self.styleSheet = "QMainWindow { border: 1px solid palette(shadow);} " + cornerWidgetsSheet.replace("min-width: 24px;", "text-align: left;") + " QToolButton:focus, QPushButton:focus { background: palette(highlight); border: 1px solid palette(highlight); color: palette(highlighted-text); }"
+        self.styleSheet = "QMainWindow { border: 1px solid palette(shadow);} %s QToolButton:focus, QPushButton:focus { background: palette(highlight); border: 1px solid palette(highlight); color: palette(highlighted-text); }" % (cornerWidgetsSheet.replace("min-width: 24px;", "text-align: left;"))
         self.widget.setLayout(self.mainLayout)
     def layout(self):
         return self.mainLayout
@@ -398,7 +403,7 @@ class SearchEditor(RMenuPopupWindow):
             keyword = "None"
             if searchManager.searchEngines[name]['keyword'] != "":
                 keyword = searchManager.searchEngines[name]['keyword']
-            self.engineList.addItem(name + "\n" + "Keyword: " + keyword)
+            self.engineList.addItem("%s\nKeyword: %s" % (name, keyword))
         for item in range(0, self.engineList.count()):
             if searchManager.searchEngines[unicode(self.engineList.item(item).text()).split("\n")[0]]['expression'] == searchManager.currentSearch:
                 self.engineList.setCurrentItem(self.engineList.item(item))
@@ -558,7 +563,7 @@ class SettingsManager():
         if check:
             self.settings['backend'] = backend
         else:
-            message("Error!", "Backend " + backend + " could not be found!", "warn")
+            message("Error!", "Backend %s could not be found!" % (backend), "warn")
             self.settings['backend'] = "python"
         
 settingsManager = SettingsManager()
@@ -710,7 +715,7 @@ class RWebView(QtWebKit.QWebView):
                 if not user_links == "":
                     self.page().mainFrame().findFirstElement("#ryouko-link-bar").appendInside(user_links)
                 else:
-                    self.evaluateJavaScript("link = document.createElement('a');\nlink.innerHTML = '" + tr("noExtensions") + "';\ndocument.getElementById('ryouko-link-bar').appendChild(link);")
+                    self.evaluateJavaScript("link = document.createElement('a');\nlink.innerHTML = '%s';\ndocument.getElementById('ryouko-link-bar').appendChild(link);" % (tr("noExtensions")))
 
     def buildToolBar(self):
         if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
@@ -720,8 +725,8 @@ class RWebView(QtWebKit.QWebView):
         if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
             self.buildToolBar()
         if self.page().mainFrame().findFirstElement("#ryouko-url-edit").isNull():
-            self.page().mainFrame().findFirstElement("#ryouko-browser-controls").appendInside("""<input type='button' value='Back' onclick='history.go(-1);'></input><input type='button' value='Next' onclick='history.go(+1);'></input><input id='ryouko-url-edit' type='button' value='Open' onclick="url = prompt('You are currently at:\\n' + window.location.href + '\\n\\nEnter a URL here:', 'http://'); if (url != null && url != '') {if (url.indexOf('://') == -1) {url = 'http://' + url;}window.location.href = url; }");
-ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input><span style='margin: -2px; padding-left: 6px; padding-right: 6px;'><span style='border-right: 1px solid ThreeDShadow;'></span></span>""")
+            self.page().mainFrame().findFirstElement("#ryouko-browser-controls").appendInside("""<input type='button' value='""" + tr('back') + """' onclick='history.go(-1);'></input><input type='button' value='""" + tr('next') + """' onclick='history.go(+1);'></input><input id='ryouko-url-edit' type='button' value='""" + tr('open') + """' onclick="url = prompt('You are currently at:\\n' + window.location.href + '\\n\\nEnter a URL here:', 'http://'); if (url != null && url != '') {if (url.indexOf('://') == -1) {url = 'http://' + url;}window.location.href = url; }");
+ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank" target="_blank">""" + tr('newWindow') + """</a><span style='margin: -2px; padding-left: 6px; padding-right: 6px;'><span style='border-right: 1px solid ThreeDShadow;'></span></span>""")
 
     def evaluateJavaScript(self, script):
         self.page().mainFrame().evaluateJavaScript(script)
@@ -782,7 +787,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input><span style='margin: 
         for child in range(1, len(self.newWindows)):
             try: self.newWindows[child].updateSettings()
             except:
-                print("Error! " + self.newWindows[child] + "does not have an updateSettings() method!")
+                print("Error! %s does not have an updateSettings() method!" % (self.newWindows[child]))
 
     def saveDialog(self, fname="", filters = "All files (*)"):
         saveDialog = QtGui.QFileDialog.getSaveFileName(None, "Save As", os.path.join(os.getcwd(), fname), filters)
@@ -790,6 +795,8 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input><span style='margin: 
 
     def checkContentType(self, request):
         mimetype = get_mimetype(unicode(request.url().toString()))
+        if mimetype == None:
+            mimetype = ""
         if mimetype != None:
             if "xspf" in mimetype:
                 self.downloadFile(request, os.path.join(app_home, "temp", "playlist.tmp.xspf"))
@@ -845,7 +852,7 @@ window.onload = function browserDetect() {
             for item in xspfReader.playlist:
                 if item['title'] == "":
                     item['title'] = "(Untitled)"
-                html = html + "<a media=\"" + item['location'] + "\">" + item['title'] + "</a><a style='float: right;' href=\"" + item['location'] + "\">[Download]</a><br/>"
+                html =  "%s<a media=\"%s\">%s</a><a style='float: right;' href=\"%s\">[Download]</a><br/>" % (html, item['location'], item['title'], item['location'])
             html = html + """
         </div>
         </div>
@@ -876,7 +883,7 @@ window.onload = function browserDetect() {
     def updateTitle(self):
         if self.title() != self.windowTitle() and self.oldURL != unicode(self.url().toString()):
             if self.parent == None or self.parent == False:
-                self.setWindowTitle(qstring(unicode(self.title()) + " (PB)"))
+                self.setWindowTitle(qstring("%s (PB)" % (unicode(self.title()))))
             else:
                 self.setWindowTitle(self.title())
             self.oldURL = unicode(self.url().toString())
@@ -884,14 +891,15 @@ window.onload = function browserDetect() {
     def buildNewTabPage(self, forceLoad = True):
         if forceLoad == True:
             self.load(QtCore.QUrl("about:blank"))
-        html = "<!DOCTYPE html><html><head><title>" + tr('newTabTitle') + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('search') + ":</b><form method='get' action='" + searchManager.currentSearch.replace("%s", "") + "' style='display: inline-block;'><input type='text'   name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
+        f = str(searchManager.currentSearch.replace("%s", ""))
+        html = "<!DOCTYPE html><html><head><title>" + tr('newTabTitle') + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('search') + ":</b><form method='get' action='" + f + "' style='display: inline-block;'><input type='text'  name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'"
         h = tr('newTabShortcuts')
         try: self.parent.closedTabList
         except:
             doNothing()
         else:
             if len(self.parent.closedTabList) > 0:
-                html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><b>" + tr('rCTabs') + "</b><br/>"
+                html = "%s<td style='border-right: 1px solid; padding-right: 4px;'><b>%s</b><br/>" % (html, tr('rCTabs'))
             urls = []
             for link in self.parent.closedTabList:
                 breakyes = False
@@ -902,13 +910,13 @@ window.onload = function browserDetect() {
                 if breakyes == True:
                     doNothing()
                 else:
-                    html = html + "<a href=\"" + link['url'] + "\">" + link['title'] + "</a><br/>"
+                    html = "%s<a href=\"%s\">%s</a><br/>" % (html, link['url'], link['title'])
                     urls.append(link['url'])
             if len(self.parent.closedTabList) > 0:
-                html = html + "</td>"
+                html = "%s</td>" % (html)
             if not len(self.parent.closedTabList) > 0:
                 h = h.replace("style='padding-left: 4px;'", "")
-        html = html + h + "</tr></body></html>"
+        html = "%s%s</tr></body></html>" % (html, h)
         self.setHtml(html)
 
     def locationEdit(self):
@@ -965,29 +973,48 @@ window.onload = function browserDetect() {
         self.zoomResetAction.setShortcut('Ctrl+0')
 
     def createWindow(self, windowType):
+        s = str(len(self.newWindows))
         if settingsManager.settings['oldSchoolWindows'] or settingsManager.settings['openInTabs']:
             if not self.parent == None:
-                exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(self.parent)")
+                exec("self.newWindow%s = RWebView(self.parent)" % (s))
             else:
-                exec("self.newWindow" + str(len(self.newWindows)) + " = RWebView(None)")
+                exec("self.newWindow%s = RWebView(None)" % (s))
+            exec("self.newWindow%s.buildNewTabPage()" % (s))
             if settingsManager.settings['openInTabs'] == False:
-                exec("self.newWindow" + str(len(self.newWindows)) + ".applyShortcuts()")
-                exec("self.newWindow" + str(len(self.newWindows)) + ".enableControls()")
-                exec("self.newWindow" + str(len(self.newWindows)) + ".show()")
-            exec("self.newWindows.append(self.newWindow" + str(len(self.newWindows)) + ")")
+                exec("self.newWindow%s.applyShortcuts()" % (s))
+                exec("self.newWindow%s.enableControls()" % (s))
+                exec("self.newWindow%s.loadControls()" % (s))
+                exec("self.newWindow%s.show()" % (s))
+            exec("self.newWindows.append(self.newWindow%s)" % (s))
             self.createNewWindow.emit(windowType)
             if settingsManager.settings['openInTabs'] == True:
                 if not self.parent == None:
-                    exec("win.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
+                    print(self.parent.__class__.__name__)
+                    if self.parent.__class__.__name__ == "Browser":
+                        exec("self.parent.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
+                    else:
+                        if win.closed:
+                            exec("win.show()")
+                            exec("win.closed = False")
+                            exec("win.resize(800, 480)")
+                        exec("win.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
                 else:
                     exec("win.newpbTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
             return self.newWindows[len(self.newWindows) - 1]
         else:
-            if not self.parent == None:
-                exec("self.newWindow" + str(len(self.newWindows)) + " = TabBrowser(self)")
+            if win.closed:
+                global win
+                if not self.parent == None:
+                    exec("win = TabBrowser(self)")
+                else:
+                    exec("win = TabBrowser()")
+                exec("n = win")
             else:
-                exec("self.newWindow" + str(len(self.newWindows)) + " = TabBrowser()")
-            exec("n = self.newWindow" + str(len(self.newWindows)))
+                if not self.parent == None:
+                    exec("self.newWindow%s = TabBrowser(self)" % (s))
+                else:
+                    exec("self.newWindow%s = TabBrowser()" % (s))
+                exec("n = self.newWindow%s" % (s))
             n.show()
             return n.tabs.widget(n.tabs.currentIndex()).webView
 
@@ -1017,12 +1044,11 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.pb = pb
         self.app_home = app_home
         self.tempHistory = []
-        self.app_lib = app_lib
         self.findText = ""
         self.version = "N/A"
         self.codename = "N/A"
-        if os.path.exists(os.path.join(self.app_lib, "info.txt")):
-            readVersionFile = open(os.path.join(self.app_lib, "info.txt"))
+        if os.path.exists(app_info):
+            readVersionFile = open(app_info)
             metadata = readVersionFile.readlines()
             readVersionFile.close()
             if len(metadata) > 0:
@@ -1032,11 +1058,11 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.initUI(url, widget)
     def initUI(self, url, widget=None):
         if not sys.platform.startswith("win"):
-            uic.loadUi(os.path.join(self.app_lib, "mainwindow.ui"), self)
+            uic.loadUi(app_gui, self)
         else:
             self.setupUi(self)
         if widget == None:
-            self.webView = RWebView(None)
+            self.webView = RWebView(self)
         else:
             self.webView = widget
         self.updateSettings()
@@ -1071,21 +1097,21 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.goButton.setText("")
         self.goButton.setToolTip(tr("go"))
         self.goButton.setIconSize(QtCore.QSize(16, 16))
-        self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(os.path.join(app_lib, "icons", 'go.png'))))
+        self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(os.path.join(app_icons, 'go.png'))))
 
-        self.backButton.setText(tr("backBtn"))
+        self.backButton.setText(tr("back"))
         self.backButton.setToolTip(tr("backBtnTT"))
         if sys.platform.startswith("win"):
             self.backButton.setIconSize(QtCore.QSize(22, 22))
         self.backButton.clicked.connect(self.webView.back)
-        self.backButton.setIcon(QtGui.QIcon().fromTheme("go-previous", QtGui.QIcon(os.path.join(app_lib, "icons", 'back.png'))))
+        self.backButton.setIcon(QtGui.QIcon().fromTheme("go-previous", QtGui.QIcon(os.path.join(app_icons, 'back.png'))))
 
         self.nextButton.setToolTip(tr("nextBtnTT"))
         if sys.platform.startswith("win"):
             self.nextButton.setIconSize(QtCore.QSize(22, 22))
         self.nextButton.clicked.connect(self.webView.forward)
         self.nextButton.setText("")
-        self.nextButton.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_lib, "icons", 'next.png'))))
+        self.nextButton.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_icons, 'next.png'))))
 
         self.urlBar2 = QtGui.QLineEdit()
         self.historyCompletionBoxLayout.addWidget(self.urlBar2)
@@ -1126,21 +1152,21 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.reloadButton.clicked.connect(self.webView.reload)
         self.reloadButton.setText("")
         self.reloadButton.setToolTip(tr("reloadBtnTT"))
-        self.reloadButton.setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_lib, "icons", 'reload.png'))))
+        self.reloadButton.setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
 
         if sys.platform.startswith("win"):
             self.findButton.setIconSize(QtCore.QSize(22, 22))
         self.findButton.clicked.connect(self.webView.find)
         self.findButton.setText("")
         self.findButton.setToolTip(tr("findBtnTT"))
-        self.findButton.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_lib, "icons", 'find.png'))))
+        self.findButton.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_icons, 'find.png'))))
 
         if sys.platform.startswith("win"):
             self.findNextButton.setIconSize(QtCore.QSize(22, 22))
         self.findNextButton.clicked.connect(self.webView.findNext)
         self.findNextButton.setText("")
         self.findNextButton.setToolTip(tr("findNextBtnTT"))
-        self.findNextButton.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(os.path.join(app_lib, "icons", 'find-next.png'))))
+        self.findNextButton.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(os.path.join(app_icons, 'find-next.png'))))
 
         self.stopAction = QtGui.QAction(self)
         self.stopAction.triggered.connect(self.webView.stop)
@@ -1155,7 +1181,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.stopButton.clicked.connect(self.updateText)
         self.stopButton.setText("")
         self.stopButton.setToolTip(tr("stopBtnTT"))
-        self.stopButton.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_lib, "icons", 'stop.png'))))
+        self.stopButton.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, 'stop.png'))))
         self.focusURLBarButton.clicked.connect(self.focusURLBar)
         self.focusURLBarButton.setStyleSheet("""
         max-width: 0;
@@ -1269,7 +1295,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.historyCompletionBox.hide()
         self.webView.show()
     def licensing(self):
-        url = QtCore.QUrl(os.path.join(self.app_lib, "LICENSE.html"))
+        url = QtCore.QUrl(os.path.join(app_lib, "LICENSE.html"))
         self.webView.load(url)
 
     def searchWeb(self):
@@ -1293,50 +1319,62 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         header = ""
         search = False
         for key in searchManager.searchEngines:
-            if urlBar.startswith(searchManager.searchEngines[key]['keyword'] + " "):
+            if urlBar.startswith("%s " % (searchManager.searchEngines[key]['keyword'])):
                 search = searchManager.searchEngines[key]
                 break
         if search:
-            urlBar = urlBar.replace(search['keyword'] + " ", "")
+            urlBar = urlBar.replace("%s " % (search['keyword']), "")
             urlBar = QtCore.QUrl(search['expression'].replace("%s", urlBar))
             self.webView.load(urlBar)
         else:
-            if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and not "javascript:" in unicode(urlBar):
-                header = "http://"
-            url = qstring(header + unicode(urlBar))
-            if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
-                command_line = ""
-                for arg in sys.argv:
-                    command_line = command_line + arg + " "
-                self.webView.setHtml("<html><head><title>" + tr('aboutRyouko') + "</title>\
-            <script type='text/javascript'>window.onload = function() {\
-            document.getElementById(\"userAgent\").innerHTML = \
-            navigator.userAgent;\
-            }\
-            </script>\
-            <style type=\"text/css\">b, h1 { font-family: sans-serif; } *:not(b):not(h1) { font-family: monospace; }</style>\
-            </head><body style='font-family: sans-serif; font-size: 11pt;'>\
-            <center>\
-            <div style=\"max-width: 640px;\">\
-            <h1 style='margin-bottom: 0;'>" + tr('aboutRyouko') + "</h1><img src='file://" \
-            + os.path.join(app_lib, "icons", "about-logo.png") + "'></img><br>\
-            <div style=\"text-align: left;\">\
-            <b>Ryouko:</b> "+self.version+"<br>\
-            <b>" + tr('codename') + ":</b> \""+self.codename+"\"<br>\
-            <b>OS:</b> "+sys.platform+"<br>\
-            <b>Qt:</b> "+QtCore.qVersion()+"<br>\
-            <b>Python:</b> "+str(\
-            sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(\
-            sys.version_info[2])+"<br>\
-            <b>" + tr("userAgent") + ":</b> <span id=\"userAgent\">JavaScript must be enabled to display the user agent!</span><br>\
-            <b>" + tr("commandLine") + ":</b> " + command_line + "<br>\
-            <b>" + tr('executablePath') + ":</b> " + os.path.realpath(__file__) + "<br>\
-            </div>\
-            </div>\
-            </center></body></html>")
+            if " " in unicode(urlBar):
+                self.searchWeb()
             else:
-                url = QtCore.QUrl(url)
-                self.webView.load(url)
+                if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and not "javascript:" in unicode(urlBar):
+                    header = "http://"
+                url = qstring(header + unicode(urlBar))
+                if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
+                    command_line = ""
+                    for arg in sys.argv:
+                        command_line = "%s%s " % (command_line, arg)
+                    self.webView.load(QtCore.QUrl("about:blank"))
+                    self.webView.setHtml("""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+                    "http://www.w3.org/TR/html4/strict.dtd">
+                    <html>
+                    <head>
+                    <title>""" + tr('aboutRyouko') + """</title>
+                    <script type='text/javascript'>
+                    window.onload = function() {
+                        document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;
+                    }
+                    </script>
+                    <style type="text/css">
+                    b, h1 {
+                    font-family: sans-serif;
+                    }
+                    
+                    *:not(b):not(h1) {
+                    font-family: monospace;
+                    }
+                    </style>
+                    </head>
+                    <body style='font-family: sans-serif; font-size: 11pt;'>
+                    <center>
+                    <div style=\"max-width: 640px;\">
+                    <h1 style='margin-bottom: 0;'>""" + tr('aboutRyouko') + """</h1>
+                    <img src='file://%""" + os.path.join(app_icons, "about-logo.png") + """'></img><br/>
+                    <div style=\"text-align: left;\">
+                    <b>Ryouko:</b> """ + self.version + """<br/>
+                    <b>""" + tr('codename') + """:</b> \"""" + self.codename) + """\"<br/>
+                    <b>OS:</b> """ + sys.platform + """<br/>
+                    <b>Qt:</b> """ + str(QtCore.qVersion() + """<br/>
+                    <b>Python:</b> """ + str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2]) + """<br/>
+                    <b>""" + tr("userAgent") + """:</b><span id="userAgent">JavaScript must be enabled to display the user agent!</span><br/>
+                    <b>""" + tr("commandLine") + """:</b> """ + command_line + "\
+                    <b>" + tr('executablePath') + ":</b> " + os.path.realpath(__file__) + "<br/></div></div></center></body></html>")
+                else:
+                    url = QtCore.QUrl(url)
+                    self.webView.load(url)
     def syncText(self):
         self.urlBar.setText(self.urlBar2.text())
     def rSyncText(self):
@@ -1370,17 +1408,17 @@ class DownloaderThread(QtCore.QThread):
     def run(self):
         command = ""
         if settingsManager.settings['backend'] == "aria2":
-            command = "aria2c --dir='" + os.path.dirname(unicode(self.destination)) + "'"
+            command = "aria2c --dir='%s'" % (os.path.dirname(unicode(self.destination)))
             if self.username and self.username != "":
-                command = command + " --http-user='" + unicode(self.username) + "'"
+                command = "%s --http-user='%s'" % (command, unicode(self.username))
                 if self.password and self.password != "":
-                    command = command + " --http-passwd='" + unicode(self.password) + "'"
-            command = command + " '" + self.url + "'"
+                    command = "%s --http-passwd='%s'" % (command, unicode(self.password))
+            command = "%s '%s'" % (command, self.url)
             system_terminal(command)
         elif settingsManager.settings['backend'] == "axel":
             os.chdir(os.path.dirname(unicode(self.destination)))
             command = "axel"
-            command = command + " '" + self.url + "'"
+            command = "%s '%s'" % (command, self.url)
             system_terminal(command)
         else:
             if self.username and self.password:
@@ -1546,16 +1584,17 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabCount = 0
         self.killCookies = False
         self.killTempFiles = False
+        self.closed = False
         self.closedTabList = []
         self.app_home = app_home
         if not os.path.exists(self.app_home):
             os.mkdir(self.app_home)
         self.searchOn = False
-        self.app_lib = app_lib
         self.tempHistory = []
 
         self.urlCheckTimer = QtCore.QTimer()
         self.urlCheckTimer.timeout.connect(self.checkForURLs)
+        self.urlCheckTimer.timeout.connect(self.rebuildLock)
         self.urlCheckTimer.start(250)
 
         self.cookies = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
@@ -1567,7 +1606,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.initUI()
 
     def checkForURLs(self):
-        if os.path.exists(app_instance2):
+        if os.path.exists(app_instance2) and not self.closed:
             f = open(app_instance2)
             i2contents = f.readlines()
             f.close()
@@ -1575,9 +1614,17 @@ class TabBrowser(QtGui.QMainWindow):
             for item in i2contents:
                 item = item.replace("\n", "")
                 if not "://" in item and not "about:" in item and not item == "":
-                    item = "http://" + item
+                    item = "http://%s" % (item)
                 if not item == "":
                     self.newTab(item)
+        if self.closed:
+            self.urlCheckTimer.stop()
+
+    def rebuildLock(self):
+        if not os.path.exists(app_lock):
+            f = open(app_lock, "w")
+            f.write("")
+            f.close()
 
     def checkTempFiles(self):
         if self.killTempFiles == True:
@@ -1593,7 +1640,7 @@ class TabBrowser(QtGui.QMainWindow):
             cookieFile.close()
         else:
             if sys.platform.startswith("linux"):
-                os.system("shred -v \"" + self.cookieFile + "\"")
+                os.system("shred -v \"%s\"" % (self.cookieFile))
             try: os.remove(self.cookieFile)
             except:
                 doNothing()
@@ -1622,6 +1669,7 @@ class TabBrowser(QtGui.QMainWindow):
         if os.path.exists(app_lock) and not os.path.isdir(app_lock):
             os.remove(app_lock)
         self.saveCookies()
+        self.closed = True
         self.checkTempFiles()
         return QtGui.QMainWindow.closeEvent(self, ev)
 
@@ -1681,7 +1729,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.addAction(deleteHistoryItemAction)
         self.searchHistoryField = QtGui.QLineEdit()
         self.searchHistoryField.textChanged.connect(self.searchHistory)
-        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(self.app_lib, "icons", "clear.png"))), tr('clearHistory'), self)
+        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(app_icons, "clear.png"))), tr('clearHistory'), self)
         clearHistoryAction.setShortcut("Ctrl+Shift+Del")
         clearHistoryAction.triggered.connect(self.showClearHistoryDialog)
         clearHistoryAction.triggered.connect(self.historyDock.show)
@@ -1760,7 +1808,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsMenu = QtGui.QMenu(self)
 
         # New tab button
-        newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newtab.png'))), tr('newTabBtn'), self)
+        newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(os.path.join(app_icons, 'newtab.png'))), tr('newTabBtn'), self)
         newTabAction.setToolTip(tr('newTabBtnTT'))
         newTabAction.setShortcuts(['Ctrl+T'])
         newTabAction.triggered.connect(self.newTab)
@@ -1773,14 +1821,14 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsToolBar.addWidget(self.cornerWidgetsMenuButton)
 
         # New window button
-        newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_lib, 'icons', 'newwindow.png'))), tr("newWindowBtn"), self)
+        newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_icons, 'newwindow.png'))), tr("newWindowBtn"), self)
         newWindowAction.setShortcut('Ctrl+N')
         newWindowAction.triggered.connect(self.newWindow)
         self.addAction(newWindowAction)
         self.cornerWidgetsMenu.addAction(newWindowAction)
 
         # Undo closed tab button
-        undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(app_lib, 'icons', 'undo.png'))), tr('undoCloseTabBtn'), self)
+        undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(app_icons, 'undo.png'))), tr('undoCloseTabBtn'), self)
         undoCloseTabAction.setToolTip(tr('undoCloseTabBtnTT'))
         undoCloseTabAction.setShortcuts(['Ctrl+Shift+T'])
         undoCloseTabAction.triggered.connect(self.undoCloseTab)
@@ -1788,7 +1836,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsMenu.addAction(undoCloseTabAction)
 
         # History sidebar button
-        historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(app_lib, "icons", "history.png"))), tr('viewHistoryBtn'), self)
+        historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(app_icons, "history.png"))), tr('viewHistoryBtn'), self)
         historyToggleAction.setToolTip(tr('viewHistoryBtnTT'))
         historyToggleAction.triggered.connect(self.historyToggle)
         historyToggleAction.triggered.connect(self.historyToolBar.show)
@@ -1797,12 +1845,21 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsMenu.addAction(historyToggleAction)
 
         # New private browsing tab button
-        newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(app_lib, 'icons', 'pb.png'))), tr('newPBTabBtn'), self)
+        newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(app_icons, 'pb.png'))), tr('newPBTabBtn'), self)
         newpbTabAction.setToolTip(tr('newPBTabBtnTT'))
         newpbTabAction.setShortcuts(['Ctrl+Shift+N'])
         newpbTabAction.triggered.connect(self.newpbTab)
         self.addAction(newpbTabAction)
         self.cornerWidgetsMenu.addAction(newpbTabAction)
+
+        closeTabAction = QtGui.QAction(tr('closeTab'), self)
+        closeTabAction.triggered.connect(self.closeTab)
+        closeLeftTabsAction = QtGui.QAction(tr('closeLeftTabs'), self)
+        closeLeftTabsAction.triggered.connect(self.closeLeftTabs)
+        closeRightTabsAction = QtGui.QAction(tr('closeRighttTabs'), self)
+        closeRightTabsAction.triggered.connect(self.closeRightTabs)
+        closeTabForeverAction = QtGui.QAction(tr('closeTabForever'), self)
+        closeTabForeverAction.triggered.connect(self.permanentCloseTab)
 
         self.cDialog = CDialog(self)
 
@@ -1811,10 +1868,15 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabsContextMenu.addAction(newWindowAction)
         self.tabsContextMenu.addAction(newpbTabAction)
         self.tabsContextMenu.addSeparator()
+        self.tabsContextMenu.addAction(closeTabAction)
+        self.tabsContextMenu.addAction(closeLeftTabsAction)
+        self.tabsContextMenu.addAction(closeRightTabsAction)
+        self.tabsContextMenu.addAction(closeTabForeverAction)
+        self.tabsContextMenu.addSeparator()
         self.tabsContextMenu.addAction(undoCloseTabAction)
 
         # Config button
-        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_lib, 'icons', 'settings.png'))), tr('preferencesButton'), self)
+        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_icons, 'settings.png'))), tr('preferencesButton'), self)
         configAction.setToolTip(tr('preferencesButtonTT'))
         configAction.setShortcuts(['Ctrl+Shift+P'])
         configAction.triggered.connect(self.showSettings)
@@ -1846,6 +1908,8 @@ class TabBrowser(QtGui.QMainWindow):
                 else:
                     if not sys.argv[arg] == "--pb" and not sys.argv[arg] == "-pb":
                         self.newpbTab(sys.argv[arg])
+            for arg in range(1, len(sys.argv)):
+                del sys.argv[1]
 
     def showTabsContextMenu(self):
         x = QtCore.QPoint(QtGui.QCursor.pos()).x()
@@ -1900,27 +1964,27 @@ class TabBrowser(QtGui.QMainWindow):
     def newTabWithRWebView(self, url="", widget=None):
         self.tabCount += 1
         if url != False:
-            exec("tab" + str(self.tabCount) + " = Browser(self,\"'"+metaunquote(url)+"\", False, widget)")
+            exec("tab%s = Browser(self,\"%s\", False, widget)" % (str(self.tabCount), metaunquote(url)))
         else:
-            exec("tab" + str(self.tabCount) + " = Browser(self)")
-        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
-        exec("tab" + str(self.tabCount) + ".webView.urlChanged.connect(self.reloadHistory)")
-        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.reloadHistory)")
-        exec("tab" + str(self.tabCount) + ".webView.iconChanged.connect(self.updateIcons)")
-        exec("self.tabs.addTab(tab" + str(self.tabCount) + ", tab" + str(self.tabCount) + ".webView.icon(), 'New Tab')")
+            exec("tab%s = Browser(self)" % (str(self.tabCount)))
+        exec("tab%s.webView.titleChanged.connect(self.updateTitles)" % (str(self.tabCount)))
+        exec("tab%s.webView.urlChanged.connect(self.reloadHistory)" % (str(self.tabCount)))
+        exec("tab%s.webView.titleChanged.connect(self.reloadHistory)" % (str(self.tabCount)))
+        exec("tab%s.webView.iconChanged.connect(self.updateIcons)" % (str(self.tabCount)))
+        exec("self.tabs.addTab(tab%s, tab%s.webView.icon(), 'New Tab')" % (str(self.tabCount), str(self.tabCount)))
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def newpbTabWithRWebView(self, url="", widget=None):
         self.tabCount += 1
         if url != False:
-            exec("tab" + str(self.tabCount) + " = Browser(self, '"+metaunquote(url)+"', True, widget)")
+            exec("tab%s = Browser(self, '%s', True, widget)" % (str(self.tabCount), metaunquote(url)))
         else:
-            exec("tab" + str(self.tabCount) + " = Browser(self, '', True, widget)")
-        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
-        exec("tab" + str(self.tabCount) + ".webView.urlChanged.connect(self.reloadHistory)")
-        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.reloadHistory)")
-        exec("tab" + str(self.tabCount) + ".webView.iconChanged.connect(self.updateIcons)")
-        exec("self.tabs.addTab(tab" + str(self.tabCount) + ", tab" + str(self.tabCount) + ".webView.icon(), 'New Tab')")
+            exec("tab%s = Browser(self, '', True, widget)" % (str(self.tabCount)))
+        exec("tab%s.webView.titleChanged.connect(self.updateTitles)" % (str(self.tabCount)))
+        exec("tab%s.webView.urlChanged.connect(self.reloadHistory)" % (str(self.tabCount)))
+        exec("tab%.webView.titleChanged.connect(self.reloadHistory)" % (str(self.tabCount)))
+        exec("tab%s.webView.iconChanged.connect(self.updateIcons)" % (str(self.tabCount)))
+        exec("self.tabs.addTab(tab%s, tab%s.webView.icon(), 'New Tab')" %(str(self.tabCount), str(self.tabCount)))
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def newTab(self, url="about:blank"):
@@ -1928,28 +1992,30 @@ class TabBrowser(QtGui.QMainWindow):
             self.newpbTab(url)
         else:
             self.tabCount += 1
+            s = str(self.tabCount)
             if url != False:
-                exec("tab%s = Browser(self, \"%s\")" % (str(self.tabCount), metaunquote(url)))
+                exec("tab%s = Browser(self, \"%s\")" % (s, metaunquote(url)))
             else:
-                exec("tab" + str(self.tabCount) + " = Browser(self)")
-            exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
-            exec("tab" + str(self.tabCount) + ".webView.urlChanged.connect(self.reloadHistory)")
-            exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.reloadHistory)")
-            exec("tab" + str(self.tabCount) + ".webView.iconChanged.connect(self.updateIcons)")
-            exec("self.tabs.addTab(tab" + str(self.tabCount) + ", tab" + str(self.tabCount) + ".webView.icon(), 'New Tab')")
+                exec("tab%s = Browser(self)" % (s))
+            exec("tab%s.webView.titleChanged.connect(self.updateTitles)" % (s))
+            exec("tab%s.webView.urlChanged.connect(self.reloadHistory)" % (s))
+            exec("tab%s.webView.titleChanged.connect(self.reloadHistory)" % (s))
+            exec("tab%s.webView.iconChanged.connect(self.updateIcons)" % (s))
+            exec("self.tabs.addTab(tab%s, tab%s.webView.icon(), 'New Tab')" % (s, s))
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def newpbTab(self, url="about:blank"):
         self.tabCount += 1
+        s = str(self.tabCount)
         if url != False:
-            exec("tab" + str(self.tabCount) + " = Browser(self, '"+metaunquote(url)+"', True)")
+            exec("tab%s = Browser(self, '%s', True)" % (s, metaunquote(url)))
         else:
-            exec("tab" + str(self.tabCount) + " = Browser(self, 'about:blank', True)")
-        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.updateTitles)")
-        exec("tab" + str(self.tabCount) + ".webView.urlChanged.connect(self.reloadHistory)")
-        exec("tab" + str(self.tabCount) + ".webView.titleChanged.connect(self.reloadHistory)")
-        exec("tab" + str(self.tabCount) + ".webView.iconChanged.connect(self.updateIcons)")
-        exec("self.tabs.addTab(tab" + str(self.tabCount) + ", tab" + str(self.tabCount) + ".webView.icon(), 'New Tab')")
+            exec("tab%s = Browser(self, 'about:blank', True)" % (s))
+        exec("tab%s.webView.titleChanged.connect(self.updateTitles)" % (s))
+        exec("tab%s.webView.urlChanged.connect(self.reloadHistory)" % (s))
+        exec("tab%s.webView.titleChanged.connect(self.reloadHistory)" % (s))
+        exec("tab%s.webView.iconChanged.connect(self.updateIcons)" % (s))
+        exec("self.tabs.addTab(tab%s, tab%s.webView.icon(), 'New Tab')" % (s, s))
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def newWindow(self):
@@ -1999,7 +2065,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.clearHistoryToolBar.setVisible(not self.clearHistoryToolBar.isVisible())
     def clearHistoryRange(self, timeRange=0.0):
         if sys.platform.startswith("linux"):
-            os.system("shred -v \"" + os.path.join(app_home, "WebpageIcons.db") + "\"")
+            os.system("shred -v \"%s\"" % (os.path.join(app_home, "WebpageIcons.db")))
         try: os.remove(os.path.join(app_home, "WebpageIcons.db"))
         except:
             doNothing()
@@ -2039,7 +2105,7 @@ class TabBrowser(QtGui.QMainWindow):
             self.clearHistoryRange(86400.0)
         elif self.selectRange.currentIndex() == 11:
             if sys.platform.startswith("linux"):
-                os.system("shred -v \"" + os.path.join(app_home, "WebpageIcons.db") + "\"")
+                os.system("shred -v \"%s\"" % (os.path.join(app_home, "WebpageIcons.db")))
             try: os.remove(os.path.join(app_home, "WebpageIcons.db"))
             except:
                 doNothing()
@@ -2054,7 +2120,7 @@ class TabBrowser(QtGui.QMainWindow):
             self.reloadHistory()
         elif self.selectRange.currentIndex() == 12:
             if sys.platform.startswith("linux"):
-                os.system("shred -v \"" + os.path.join(app_home, "WebpageIcons.db") + "\"")
+                os.system("shred -v \"%s\"" % (os.path.join(app_home, "WebpageIcons.db")))
             try: os.remove(os.path.join(app_home, "WebpageIcons.db"))
             except:
                 doNothing()
@@ -2074,6 +2140,8 @@ class TabBrowser(QtGui.QMainWindow):
     def focusHistorySearch(self):
         self.searchHistoryField.setFocus()
         self.searchHistoryField.selectAll()
+
+
     def closeTab(self, index=False):
         if not index:
             index = self.tabs.currentIndex()
@@ -2083,11 +2151,26 @@ class TabBrowser(QtGui.QMainWindow):
             self.tabs.widget(index).webView.stop()
             self.tabs.removeTab(index)
             if self.tabs.count() == 0:
-                if self.parent == None:
-                    self.newpbTab()
-                else:
-                    self.newTab()
-                    self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
+                self.close()
+
+    def permanentCloseTab(self):
+        index = self.tabs.currentIndex()
+        pb = self.tabs.widget(index).pb
+        url = unicode(self.tabs.widget(index).webView.url().toString())
+        self.closeTab()
+        if not pb and not url == "" and not url == "about:blank":
+            del self.closedTabList[len(self.closedTabList) - 1]
+
+    def closeLeftTabs(self):
+        t = self.tabs.currentIndex()
+        self.tabs.setCurrentIndex(0)
+        for i in range(t):
+            self.closeTab(0)
+
+    def closeRightTabs(self):
+        while self.tabs.currentIndex() != self.tabs.count() - 1:
+            self.closeTab(self.tabs.count() - 1)
+
     def undoCloseTab(self, index=False):
         if len(self.closedTabList) > 0:
             self.tabs.addTab(self.closedTabList[len(self.closedTabList) - 1]['widget'], self.closedTabList[len(self.closedTabList) - 1]['widget'].webView.icon(), self.closedTabList[len(self.closedTabList) - 1]['widget'].webView.title())
@@ -2116,18 +2199,18 @@ class TabBrowser(QtGui.QMainWindow):
                         title += char
                         chars += 1
                         if chars >= 19:
-                            title = title + "..."
+                            title = "%s..." % (title)
                             break
                     title = qstring(title)
                 else:
                     title = self.tabs.widget(tab).webView.title()
                 if self.tabs.widget(tab).pb:
                     title = unicode(title)
-                    title = title + " (PB)"
+                    title = "%s (PB)" % (title)
                     title = qstring(title)
                 self.tabs.setTabText(tab, title)
                 if tab == self.tabs.currentIndex():
-                    self.setWindowTitle(self.tabs.widget(tab).webView.title() + " - Ryouko")
+                    self.setWindowTitle("%s - Ryouko" % (unicode(self.tabs.widget(tab).webView.title())))
 
 win = None
 
@@ -2141,7 +2224,7 @@ class Ryouko(QtGui.QWidget):
             if not sys.platform.startswith("win"):
                 win.setWindowIcon(QtGui.QIcon(app_logo))
             else:
-                win.setWindowIcon(QtGui.QIcon(os.path.join(app_lib, 'icons', 'about-logo.png')))
+                win.setWindowIcon(QtGui.QIcon(os.path.join(app_icons, 'about-logo.png')))
         win.show()
 
 def main():
@@ -2149,14 +2232,27 @@ def main():
         print(tr("help"))
     else:
         if os.path.exists(app_lock):
-            f = open(app_instance2, "w")
-            f.write("")
-            f.close()
-            f = open(app_instance2, "a")
-            for arg in range(1, len(sys.argv)):
-                if not "--pb" in sys.argv and not "-pb" in sys.argv:
-                    f.write(sys.argv[arg] + "\n")
-            f.close()
+            app = QtGui.QApplication(sys.argv)
+            reply = QtGui.QMessageBox.question(None, tr("error"),
+        tr("isRunning"), QtGui.QMessageBox.Yes | 
+        QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
+            if reply == QtGui.QMessageBox.Yes:
+                f = open(app_instance2, "w")
+                f.write("")
+                f.close()
+                f = open(app_instance2, "a")
+                for arg in range(1, len(sys.argv)):
+                    if not "--pb" in sys.argv and not "-pb" in sys.argv:
+                        f.write("%s\n" % (sys.argv[arg]))
+                f.close()
+            else:
+                os.remove(app_lock)
+                args = ""
+                for arg in sys.argv:
+                    args = "%s%s " % (args, arg)
+                os.system("%s && echo \"\"" % (args))
+            QtCore.QCoreApplication.instance().quit()
+            sys.exit()
         else:
             links = []
             if os.path.isdir(os.path.join(app_home, "links")):
@@ -2172,7 +2268,7 @@ def main():
                 links.sort()
             global user_links
             for link in links:
-                user_links = user_links + "<a href=\"" + link[0] + "\">" + link[1] + "</a> \n"
+                user_links = "%s<a href=\"%s\">%s</a> \n" % (user_links, link[0], link[1])
             global reset
             if not os.path.isdir(app_home):
                 os.mkdir(app_home)

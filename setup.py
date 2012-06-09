@@ -2,11 +2,22 @@
 
 files = ["translations/*", "icons/*", "*.*"]
 
+import os
 from distutils.core import setup
+
+app_lib = os.path.dirname(os.path.realpath(__file__))
+app_info = os.path.join(app_lib, "ryouko_lib", "info.txt")
+app_version = '0.6.5'
+if os.path.exists(app_info):
+    readVersionFile = open(app_info, "r")
+    metadata = readVersionFile.readlines()
+    readVersionFile.close()
+    if len(metadata) > 0:
+        app_version = metadata[0].rstrip("\n")
 
 setup(
     name = 'ryouko',
-    version = '0.6.5',
+    version = app_version,
     description = 'PyQt4 Web browser',
     long_description = """Ryouko is a basic PyQt4 Web browser. It was coded for fun and is not intended for serious usage, but it should be capable of fulfilling very basic browsing needs.""",
     scripts = ['ryouko'],
