@@ -1773,7 +1773,6 @@ class TabBrowser(QtGui.QMainWindow):
 
         self.urlCheckTimer = QtCore.QTimer()
         self.urlCheckTimer.timeout.connect(self.checkForURLs)
-        self.urlCheckTimer.timeout.connect(self.rebuildLock)
         self.urlCheckTimer.start(250)
 
         self.cookies = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
@@ -1784,6 +1783,8 @@ class TabBrowser(QtGui.QMainWindow):
 
         global app_windows
         app_windows.append(self)
+
+        self.rebuildLock()
 
         self.initUI()
 
