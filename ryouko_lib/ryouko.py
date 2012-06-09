@@ -549,6 +549,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.resize(800, 480)
         self.nameField.setFocus()
         self.nameField.selectAll()
+        self.activateWindow()
     def reload_(self):
         self.bookmarksList.clear()
         for bookmark in bookmarksManager.bookmarks:
