@@ -2415,12 +2415,12 @@ win = None
 class Ryouko(QtGui.QWidget):
     def __init__(self):
         global bookmarksManagerGUI
-        global cDialog
         global searchEditor
+        global cDialog
         global win
         bookmarksManagerGUI = BookmarksManagerGUI()
-        cDialog = CDialog(self)
         searchEditor = SearchEditor()
+        cDialog = CDialog(self)
         win = TabBrowser(self)
     def primeBrowser(self):
         global win
