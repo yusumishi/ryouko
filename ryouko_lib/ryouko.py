@@ -60,6 +60,28 @@ from ryouko_common import *
 
 app_windows = []
 app_icons = os.path.join(app_lib, 'icons')
+app_cookiejar = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
+
+def loadCookies():
+    global app_cookiejar
+    if os.path.exists(app_cookies):
+        cookieFile = open(app_cookies, "rb")
+        try: c = json.load(cookieFile)
+        except:
+            print("Error! Cookies could not be loaded!")
+            c = []
+        else:
+            doNothing()
+        cookieFile.close()
+        for cookie in c:
+            cookie = QtCore.QByteArray(cookie)
+    else:
+        c = []
+    cookies = []
+    for cookie in c:
+        cookies.append(QtNetwork.QNetworkCookie().parseCookies(cookie)[0])
+    app_cookiejar.setAllCookies(cookies)
+
 app_gui = os.path.join(app_lib, "mainwindow.ui")
 app_info = os.path.join(app_lib, "info.txt")
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
@@ -759,15 +781,16 @@ def runThroughFilters(url):
 
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
-    def __init__(self, parent=False):
+    def __init__(self, parent=False, pb=False):
         super(RWebView, self).__init__()
+        self.parent = parent
         self.newWindows = [0]
         self.oldURL = False
         self.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
         downloaderThread.fileDownloaded.connect(self.loadXspf)
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
-        if parent == False or parent == None:
+        if pb:
             self.setWindowTitle("Ryouko (PB)")
         else:
             self.setWindowTitle("Ryouko")
@@ -838,16 +861,22 @@ class RWebView(QtWebKit.QWebView):
         self.zoomResetAction.triggered.connect(self.zoomReset)
         self.addAction(self.zoomResetAction)
 
+        self.page().action(QtWebKit.QWebPage.InspectElement).triggered.connect(self.showInspector)
+
         self.page().setForwardUnsupportedContent(True)
         self.page().unsupportedContent.connect(self.checkContentType)
         self.page().downloadRequested.connect(self.downloadFile)
         self.loadFinished.connect(self.checkForAds)
         self.updateSettings()
-        self.establishParent(parent)
+        self.establishPBMode(pb)
         self.loadFinished.connect(self.loadLinks)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
             self.buildNewTabPage()
             self.loadControls()
+
+    def showInspector(self):
+        if self.parent.webInspectorDock:
+            self.parent.webInspectorDock.show()
 
     def enableControls(self):
         self.loadFinished.connect(self.loadControls)
@@ -879,7 +908,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
 
     def checkForAds(self):
         if settingsManager.settings['adBlock']:
-            elements = self.page().mainFrame().findAllElements("iframe, frame, object, embed").toList()
+            elements = self.page().mainFrame().findAllElements("iframe, frame, object, embed, .ego_unit").toList()
             for element in elements:
                 for attribute in element.attributeNames():
                     e = unicode(element.attribute(attribute))
@@ -887,24 +916,23 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                     if delete:
                         element.removeFromDocument()
 
-    def establishParent(self, parent):
-        if parent == False:
-            self.parent = None
-        else:
-            self.parent = parent
-        if not parent or parent == None:
+    def establishPBMode(self, pb):
+        self.pb = pb
+        if not pb or pb == None:
             self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
         else:
             self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, False)
-        if parent and self.parent != None:
-            try: self.page().networkAccessManager().setCookieJar(self.parent.cookies)
+        if not pb:
+            try:
+                global app_cookiejar
+                self.page().networkAccessManager().setCookieJar(app_cookiejar)
             except:
                 doNothing()
         else:
             cookies = QtNetwork.QNetworkCookieJar(None)
             cookies.setAllCookies([])
             self.page().networkAccessManager().setCookieJar(cookies)
-        if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
+        if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.pb != None and self.pb != False:
             self.buildNewTabPage()
 
     def updateSettings(self):
@@ -928,8 +956,8 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             print("", end = "")
         else:
             self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, settingsManager.settings['privateBrowsing'])
-            if not settingsManager.settings['privateBrowsing'] and not (self.parent == False or self.parent == None):
-                self.establishParent(self.parent)
+            if settingsManager.settings['privateBrowsing'] == True:
+                self.establishPBMode(True)
         for child in range(1, len(self.newWindows)):
             try: self.newWindows[child].updateSettings()
             except:
@@ -1121,32 +1149,29 @@ window.onload = function browserDetect() {
     def createWindow(self, windowType):
         s = str(len(self.newWindows))
         if settingsManager.settings['oldSchoolWindows'] or settingsManager.settings['openInTabs']:
-            if not self.parent == None:
-                exec("self.newWindow%s = RWebView(self.parent)" % (s))
+            if settingsManager.settings['openInTabs']:
+                if win.closed:
+                    exec("win.show()")
+                    exec("win.closed = False")
+                    exec("win.resize(800, 480)")
+                if self.pb == False:
+                    exec("win.newTab()")
+                else:
+                    exec("win.newpbTab()")
+                self.createNewWindow.emit(windowType)
+                return win.tabs.widget(win.tabs.currentIndex()).webView
             else:
-                exec("self.newWindow%s = RWebView(None)" % (s))
-            exec("self.newWindow%s.buildNewTabPage()" % (s))
-            if settingsManager.settings['openInTabs'] == False:
+                if self.pb == True:
+                    exec("self.newWindow%s = RWebView(self.parent, True)" % (s))
+                else:
+                    exec("self.newWindow%s = RWebView(self.parent, False)" % (s))
+                exec("self.newWindow%s.buildNewTabPage()" % (s))
                 exec("self.newWindow%s.applyShortcuts()" % (s))
                 exec("self.newWindow%s.enableControls()" % (s))
                 exec("self.newWindow%s.loadControls()" % (s))
                 exec("self.newWindow%s.show()" % (s))
-            exec("self.newWindows.append(self.newWindow%s)" % (s))
-            self.createNewWindow.emit(windowType)
-            if settingsManager.settings['openInTabs'] == True:
-                if not self.parent == None:
-                    print(self.parent.__class__.__name__)
-                    if self.parent.__class__.__name__ == "Browser":
-                        exec("self.parent.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
-                    else:
-                        if win.closed:
-                            exec("win.show()")
-                            exec("win.closed = False")
-                            exec("win.resize(800, 480)")
-                        exec("win.newTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
-                else:
-                    exec("win.newpbTabWithRWebView('', self.newWindows[len(self.newWindows) - 1])")
-            return self.newWindows[len(self.newWindows) - 1]
+                exec("self.newWindows.append(self.newWindow%s)" % (s))
+                self.createNewWindow.emit(windowType)
         else:
             if win.closed:
                 global win
@@ -1163,6 +1188,18 @@ window.onload = function browserDetect() {
                 exec("n = self.newWindow%s" % (s))
             n.show()
             return n.tabs.widget(n.tabs.currentIndex()).webView
+
+class RWebInspector(QtWebKit.QWebInspector):
+    shown = QtCore.pyqtSignal()
+    def __init__(self, parent):
+        super(RWebInspector, self).__init__(parent)
+        self.parent = parent
+    def showEvent(self, e):
+        print(self.parent.webInspectorDock)
+        if self.parent.webInspectorDock:
+            self.parent.webInspectorDock.show()
+        self.shown.emit()
+        e.accept()
 
 class HistoryCompletionList(QtGui.QListWidget):
     if sys.version_info[0] <= 2:
@@ -1184,7 +1221,7 @@ class HistoryCompletionList(QtGui.QListWidget):
                 self.statusMessage.emit(qstring(""))
 
 class Browser(QtGui.QMainWindow, Ui_MainWindow):
-    def __init__(self, parent=None, url=False, pb=False, widget=None):
+    def __init__(self, parent=None, url=False, pb=False):
         super(Browser, self).__init__()
         self.parent = parent
         self.pb = pb
@@ -1200,30 +1237,41 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
                 self.version = metadata[0].rstrip("\n")
             if len(metadata) > 1:
                 self.codename = metadata[1].rstrip("\n")
-        self.initUI(url, widget)
-    def initUI(self, url, widget=None):
+        self.initUI(url)
+    def initUI(self, url):
         if not sys.platform.startswith("win"):
             uic.loadUi(app_gui, self)
         else:
             self.setupUi(self)
-        if widget == None:
-            self.webView = RWebView(self)
-        else:
-            self.webView = widget
+        self.webView = RWebView(self, self.pb)
         self.updateSettings()
-        if not self.pb:
-            self.webView.establishParent(self.parent)
         self.webView.statusBarMessage.connect(self.statusMessage.setText)
         self.mainLayout.addWidget(self.webView, 2, 0)
+
+        self.webInspector = RWebInspector(self)
+        self.webInspector.setPage(self.webView.page())
+        self.webInspectorDock = QtGui.QDockWidget(tr('webInspector'))
+        self.webInspectorDock.setFeatures(QtGui.QDockWidget.DockWidgetClosable)
+        self.webInspectorDock.setWidget(self.webInspector)
+        self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.webInspectorDock)
+        self.webInspectorDock.hide()
+        self.webInspector.shown.connect(self.webInspectorDock.show)
+
         self.historyCompletionBox = QtGui.QWidget()
+
         self.downArrowAction = QtGui.QAction(self)
         self.downArrowAction.setShortcut("Down")
         self.downArrowAction.triggered.connect(self.historyDown)
+
         self.historyCompletionBox.addAction(self.downArrowAction)
+
+
         self.upArrowAction = QtGui.QAction(self)
         self.upArrowAction.setShortcut("Up")
         self.upArrowAction.triggered.connect(self.historyUp)
+
         self.historyCompletionBox.addAction(self.upArrowAction)
+
         self.historyCompletionBoxLayout = QtGui.QVBoxLayout()
         self.historyCompletionBoxLayout.setContentsMargins(0,0,0,0)
         self.historyCompletionBoxLayout.setSpacing(0)
@@ -1234,6 +1282,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.historyCompletion.itemActivated.connect(self.openHistoryItem)
         self.historyCompletion.statusMessage.connect(self.statusMessage.setText)
         self.progressBar.hide()
+
         self.mainLayout.setSpacing(0);
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
         self.mainToolBarLayout.setSpacing(0)
@@ -1272,9 +1321,11 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.urlBar2 = QtGui.QLineEdit()
         self.historyCompletionBoxLayout.addWidget(self.urlBar2)
         self.historyCompletionBoxLayout.addWidget(self.historyCompletion)
+
         self.urlBar.setToolTip(tr("locationBarTT"))
         self.urlBar.textChanged.connect(self.rSyncText)
         self.urlBar.textChanged.connect(self.showHistoryBox)
+
         self.urlBar2.textChanged.connect(self.syncText)
         self.urlBar2.returnPressed.connect(self.updateWeb)
         self.urlBar.returnPressed.connect(self.updateWeb)
@@ -1760,7 +1811,6 @@ class TabBrowser(QtGui.QMainWindow):
             else:
                 if os.path.exists(os.path.join(app_icons, 'about-logo.png')):
                     self.setWindowIcon(QtGui.QIcon(os.path.join(app_icons, 'about-logo.png')))
-        self.cookieFile = app_cookies
         self.tabCount = 0
         self.killCookies = False
         self.killTempFiles = False
@@ -1774,12 +1824,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.urlCheckTimer = QtCore.QTimer()
         self.urlCheckTimer.timeout.connect(self.checkForURLs)
         self.urlCheckTimer.start(250)
-
-        self.cookies = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
-        cookies = []
-        for c in self.loadCookies():
-            cookies.append(QtNetwork.QNetworkCookie().parseCookies(c)[0])
-        self.cookies.setAllCookies(cookies)
 
         global app_windows
         app_windows.append(self)
@@ -1814,35 +1858,20 @@ class TabBrowser(QtGui.QMainWindow):
             shred_directory(os.path.join(app_home, "temp"))
 
     def saveCookies(self):
+        global app_cookiejar
         if self.killCookies == False:
-            cookieFile = open(self.cookieFile, "wb")
+            cookieFile = open(app_cookies, "wb")
             cookies = []
-            for c in self.cookies.allCookies():
+            for c in app_cookiejar.allCookies():
                 cookies.append(unicode(qstring(c.toRawForm())))
             json.dump(cookies, cookieFile)
             cookieFile.close()
         else:
             if sys.platform.startswith("linux"):
-                os.system("shred -v \"%s\"" % (self.cookieFile))
-            try: os.remove(self.cookieFile)
+                os.system("shred -v \"%s\"" % (app_cookies))
+            try: os.remove(app_cookies)
             except:
                 doNothing()
-
-    def loadCookies(self):
-        if os.path.exists(self.cookieFile):
-            cookieFile = open(self.cookieFile, "rb")
-            cookies = []
-            try: cookies = json.load(cookieFile)
-            except:
-                print("Error! Cookies could not be loaded!")
-            else:
-                doNothing()
-            cookieFile.close()
-            for cookie in cookies:
-                cookie = QtCore.QByteArray(cookie)
-            return cookies
-        else:
-            return []
 
     def quit(self):
         self.close()
@@ -1851,6 +1880,9 @@ class TabBrowser(QtGui.QMainWindow):
     def closeEvent(self, ev):
         if os.path.exists(app_lock) and not os.path.isdir(app_lock):
             os.remove(app_lock)
+        global app_windows
+        if self in app_windows:
+            del app_windows[app_windows.index(self)]
         self.saveCookies()
         self.closed = True
         self.checkTempFiles()
@@ -2155,32 +2187,6 @@ class TabBrowser(QtGui.QMainWindow):
         else:
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
-    def newTabWithRWebView(self, url="", widget=None):
-        self.tabCount += 1
-        if url != False:
-            exec("tab%s = Browser(self,\"%s\", False, widget)" % (str(self.tabCount), metaunquote(url)))
-        else:
-            exec("tab%s = Browser(self)" % (str(self.tabCount)))
-        exec("tab%s.webView.titleChanged.connect(self.updateTitles)" % (str(self.tabCount)))
-        exec("tab%s.webView.urlChanged.connect(self.reloadHistory)" % (str(self.tabCount)))
-        exec("tab%s.webView.titleChanged.connect(self.reloadHistory)" % (str(self.tabCount)))
-        exec("tab%s.webView.iconChanged.connect(self.updateIcons)" % (str(self.tabCount)))
-        exec("self.tabs.addTab(tab%s, tab%s.webView.icon(), 'New Tab')" % (str(self.tabCount), str(self.tabCount)))
-        self.tabs.setCurrentIndex(self.tabs.count() - 1)
-
-    def newpbTabWithRWebView(self, url="", widget=None):
-        self.tabCount += 1
-        if url != False:
-            exec("tab%s = Browser(self, '%s', True, widget)" % (str(self.tabCount), metaunquote(url)))
-        else:
-            exec("tab%s = Browser(self, '', True, widget)" % (str(self.tabCount)))
-        exec("tab%s.webView.titleChanged.connect(self.updateTitles)" % (str(self.tabCount)))
-        exec("tab%s.webView.urlChanged.connect(self.reloadHistory)" % (str(self.tabCount)))
-        exec("tab%.webView.titleChanged.connect(self.reloadHistory)" % (str(self.tabCount)))
-        exec("tab%s.webView.iconChanged.connect(self.updateIcons)" % (str(self.tabCount)))
-        exec("self.tabs.addTab(tab%s, tab%s.webView.icon(), 'New Tab')" %(str(self.tabCount), str(self.tabCount)))
-        self.tabs.setCurrentIndex(self.tabs.count() - 1)
-
     def newTab(self, url="about:blank"):
         if cDialog.settings['privateBrowsing']:
             self.newpbTab(url)
@@ -2188,28 +2194,28 @@ class TabBrowser(QtGui.QMainWindow):
             self.tabCount += 1
             s = str(self.tabCount)
             if url != False:
-                exec("tab%s = Browser(self, \"%s\")" % (s, metaunquote(url)))
+                exec("tab" + s + " = Browser(self, \"" + metaunquote(url) + "\")")
             else:
                 exec("tab%s = Browser(self)" % (s))
             exec("tab%s.webView.titleChanged.connect(self.updateTitles)" % (s))
             exec("tab%s.webView.urlChanged.connect(self.reloadHistory)" % (s))
             exec("tab%s.webView.titleChanged.connect(self.reloadHistory)" % (s))
             exec("tab%s.webView.iconChanged.connect(self.updateIcons)" % (s))
-            exec("self.tabs.addTab(tab%s, tab%s.webView.icon(), 'New Tab')" % (s, s))
+            exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def newpbTab(self, url="about:blank"):
         self.tabCount += 1
         s = str(self.tabCount)
         if url != False:
-            exec("tab%s = Browser(self, '%s', True)" % (s, metaunquote(url)))
+            exec("tab" + s + " = Browser(self, '" + metaunquote(url) + "', True)")
         else:
-            exec("tab%s = Browser(self, 'about:blank', True)" % (s))
-        exec("tab%s.webView.titleChanged.connect(self.updateTitles)" % (s))
-        exec("tab%s.webView.urlChanged.connect(self.reloadHistory)" % (s))
-        exec("tab%s.webView.titleChanged.connect(self.reloadHistory)" % (s))
-        exec("tab%s.webView.iconChanged.connect(self.updateIcons)" % (s))
-        exec("self.tabs.addTab(tab%s, tab%s.webView.icon(), 'New Tab')" % (s, s))
+            exec("tab" + s + " = Browser(self, 'about:blank', True)")
+        exec("tab" + s + ".webView.titleChanged.connect(self.updateTitles)")
+        exec("tab" + s + ".webView.urlChanged.connect(self.reloadHistory)")
+        exec("tab" + s + ".webView.titleChanged.connect(self.reloadHistory)")
+        exec("tab" + s + ".webView.iconChanged.connect(self.updateIcons)")
+        exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def newWindow(self):
@@ -2338,18 +2344,16 @@ class TabBrowser(QtGui.QMainWindow):
 
 
     def closeTab(self, index=False):
-        global app_windows
-        if self in app_windows:
-            del app_windows[app_windows.index(self)]
         if not index:
             index = self.tabs.currentIndex()
         if self.tabs.count() > 0:
-            if not self.tabs.widget(index).pb and not unicode(self.tabs.widget(index).webView.url().toString()) == "" and not unicode(self.tabs.widget(index).webView.url().toString()) == "about:blank":
+            if not self.tabs.widget(index).webView.pb and not unicode(self.tabs.widget(index).webView.url().toString()) == "" and not unicode(self.tabs.widget(index).webView.url().toString()) == "about:blank":
                 self.closedTabList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
             self.tabs.widget(index).webView.stop()
             self.tabs.removeTab(index)
             if self.tabs.count() == 0:
                 self.close()
+        print(self.closedTabList)
 
     def permanentCloseTab(self):
         index = self.tabs.currentIndex()
@@ -2414,6 +2418,8 @@ win = None
 
 class Ryouko(QtGui.QWidget):
     def __init__(self):
+        loadCookies()
+        self.cookies = app_cookiejar
         global bookmarksManagerGUI
         global searchEditor
         global cDialog

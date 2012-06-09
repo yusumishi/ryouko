@@ -8,7 +8,7 @@
 "executablePath": "Ruta de ejecutable",
 "menu": "&Menú",
 "quit": "Dejar",
-"inspect": "Inspeccionar este elemento",
+"webInspector": "Inspector de Web",
 "error": "Error",
 "isRunning": "Creo que Ryouko ya está abierto. ¿Es correcto?",
 "bookmarkError": "Por favor, llene los cuadros de textos.",

@@ -8,7 +8,7 @@
 "executablePath": "Executable path",
 "menu": "&Menu",
 "quit": "&Quit",
-"inspect": "Inspect Element",
+"webInspector": "Web Inspector",
 "error": "Error",
 "isRunning": "Ryouko thinks that you already have Ryouko open. Is this correct?",
 "bookmarkError": "Please fill out the name and URL fields.",
