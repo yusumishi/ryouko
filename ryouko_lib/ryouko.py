@@ -60,27 +60,6 @@ from ryouko_common import *
 
 app_windows = []
 app_icons = os.path.join(app_lib, 'icons')
-app_cookiejar = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
-
-def loadCookies():
-    global app_cookiejar
-    if os.path.exists(app_cookies):
-        cookieFile = open(app_cookies, "rb")
-        try: c = json.load(cookieFile)
-        except:
-            print("Error! Cookies could not be loaded!")
-            c = []
-        else:
-            doNothing()
-        cookieFile.close()
-        for cookie in c:
-            cookie = QtCore.QByteArray(cookie)
-    else:
-        c = []
-    cookies = []
-    for cookie in c:
-        cookies.append(QtNetwork.QNetworkCookie().parseCookies(cookie)[0])
-    app_cookiejar.setAllCookies(cookies)
 
 app_gui = os.path.join(app_lib, "mainwindow.ui")
 app_info = os.path.join(app_lib, "info.txt")
@@ -924,8 +903,10 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, False)
         if not pb:
             try:
-                global app_cookiejar
-                self.page().networkAccessManager().setCookieJar(app_cookiejar)
+                if type(self.parent) == Browser:
+                    self.page().networkAccessManager().setCookieJar(self.parent.parent.cookieJar)
+                else:
+                    self.page().networkAccessManager().setCookieJar(self.parent.cookieJar)
             except:
                 doNothing()
         else:
@@ -1811,6 +1792,8 @@ class TabBrowser(QtGui.QMainWindow):
             else:
                 if os.path.exists(os.path.join(app_icons, 'about-logo.png')):
                     self.setWindowIcon(QtGui.QIcon(os.path.join(app_icons, 'about-logo.png')))
+        self.cookieJar = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
+        self.loadCookies()
         self.tabCount = 0
         self.killCookies = False
         self.killTempFiles = False
@@ -1857,12 +1840,30 @@ class TabBrowser(QtGui.QMainWindow):
         if self.killTempFiles == True:
             shred_directory(os.path.join(app_home, "temp"))
 
+    def loadCookies(self):
+        if os.path.exists(app_cookies):
+            cookieFile = open(app_cookies, "rb")
+            try: c = json.load(cookieFile)
+            except:
+                print("Error! Cookies could not be loaded!")
+                c = []
+            else:
+                doNothing()
+            cookieFile.close()
+            for cookie in c:
+                cookie = QtCore.QByteArray(cookie)
+        else:
+            c = []
+        cookies = []
+        for cookie in c:
+            cookies.append(QtNetwork.QNetworkCookie().parseCookies(cookie)[0])
+        self.cookieJar.setAllCookies(cookies)
+
     def saveCookies(self):
-        global app_cookiejar
         if self.killCookies == False:
             cookieFile = open(app_cookies, "wb")
             cookies = []
-            for c in app_cookiejar.allCookies():
+            for c in self.cookieJar.allCookies():
                 cookies.append(unicode(qstring(c.toRawForm())))
             json.dump(cookies, cookieFile)
             cookieFile.close()
@@ -2418,8 +2419,6 @@ win = None
 
 class Ryouko(QtGui.QWidget):
     def __init__(self):
-        loadCookies()
-        self.cookies = app_cookiejar
         global bookmarksManagerGUI
         global searchEditor
         global cDialog
