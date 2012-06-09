@@ -500,6 +500,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
         self.setWindowTitle(tr('bookmarks'))
+        self.setStyleSheet(dialogToolBarSheet)
         self.nameToolBar = QtGui.QToolBar("Add a bookmarky")
         self.nameToolBar.setMovable(False)
         self.nameToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -529,7 +530,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.bookmarksList.itemActivated.connect(self.openBookmark)
         removeBookmarkAction = QtGui.QAction(self)
         removeBookmarkAction.setShortcut("Del")
-        removeBookmarkAction.triggered.connect(self.removeBookmarkIfFocused)
+        removeBookmarkAction.triggered.connect(self.removeBookmark)
         self.addAction(removeBookmarkAction)
         closeWindowAction = QtGui.QAction(self)
         closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+B"])
@@ -1276,9 +1277,11 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.addAction(searchAction)
         self.historyCompletionBox.addAction(searchAction)
         self.searchButton.clicked.connect(self.searchWeb)
+        self.searchButton.setStyleSheet(dialogToolBarSheet)
         self.searchButton.setText(tr("searchBtn"))
         self.searchButton.setToolTip(tr("searchBtnTT"))
         self.searchEditButton.setToolTip(tr("searchBtnTT"))
+        self.searchEditButton.setStyleSheet(dialogToolBarSheet.replace("padding: 4px;", "max-width: 16px; margin-right: 2px;"))
         self.searchEditButton.clicked.connect(self.editSearch)
         self.searchEditButton.setShortcut("Ctrl+Shift+K")
         self.searchEditButton.setToolTip(tr("editSearchTT"))
@@ -1816,6 +1819,7 @@ class TabBrowser(QtGui.QMainWindow):
         return QtGui.QMainWindow.closeEvent(self, ev)
 
     def aboutRyoukoHKey(self):
+        self.newTab()
         self.tabs.widget(self.tabs.currentIndex()).urlBar.setText("about:version")
         self.tabs.widget(self.tabs.currentIndex()).updateWeb()
 
