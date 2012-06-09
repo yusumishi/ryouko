@@ -895,7 +895,7 @@ window.onload = function browserDetect() {
         if forceLoad == True:
             self.load(QtCore.QUrl("about:blank"))
         f = str(searchManager.currentSearch.replace("%s", ""))
-        html = "<!DOCTYPE html><html><head><title>" + tr('newTabTitle') + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('search') + ":</b><form method='get' action='" + f + "' style='display: inline-block;'><input type='text'  name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'"
+        html = "<!DOCTYPE html><html><head><title>" + tr('newTabTitle') + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('search') + ":</b><form method='get' action='" + f + "' style='display: inline-block;'><input type='text'  name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
         h = tr('newTabShortcuts')
         try: self.parent.closedTabList
         except:
@@ -913,13 +913,13 @@ window.onload = function browserDetect() {
                 if breakyes == True:
                     doNothing()
                 else:
-                    html = html + "<a href=\"" + link['url'] + "\"" + link['title'] + "</a><br/>"
+                    html = html + "<a href=\"" + link['url'] + "\">" + link['title'] + "</a><br/>"
                     urls.append(link['url'])
             if len(self.parent.closedTabList) > 0:
                 html = "%s</td>" % (html)
             if not len(self.parent.closedTabList) > 0:
                 h = h.replace("style='padding-left: 4px;'", "")
-        html = "%s%s</tr></body></html>" % (html, h)
+        html = html + h + "</tr></body></html>"
         self.setHtml(html)
 
     def locationEdit(self):
