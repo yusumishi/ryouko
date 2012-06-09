@@ -840,7 +840,9 @@ class RWebView(QtWebKit.QWebView):
         self.zoomResetAction.triggered.connect(self.zoomReset)
         self.addAction(self.zoomResetAction)
 
+        self.page().action(QtWebKit.QWebPage.InspectElement).setShortcut("F12")
         self.page().action(QtWebKit.QWebPage.InspectElement).triggered.connect(self.showInspector)
+        self.addAction(self.page().action(QtWebKit.QWebPage.InspectElement))
 
         self.page().setForwardUnsupportedContent(True)
         self.page().unsupportedContent.connect(self.checkContentType)
@@ -856,6 +858,8 @@ class RWebView(QtWebKit.QWebView):
     def showInspector(self):
         if self.parent.webInspectorDock:
             self.parent.webInspectorDock.show()
+        if self.parent.webInspector:
+            self.parent.webInspector.show()
 
     def enableControls(self):
         self.loadFinished.connect(self.loadControls)
@@ -1170,18 +1174,6 @@ window.onload = function browserDetect() {
             n.show()
             return n.tabs.widget(n.tabs.currentIndex()).webView
 
-class RWebInspector(QtWebKit.QWebInspector):
-    shown = QtCore.pyqtSignal()
-    def __init__(self, parent):
-        super(RWebInspector, self).__init__(parent)
-        self.parent = parent
-    def showEvent(self, e):
-        print(self.parent.webInspectorDock)
-        if self.parent.webInspectorDock:
-            self.parent.webInspectorDock.show()
-        self.shown.emit()
-        e.accept()
-
 class HistoryCompletionList(QtGui.QListWidget):
     if sys.version_info[0] <= 2:
         statusMessage = QtCore.pyqtSignal(QtCore.QString)
@@ -1229,14 +1221,13 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.webView.statusBarMessage.connect(self.statusMessage.setText)
         self.mainLayout.addWidget(self.webView, 2, 0)
 
-        self.webInspector = RWebInspector(self)
+        self.webInspector = QtWebKit.QWebInspector(self)
         self.webInspector.setPage(self.webView.page())
         self.webInspectorDock = QtGui.QDockWidget(tr('webInspector'))
         self.webInspectorDock.setFeatures(QtGui.QDockWidget.DockWidgetClosable)
         self.webInspectorDock.setWidget(self.webInspector)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.webInspectorDock)
         self.webInspectorDock.hide()
-        self.webInspector.shown.connect(self.webInspectorDock.show)
 
         self.historyCompletionBox = QtGui.QWidget()
 
@@ -1968,6 +1959,7 @@ class TabBrowser(QtGui.QMainWindow):
 
         # Tabs
         self.tabs = RTabWidget(self)
+        self.tabs.currentChanged.connect(self.hideInspectors)
         self.tabs.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.tabs.customContextMenuRequested.connect(self.showTabsContextMenu)
         self.tabs.setMovable(True)
@@ -2137,6 +2129,13 @@ class TabBrowser(QtGui.QMainWindow):
                         self.newpbTab(sys.argv[arg])
             for arg in range(1, len(sys.argv)):
                 del sys.argv[1]
+
+    def hideInspectors(self):
+        for tab in range(self.tabs.count()):
+            try:
+                self.tabs.widget(tab).webInspectorDock.hide()
+            except:
+                doNothing()
 
     def showTabsContextMenu(self):
         x = QtCore.QPoint(QtGui.QCursor.pos()).x()
@@ -2354,7 +2353,6 @@ class TabBrowser(QtGui.QMainWindow):
             self.tabs.removeTab(index)
             if self.tabs.count() == 0:
                 self.close()
-        print(self.closedTabList)
 
     def permanentCloseTab(self):
         index = self.tabs.currentIndex()
