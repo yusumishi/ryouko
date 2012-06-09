@@ -58,6 +58,7 @@ sys.path.append(app_lib)
 import translate
 from ryouko_common import *
 
+app_windows = []
 app_icons = os.path.join(app_lib, 'icons')
 app_gui = os.path.join(app_lib, "mainwindow.ui")
 app_info = os.path.join(app_lib, "info.txt")
@@ -452,6 +453,8 @@ class SearchEditor(RMenuPopupWindow):
     def takeSearch(self):
         searchManager.remove(unicode(self.engineList.currentItem().text()).split("\n")[0])
         self.reload()
+
+searchEditor = None
 
 class BookmarksManager(QtCore.QObject):
     bookmarksChanged = QtCore.pyqtSignal()
@@ -1448,7 +1451,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.webView.load(url)
 
     def editSearch(self):
-        self.parent.searchEditor.display(True, self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).x(), self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).y(), self.searchEditButton.width(), self.searchEditButton.height())
+        searchEditor.display(True, self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).x(), self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).y(), self.searchEditButton.width(), self.searchEditButton.height())
 
     def focusURLBar(self):
         if not self.historyCompletionBox.isVisible():
@@ -1615,7 +1618,7 @@ class CDialog(QtGui.QMainWindow):
         self.lDBox = QtGui.QCheckBox(tr('loginToDownload'))
         self.layout.addWidget(self.lDBox)
         self.editSearchButton = QtGui.QPushButton("Manage search engines...")
-        try: self.editSearchButton.clicked.connect(self.parent.searchEditor.display)
+        try: self.editSearchButton.clicked.connect(searchEditor.display)
         except:
             doNothing()
         self.layout.addWidget(self.editSearchButton)
@@ -1707,7 +1710,13 @@ class CDialog(QtGui.QMainWindow):
                     if unicode(self.selectBackend.itemText(index)).lower() == self.settings['backend']:
                         self.selectBackend.setCurrentIndex(index)
                         break
-        try: self.parent.updateSettings()
+        try:
+            global app_windows
+            for window in app_windows:
+                try:
+                    window.updateSettings()
+                except:
+                    doNothing()
         except:
             doNothing()
     def saveSettings(self):
@@ -1715,7 +1724,14 @@ class CDialog(QtGui.QMainWindow):
         settingsManager.settings = self.settings
         settingsManager.setBackend(unicode(self.selectBackend.currentText()).lower())
         settingsManager.saveSettings()
-        self.parent.updateSettings()
+        global app_windows
+        for window in app_windows:
+            try:
+                window.updateSettings()
+            except:
+                doNothing()
+
+cDialog = None
 
 class TabBrowser(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -1748,6 +1764,9 @@ class TabBrowser(QtGui.QMainWindow):
         for c in self.loadCookies():
             cookies.append(QtNetwork.QNetworkCookie().parseCookies(c)[0])
         self.cookies.setAllCookies(cookies)
+
+        global app_windows
+        app_windows.append(self)
 
         self.initUI()
 
@@ -1853,8 +1872,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.clearHistoryToolBar.addWidget(self.clearHistoryButton)
 
     def initUI(self):
-
-        self.searchEditor = SearchEditor()
 
         # Quit action
         quitAction = QtGui.QAction(tr("quit"), self)
@@ -2019,8 +2036,6 @@ class TabBrowser(QtGui.QMainWindow):
         closeTabForeverAction = QtGui.QAction(tr('closeTabForever'), self)
         closeTabForeverAction.triggered.connect(self.permanentCloseTab)
 
-        self.cDialog = CDialog(self)
-
         self.tabsContextMenu = QtGui.QMenu()
         self.tabsContextMenu.addAction(newTabAction)
         self.tabsContextMenu.addAction(newWindowAction)
@@ -2099,11 +2114,11 @@ class TabBrowser(QtGui.QMainWindow):
         self.mainMenu.move(x, y)
 
     def showSettings(self):
-        self.cDialog.show()
-        qr = self.cDialog.frameGeometry()
+        cDialog.show()
+        qr = cDialog.frameGeometry()
         cp = QtGui.QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
-        self.cDialog.move(qr.topLeft())
+        cDialog.move(qr.topLeft())
 
     def updateSettings(self):
         for tab in range(self.tabs.count()):
@@ -2149,7 +2164,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def newTab(self, url="about:blank"):
-        if self.cDialog.settings['privateBrowsing']:
+        if cDialog.settings['privateBrowsing']:
             self.newpbTab(url)
         else:
             self.tabCount += 1
@@ -2305,6 +2320,9 @@ class TabBrowser(QtGui.QMainWindow):
 
 
     def closeTab(self, index=False):
+        global app_windows
+        if self in app_windows:
+            del app_windows[app_windows.index(self)]
         if not index:
             index = self.tabs.currentIndex()
         if self.tabs.count() > 0:
@@ -2378,9 +2396,13 @@ win = None
 
 class Ryouko(QtGui.QWidget):
     def __init__(self):
-        global win
         global bookmarksManagerGUI
+        global cDialog
+        global searchEditor
+        global win
         bookmarksManagerGUI = BookmarksManagerGUI()
+        cDialog = CDialog(self)
+        searchEditor = SearchEditor()
         win = TabBrowser(self)
     def primeBrowser(self):
         global win
