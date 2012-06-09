@@ -62,6 +62,9 @@ app_icons = os.path.join(app_lib, 'icons')
 app_gui = os.path.join(app_lib, "mainwindow.ui")
 app_info = os.path.join(app_lib, "info.txt")
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
+app_commandline = ""
+for arg in sys.argv:
+    app_commandline = "%s%s " % (app_commandline, arg)
 app_lock = os.path.join(app_home, ".lockfile")
 app_logo = os.path.join(app_icons, "logo.svg")
 app_cookies = os.path.join(app_home, "cookies.json")
@@ -1334,9 +1337,6 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
                     header = "http://"
                 url = qstring(header + unicode(urlBar))
                 if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
-                    command_line = ""
-                    for arg in sys.argv:
-                        command_line = "%s%s " % (command_line, arg)
                     self.webView.load(QtCore.QUrl("about:blank"))
                     self.webView.setHtml("""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
                     "http://www.w3.org/TR/html4/strict.dtd">
@@ -1365,12 +1365,12 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
                     <img src='file://%""" + os.path.join(app_icons, "about-logo.png") + """'></img><br/>
                     <div style=\"text-align: left;\">
                     <b>Ryouko:</b> """ + self.version + """<br/>
-                    <b>""" + tr('codename') + """:</b> \"""" + self.codename) + """\"<br/>
+                    <b>""" + tr('codename') + """:</b> \"""" + self.codename + """\"<br/>
                     <b>OS:</b> """ + sys.platform + """<br/>
-                    <b>Qt:</b> """ + str(QtCore.qVersion() + """<br/>
+                    <b>Qt:</b> """ + str(QtCore.qVersion()) + """<br/>
                     <b>Python:</b> """ + str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2]) + """<br/>
-                    <b>""" + tr("userAgent") + """:</b><span id="userAgent">JavaScript must be enabled to display the user agent!</span><br/>
-                    <b>""" + tr("commandLine") + """:</b> """ + command_line + "\
+                    <b>""" + tr("userAgent") + """:</b> <span id="userAgent">JavaScript must be enabled to display the user agent!</span><br/>
+                    <b>""" + tr("commandLine") + """:</b> """ + app_commandline + "<br/>\
                     <b>" + tr('executablePath') + ":</b> " + os.path.realpath(__file__) + "<br/></div></div></center></body></html>")
                 else:
                     url = QtCore.QUrl(url)
@@ -1779,12 +1779,12 @@ class TabBrowser(QtGui.QMainWindow):
         self.showCornerWidgetsMenuAction.setShortcut("Alt+M")
         self.showCornerWidgetsMenuAction.setToolTip(tr("cornerWidgetsMenuTT"))
         self.showCornerWidgetsMenuAction.triggered.connect(self.showCornerWidgetsMenu)"""
-        self.cornerWidgetsMenuButton = QtGui.QPushButton(self)
-        self.cornerWidgetsMenuButton.setText(tr("menu"))
-        self.cornerWidgetsMenuButton.setShortcut("Alt+M")
-        self.cornerWidgetsMenuButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.cornerWidgetsMenuButton.clicked.connect(self.showCornerWidgetsMenu)
-        self.cornerWidgetsMenuButton.setStyleSheet("""
+        self.mainMenuButton = QtGui.QPushButton(self)
+        self.mainMenuButton.setText(tr("menu"))
+        self.mainMenuButton.setShortcut("Alt+M")
+        self.mainMenuButton.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.mainMenuButton.clicked.connect(self.showCornerWidgetsMenu)
+        self.mainMenuButton.setStyleSheet("""
         QPushButton {
         padding: 4px;
         padding-left: 8px;
@@ -1804,8 +1804,8 @@ class TabBrowser(QtGui.QMainWindow):
         background-color: palette(highlight);
         }
         """)
-#        self.cornerWidgetsMenuButton.setArrowType(QtCore.Qt.DownArrow)
-        self.cornerWidgetsMenu = QtGui.QMenu(self)
+#        self.mainMenuButton.setArrowType(QtCore.Qt.DownArrow)
+        self.mainMenu = QtGui.QMenu(self)
 
         # New tab button
         newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(os.path.join(app_icons, 'newtab.png'))), tr('newTabBtn'), self)
@@ -1818,14 +1818,15 @@ class TabBrowser(QtGui.QMainWindow):
         self.newTabButton.setDefaultAction(newTabAction)
         self.cornerWidgetsToolBar.addWidget(self.newTabButton)
 
-        self.cornerWidgetsToolBar.addWidget(self.cornerWidgetsMenuButton)
+        self.cornerWidgetsToolBar.addWidget(self.mainMenuButton)
 
         # New window button
         newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_icons, 'newwindow.png'))), tr("newWindowBtn"), self)
         newWindowAction.setShortcut('Ctrl+N')
         newWindowAction.triggered.connect(self.newWindow)
         self.addAction(newWindowAction)
-        self.cornerWidgetsMenu.addAction(newWindowAction)
+        self.mainMenu.addAction(newWindowAction)
+        self.mainMenu.addSeparator()
 
         # Undo closed tab button
         undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(app_icons, 'undo.png'))), tr('undoCloseTabBtn'), self)
@@ -1833,7 +1834,7 @@ class TabBrowser(QtGui.QMainWindow):
         undoCloseTabAction.setShortcuts(['Ctrl+Shift+T'])
         undoCloseTabAction.triggered.connect(self.undoCloseTab)
         self.addAction(undoCloseTabAction)
-        self.cornerWidgetsMenu.addAction(undoCloseTabAction)
+        self.mainMenu.addAction(undoCloseTabAction)
 
         # History sidebar button
         historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(app_icons, "history.png"))), tr('viewHistoryBtn'), self)
@@ -1842,7 +1843,7 @@ class TabBrowser(QtGui.QMainWindow):
         historyToggleAction.triggered.connect(self.historyToolBar.show)
         historyToggleAction.setShortcut("Ctrl+H")
         self.addAction(historyToggleAction)
-        self.cornerWidgetsMenu.addAction(historyToggleAction)
+        self.mainMenu.addAction(historyToggleAction)
 
         # New private browsing tab button
         newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(app_icons, 'pb.png'))), tr('newPBTabBtn'), self)
@@ -1850,7 +1851,8 @@ class TabBrowser(QtGui.QMainWindow):
         newpbTabAction.setShortcuts(['Ctrl+Shift+N'])
         newpbTabAction.triggered.connect(self.newpbTab)
         self.addAction(newpbTabAction)
-        self.cornerWidgetsMenu.addAction(newpbTabAction)
+        self.mainMenu.addAction(newpbTabAction)
+        self.mainMenu.addSeparator()
 
         closeTabAction = QtGui.QAction(tr('closeTab'), self)
         closeTabAction.triggered.connect(self.closeTab)
@@ -1881,14 +1883,17 @@ class TabBrowser(QtGui.QMainWindow):
         configAction.setShortcuts(['Ctrl+Shift+P'])
         configAction.triggered.connect(self.showSettings)
         self.addAction(configAction)
-        self.cornerWidgetsMenu.addAction(configAction)
+        self.mainMenu.addAction(configAction)
+        self.mainMenu.addSeparator()
 
         # About Action
         aboutAction = QtGui.QAction(tr('aboutRyoukoHKey'), self)
         aboutAction.triggered.connect(self.aboutRyoukoHKey)
-        self.cornerWidgetsMenu.addAction(aboutAction)
+        self.mainMenu.addAction(aboutAction)
 
-        self.cornerWidgetsMenu.addAction(quitAction)
+        self.mainMenu.addSeparator()
+
+        self.mainMenu.addAction(quitAction)
 
         closeTabAction = QtGui.QAction(self)
         closeTabAction.setShortcuts(['Ctrl+W'])
@@ -1922,20 +1927,20 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabsContextMenu.show()
 
     def showCornerWidgetsMenu(self):
-        x = self.cornerWidgetsMenuButton.mapToGlobal(QtCore.QPoint(0,0)).x()
-        y = self.cornerWidgetsMenuButton.mapToGlobal(QtCore.QPoint(0,0)).y()
-        width = self.cornerWidgetsMenuButton.width()
-        height = self.cornerWidgetsMenuButton.height()
-        self.cornerWidgetsMenu.show()
-        if x - self.cornerWidgetsMenu.width() + width < 0:
+        x = self.mainMenuButton.mapToGlobal(QtCore.QPoint(0,0)).x()
+        y = self.mainMenuButton.mapToGlobal(QtCore.QPoint(0,0)).y()
+        width = self.mainMenuButton.width()
+        height = self.mainMenuButton.height()
+        self.mainMenu.show()
+        if x - self.mainMenu.width() + width < 0:
             x = 0
         else:
-            x = x - self.cornerWidgetsMenu.width() + width
-        if y + height + self.cornerWidgetsMenu.height() >= QtGui.QApplication.desktop().size().height():
-            y = y - self.cornerWidgetsMenu.height()
+            x = x - self.mainMenu.width() + width
+        if y + height + self.mainMenu.height() >= QtGui.QApplication.desktop().size().height():
+            y = y - self.mainMenu.height()
         else:
             y = y + height
-        self.cornerWidgetsMenu.move(x, y)
+        self.mainMenu.move(x, y)
 
     def showSettings(self):
         self.cDialog.show()
