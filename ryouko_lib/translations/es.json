@@ -25,7 +25,7 @@
 "search": "Buscar",
 "go": "Ir",
 "rCTabs": "Pestaña que ha cerrió recientemente",
-"newTabShortcuts": "<td style='padding-left: 4px;' valign='top'><b>Atajos de teclado</b><br/>F1: Abrir este página de pestañas nuevos<br>Ctrl+N: Abrir un ventana nuevo*<br>Ctrl+W: Cerrar este pestaña/ventana<br>Alt+Izquierdo: Va a la página previo<br>Alt+Derecho: Va a la página próximo<br>Ctrl+R; F5: Recargar este página<br>Esc: Detener<br>Ctrl+L; Alt+D: Abrir un URL<br>Ctrl+F: Buscar para algo texto en la página<br>Ctrl+G; F3: Buscar por la texto próximo<br>Ctrl+=; Ctrl++: Ampliar<br>Ctrl+-: Alejar<br>Ctrl+0: Restablecer el zoom<br><br>Los tooltips contenemos más atajos de teclado.</center><span style='font-size: 0.9em; position: fixed; bottom: 4px; left: 4px;'>* Voy a abrir un pestaña nuevo por defecto; para cambiar, abri el diálogo Preferencias y desmarque 'Abrir ventanas nuevos en pestañas'</span></td>",
+"newTabShortcuts": "<td style='padding-left: 4px;' valign='top'><b>Atajos de teclado</b><br/>F1: Abrir este página de pestañas nuevos<br>Ctrl+N: Abrir un ventana nuevo*<br>Ctrl+W: Cerrar este pestaña/ventana<br>Alt+Izquierdo: Va a la página previo<br>Alt+Derecho: Va a la página próximo<br>Ctrl+R; F5: Recargar este página<br>Esc: Detener<br>Ctrl+L; Alt+D: Abrir un URL<br>Ctrl+F: Buscar para algo texto en la página<br>Ctrl+G; F3: Buscar por la texto próximo<br>Ctrl+=; Ctrl++: Ampliar<br>Ctrl+-: Alejar<br>Ctrl+0: Restablecer el zoom<br><br>Los tooltips contenemos más atajos de teclado.</center></td>",
 "open": "Abrir",
 "openLocation": "Abrir un ubicación",
 "enterURL": "Entre un URL aquí:",

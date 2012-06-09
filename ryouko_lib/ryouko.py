@@ -2175,7 +2175,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def newWindow(self):
-        self.tabs.widget(self.tabs.currentIndex()).webView.newWindow()
+        nwin = TabBrowser(self)
+        nwin.show()
 
     def openHistoryItem(self, item):
         if self.searchOn == False:
