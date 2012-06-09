@@ -215,15 +215,13 @@ class RTabWidget(QtGui.QTabWidget):
         self.nuTabBar = RTabBar(self.parent)
         self.setTabBar(self.nuTabBar)
         self.setDocumentMode(True)
-        lynn = ""
-        if sys.platform.startswith("linux"):
-            lynn = """QTabBar {
+        self.setStyleSheet("""
+QTabBar {
 border-top: 1px solid palette(shadow);
 border-right: 1px solid palette(shadow);
 border-top-right-radius:4px;
 background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(midlight), stop:1 palette(window));
-}"""
-        self.setStyleSheet(lynn + """
+}
 
 QTabBar::tab {
 padding: 4px;
@@ -1786,27 +1784,15 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsMenuButton.setShortcut("Alt+M")
         self.cornerWidgetsMenuButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.cornerWidgetsMenuButton.clicked.connect(self.showCornerWidgetsMenu)
-        if sys.platform.startswith("win"):
-            osStyle = """
-            QPushButton {
-            padding: 4px;
-            padding-left: 8px;
-            padding-right: 8px;
-            border-top-left-radius: 4px;
-            border-bottom-left-radius: 4px;
-            background-color: transparent;
-            }"""
-        else:
-            osStyle = """
-            QPushButton {
-            padding: 4px;
-            padding-left: 8px;
-            padding-right: 8px;
-            border-top-left-radius: 4px;
-            border-bottom: 1px solid palette(shadow);
-            background-color: transparent;
-            }"""
-        self.cornerWidgetsMenuButton.setStyleSheet(osStyle + """
+        self.cornerWidgetsMenuButton.setStyleSheet("""
+        QPushButton {
+        padding: 4px;
+        padding-left: 8px;
+        padding-right: 8px;
+        border-top-left-radius: 4px;
+        border-bottom: 1px solid palette(shadow);
+        background-color: transparent;
+        }
 
         QPushButton:hover {
         color: palette(highlighted-text);
