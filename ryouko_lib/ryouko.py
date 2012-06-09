@@ -848,7 +848,7 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.loadControls)
 
     def loadLinks(self):
-        if os.path.isdir(os.path.join(app_home, "links")):
+        if os.path.isdir(os.path.join(app_home, "links")) and not user_links == "":
             if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
                 self.buildToolBar()
             if self.page().mainFrame().findFirstElement("#ryouko-link-bar").isNull():
