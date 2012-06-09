@@ -63,6 +63,8 @@
 "history": "History",
 "clearHistory": "Clear History",
 "viewBookmarks": "View &Bookmarks",
+"addBookmark": "Add a bookmark",
+"addBookmarkTT": "<b>Bookmark this page</b><br>Ctrl+D",
 "bookmarks": "Bookmarks",
 "name": "Name",
 "url": "URL",

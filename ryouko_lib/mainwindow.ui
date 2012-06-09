@@ -185,6 +185,22 @@ background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shado
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="addBookmarkButton">
+              <property name="focusPolicy">
+               <enum>Qt::TabFocus</enum>
+              </property>
+              <property name="toolTip">
+               <string>&lt;b&gt;Add Bookmark&lt;/b&gt;&lt;br&gt;Ctrl+D</string>
+              </property>
+              <property name="styleSheet">
+               <string notr="true"/>
+              </property>
+              <property name="text">
+               <string>Add Bookmark</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="goButton">
               <property name="focusPolicy">
                <enum>Qt::TabFocus</enum>
@@ -448,6 +464,7 @@ background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shado
   <tabstop>findButton</tabstop>
   <tabstop>findNextButton</tabstop>
   <tabstop>urlBar</tabstop>
+  <tabstop>addBookmarkButton</tabstop>
   <tabstop>goButton</tabstop>
   <tabstop>focusURLBarButton</tabstop>
   <tabstop>searchButton</tabstop>

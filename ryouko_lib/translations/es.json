@@ -63,6 +63,8 @@
 "history": "Historia",
 "clearHistory": "Limpiar la historia",
 "viewBookmarks": "Abrir los marcadores",
+"addBookmark": "Añadir un marcador",
+"addBookmarkTT": "<b>Añadir este página</b><br>Ctrl+D",
 "bookmarks": "Marcadores",
 "name": "Nombre",
 "add": "Añadir",

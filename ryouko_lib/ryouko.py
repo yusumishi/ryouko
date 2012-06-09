@@ -1238,6 +1238,17 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
         self.mainToolBarLayout.setSpacing(0)
 
+        addBookmarkAction = QtGui.QAction(self)
+        addBookmarkAction.triggered.connect(self.bookmarkPage)
+        addBookmarkAction.setShortcut("Ctrl+D")
+        self.addAction(addBookmarkAction)
+
+        self.addBookmarkButton.clicked.connect(self.bookmarkPage)
+        self.addBookmarkButton.setText("")
+        self.addBookmarkButton.setToolTip(tr("addBookmarkTT"))
+        self.addBookmarkButton.setIconSize(QtCore.QSize(16, 16))
+        self.addBookmarkButton.setIcon(QtGui.QIcon().fromTheme("emblem-favorite", QtGui.QIcon(os.path.join(app_icons, 'heart.png'))))
+
         self.goButton.clicked.connect(self.updateWeb)
         self.goButton.setText("")
         self.goButton.setToolTip(tr("go"))
@@ -1460,6 +1471,12 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         else:
             self.urlBar2.setFocus()
             self.urlBar2.selectAll()
+
+    def bookmarkPage(self):
+        name = inputDialog(tr('addBookmark'), tr('enterName'), unicode(self.webView.title()))
+        if name and name != "":
+            bookmarksManager.add(unicode(self.webView.url().toString()), unicode(name))
+
     def updateWeb(self):
         urlBar = self.urlBar.text()
         urlBar = unicode(urlBar)
