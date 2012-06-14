@@ -853,7 +853,8 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.loadLinks)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
             self.buildNewTabPage()
-            self.loadControls()
+            if not type(self.parent) == Browser:
+                self.loadControls()
 
     def showInspector(self):
         if self.parent.webInspectorDock:
