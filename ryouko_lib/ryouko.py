@@ -64,15 +64,39 @@ app_icons = os.path.join(app_lib, 'icons')
 app_gui = os.path.join(app_lib, "mainwindow.ui")
 app_info = os.path.join(app_lib, "info.txt")
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
-app_links = os.path.join(app_home, "links")
+app_profile_folder = os.path.join(app_home, "profiles")
 app_commandline = ""
+app_profile_exists = False
 for arg in sys.argv:
     app_commandline = "%s%s " % (app_commandline, arg)
-app_lock = os.path.join(app_home, ".lockfile")
 app_logo = os.path.join(app_icons, "logo.svg")
-app_cookies = os.path.join(app_home, "cookies.json")
 user_links = ""
-app_instance2 = os.path.join(app_home, "instance2-says.txt")
+
+def changeProfile(name, init = False):
+    global app_profile_name
+    global app_profile
+    global app_links
+    global app_lock
+    global app_cookies
+    global app_instance2
+    global app_profile_exists
+    app_profile_name = name
+    app_profile = os.path.join(app_profile_folder, app_profile_name)
+    app_links = os.path.join(app_profile, "links")
+    app_lock = os.path.join(app_profile, ".lockfile")
+    app_cookies = os.path.join(app_profile, "cookies.json")
+    app_instance2 = os.path.join(app_profile, "instance2-says.txt")
+    if not os.path.isdir(app_home):
+        os.mkdir(app_home)
+    if not os.path.isdir(app_profile_folder):
+        os.mkdir(app_profile_folder)
+    if not os.path.isdir(app_profile):
+        os.mkdir(app_profile)
+    else:
+        if init == False:
+            app_profile_exists = True
+
+changeProfile("default", True)
 
 reset = False
 terminals=[ ["terminator",      "-x "],
@@ -150,11 +174,11 @@ def doNothing():
 
 def reload_user_links():
     links = []
-    if os.path.isdir(os.path.join(app_home, "links")):
-        l = os.listdir(os.path.join(app_home, "links"))
+    if os.path.isdir(os.path.join(app_profile, "links")):
+        l = os.listdir(os.path.join(app_profile, "links"))
         links = []
         for fname in l:
-            f = os.path.join(app_home, "links", fname)
+            f = os.path.join(app_profile, "links", fname)
             fi = open(f, "r")
             contents = fi.read()
             fi.close()
@@ -296,7 +320,7 @@ class SearchManager(QtCore.QObject):
         self.parent = parent
         self.searchEngines = {"DuckDuckGo": {"expression" : "http://duckduckgo.com/?q=%s", "keyword" : "d"}, "Wikipedia": {"expression" : "http://wikipedia.org/w/index.php?title=Special:Search&search=%s", "keyword" : "w"}, "YouTube" : {"expression" : "http://www.youtube.com/results?search_query=%s", "keyword" : "y"}, "Google" : {"expression" : "http://www.google.com/?q=%s", "keyword" : "g"}, "deviantART" : {"expression" : "http://browse.deviantart.com/?qh=&section=&q=%s", "keyword" : "da"}}
         self.currentSearch = "http://duckduckgo.com/?q=%s"
-        self.searchEnginesFile = os.path.join(app_home, "search-engines.json")
+        self.searchEnginesFile = os.path.join(app_profile, "search-engines.json")
         self.load()
     def load(self):
         if os.path.exists(self.searchEnginesFile):
@@ -587,21 +611,21 @@ class BrowserHistory(QtCore.QObject):
         self.parent = parent
         self.history = []
         self.url = "about:blank"
-        if not os.path.exists(os.path.join(app_home, "history.json")):
+        if not os.path.exists(os.path.join(app_profile, "history.json")):
             self.save()
         self.reload()
     def reload(self):
-        if os.path.exists(os.path.join(app_home, "history.json")):
-            history = open(os.path.join(app_home, "history.json"), "r")
+        if os.path.exists(os.path.join(app_profile, "history.json")):
+            history = open(os.path.join(app_profile, "history.json"), "r")
             try: self.history = json.load(history)
             except:
                 global reset
                 reset = True
             history.close()
     def save(self):
-        if not os.path.isdir(app_home):
-            os.mkdir(app_home)
-        history = open(os.path.join(app_home, "history.json"), "w")
+        if not os.path.isdir(app_profile):
+            os.mkdir(app_profile)
+        history = open(os.path.join(app_profile, "history.json"), "w")
         json.dump(self.history, history)
         history.close()
     def append(self, url, name=""):
@@ -679,23 +703,23 @@ class SettingsManager():
         self.filters = []
         self.loadSettings()
     def loadSettings(self):
-        settingsFile = os.path.join(app_home, "settings.json")
+        settingsFile = os.path.join(app_profile, "settings.json")
         if os.path.exists(settingsFile):
             fstream = open(settingsFile, "r")
             self.settings = json.load(fstream)
             fstream.close()
         self.applyFilters()
     def saveSettings(self):
-        settingsFile = os.path.join(app_home, "settings.json")
+        settingsFile = os.path.join(app_profile, "settings.json")
         fstream = open(settingsFile, "w")
         json.dump(self.settings, fstream)
         fstream.close()
     def applyFilters(self):
-        if os.path.isdir(os.path.join(app_home, "adblock")):
+        if os.path.isdir(os.path.join(app_profile, "adblock")):
             self.filters = []
-            l = os.listdir(os.path.join(app_home, "adblock"))
+            l = os.listdir(os.path.join(app_profile, "adblock"))
             for fname in l:
-                f = open(os.path.join(app_home, "adblock", fname))
+                f = open(os.path.join(app_profile, "adblock", fname))
                 contents = f.readlines()
                 f.close()
                 for g in contents:
@@ -866,7 +890,7 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.loadControls)
 
     def loadLinks(self):
-        if os.path.isdir(os.path.join(app_home, "links")) and not user_links == "":
+        if os.path.isdir(os.path.join(app_profile, "links")) and not user_links == "":
             if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
                 self.buildToolBar()
             if self.page().mainFrame().findFirstElement("#ryouko-link-bar").isNull():
@@ -959,18 +983,18 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             mimetype = ""
         if mimetype != None:
             if "xspf" in mimetype:
-                self.downloadFile(request, os.path.join(app_home, "temp", "playlist.tmp.xspf"))
+                self.downloadFile(request, os.path.join(app_profile, "temp", "playlist.tmp.xspf"))
             else:
                 self.downloadFile(request)
 
     def loadXspf(self):
         self.load(QtCore.QUrl("about:blank"))
-        l = os.listdir(os.path.join(app_home, "temp"))
+        l = os.listdir(os.path.join(app_profile, "temp"))
         try: l[0]
         except:
             doNothing()
         else:
-            f = open(os.path.join(app_home, "temp", l[0]), "r")
+            f = open(os.path.join(app_profile, "temp", l[0]), "r")
             contents = f.readlines()
             f.close()
             nucontents = ""
@@ -1020,7 +1044,7 @@ window.onload = function browserDetect() {
         </html>
         """
             self.setHtml(html)
-            shred_directory(os.path.join(app_home, "temp"))
+            shred_directory(os.path.join(app_profile, "temp"))
 
     def downloadFile(self, request, fname = ""):
         if not os.path.isdir(os.path.dirname(fname)):
@@ -1386,7 +1410,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.focusURLBarAction.setShortcut("Ctrl+L")
         self.focusURLBarAction.triggered.connect(self.focusURLBar)
         self.addAction(self.focusURLBarAction)
-        self.webView.settings().setIconDatabasePath(qstring(app_home))
+        self.webView.settings().setIconDatabasePath(qstring(app_profile))
         self.webView.page().linkHovered.connect(self.updateStatusMessage)
         self.webView.loadFinished.connect(self.progressBar.hide)
         self.webView.loadProgress.connect(self.progressBar.setValue)
@@ -1692,16 +1716,16 @@ class CDialog(QtGui.QMainWindow):
         if self.oswBox.isChecked():
             self.openTabsBox.setCheckState(QtCore.Qt.Unchecked)
     def applyFilters(self):
-        l = os.listdir(os.path.join(app_home, "adblock"))
+        l = os.listdir(os.path.join(app_profile, "adblock"))
         if len(l) != self.filterListCount:
             settingsManager.applyFilters()
             self.filterListCount = len(l)
     def tryDownload(self):
         if self.aBBox.isChecked():
-            l = os.listdir(os.path.join(app_home, "adblock"))
+            l = os.listdir(os.path.join(app_profile, "adblock"))
             if len(l) == 0:
                 downloaderThread.setUrl("https://easylist-downloads.adblockplus.org/easylist.txt")
-                downloaderThread.setDestination(os.path.join(app_home, "adblock", "easylist.txt"))
+                downloaderThread.setDestination(os.path.join(app_profile, "adblock", "easylist.txt"))
                 downloaderThread.start()
     def loadSettings(self):
         settingsManager.loadSettings()
@@ -1798,8 +1822,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.killTempFiles = False
         self.closed = False
         self.closedTabList = []
-        if not os.path.exists(app_home):
-            os.mkdir(app_home)
         self.searchOn = False
         self.tempHistory = []
 
@@ -1837,7 +1859,7 @@ class TabBrowser(QtGui.QMainWindow):
 
     def checkTempFiles(self):
         if self.killTempFiles == True:
-            shred_directory(os.path.join(app_home, "temp"))
+            shred_directory(os.path.join(app_profile, "temp"))
 
     def loadCookies(self):
         if os.path.exists(app_cookies):
@@ -2123,20 +2145,33 @@ class TabBrowser(QtGui.QMainWindow):
         self.addAction(closeTabAction)
         self.setCentralWidget(self.tabs)
         if len(sys.argv) == 1:
-            if self.parent == None:
-                self.newpbTab()
-            else:
-                self.newTab()
-                self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
+            self.newTab()
+            self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
         elif len(sys.argv) > 1:
             for arg in range(1, len(sys.argv)):
                 if not "--pb" in sys.argv and not "-pb" in sys.argv:
-                    self.newTab(sys.argv[arg])
+                    try:
+                        sys.argv[arg - 1]
+                    except:
+                        if not sys.argv[arg] == "-P":
+                            self.newTab(sys.argv[arg])
+                    else:
+                        if not (sys.argv[arg - 1] == "-P") and not sys.argv[arg] == "-P":
+                            self.newTab(sys.argv[arg])
                 else:
-                    if not sys.argv[arg] == "--pb" and not sys.argv[arg] == "-pb":
-                        self.newpbTab(sys.argv[arg])
+                    try:
+                        sys.argv[arg - 1]
+                    except:
+                        if not sys.argv[arg] == "-P" and not sys.argv[arg] == "--pb" and not sys.argv[arg] == "-pb":
+                            self.newpbTab(sys.argv[arg])
+                    else:
+                        if not (sys.argv[arg - 1] == "-P") and not sys.argv[arg] == "-P" and not sys.argv[arg] == "--pb" and not sys.argv[arg] == "-pb":
+                            self.newpbTab(sys.argv[arg])
             for arg in range(1, len(sys.argv)):
                 del sys.argv[1]
+            if self.tabs.count() == 0:
+                self.newTab()
+                self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
 
     def hideInspectors(self):
         for tab in range(self.tabs.count()):
@@ -2280,8 +2315,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.clearHistoryToolBar.setVisible(not self.clearHistoryToolBar.isVisible())
     def clearHistoryRange(self, timeRange=0.0):
         if sys.platform.startswith("linux"):
-            os.system("shred -v \"%s\"" % (os.path.join(app_home, "WebpageIcons.db")))
-        try: os.remove(os.path.join(app_home, "WebpageIcons.db"))
+            os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
+        try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
         except:
             doNothing()
         saveTime = time.time()
@@ -2320,8 +2355,8 @@ class TabBrowser(QtGui.QMainWindow):
             self.clearHistoryRange(86400.0)
         elif self.selectRange.currentIndex() == 11:
             if sys.platform.startswith("linux"):
-                os.system("shred -v \"%s\"" % (os.path.join(app_home, "WebpageIcons.db")))
-            try: os.remove(os.path.join(app_home, "WebpageIcons.db"))
+                os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
+            try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
             except:
                 doNothing()
             saveMonth = time.strftime("%B")
@@ -2335,8 +2370,8 @@ class TabBrowser(QtGui.QMainWindow):
             self.reloadHistory()
         elif self.selectRange.currentIndex() == 12:
             if sys.platform.startswith("linux"):
-                os.system("shred -v \"%s\"" % (os.path.join(app_home, "WebpageIcons.db")))
-            try: os.remove(os.path.join(app_home, "WebpageIcons.db"))
+                os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
+            try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
             except:
                 doNothing()
             browserHistory.history = []
@@ -2442,11 +2477,25 @@ class Ryouko(QtGui.QWidget):
     def primeBrowser(self):
         global win
         win.show()
+        if app_profile_exists == True:
+            message("")
 
 def main():
     if "--help" in sys.argv or "-h" in sys.argv:
         print(tr("help"))
     else:
+        if "-P" in sys.argv:
+            try:
+                i = sys.argv.index("-P")
+            except:
+                doNothing()
+            else:
+                try:
+                    sys.argv[i + 1]
+                except:
+                    doNothing()
+                else:
+                    changeProfile(sys.argv[i + 1])
         if os.path.exists(app_lock):
             app = QtGui.QApplication(sys.argv)
             reply = QtGui.QMessageBox.question(None, tr("error"),
@@ -2458,7 +2507,7 @@ def main():
                 f.close()
                 f = open(app_instance2, "a")
                 for arg in range(1, len(sys.argv)):
-                    if not "--pb" in sys.argv and not "-pb" in sys.argv:
+                    if not sys.argv[arg].lower() == "--pb" and not sys.argv[arg].lower() == "-pb" and not sys.argv[arg] == "-P":
                         f.write("%s\n" % (sys.argv[arg]))
                 f.close()
             else:
@@ -2472,12 +2521,12 @@ def main():
         else:
             reload_user_links()
             global reset
-            if not os.path.isdir(app_home):
-                os.mkdir(app_home)
-            if not os.path.isdir(os.path.join(app_home, "temp")):
-                os.mkdir(os.path.join(app_home, "temp"))
-            if not os.path.isdir(os.path.join(app_home, "adblock")):
-                os.mkdir(os.path.join(app_home, "adblock"))
+            if not os.path.isdir(app_profile):
+                os.mkdir(app_profile)
+            if not os.path.isdir(os.path.join(app_profile, "temp")):
+                os.mkdir(os.path.join(app_profile, "temp"))
+            if not os.path.isdir(os.path.join(app_profile, "adblock")):
+                os.mkdir(os.path.join(app_profile, "adblock"))
             app = QtGui.QApplication(sys.argv)
             if reset == True:
                 browserHistory.reset()
