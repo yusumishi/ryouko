@@ -1,5 +1,5 @@
 {
-"help": "ryouko [-h|--help] [-pb|--pb] [URLs]\n\n-h or --help: This help screen\n-pb or --pb: Opens [URLs] in private browsing mode",
+"help": "ryouko [-h|--help] [-P <profile name>] [-pb|--pb] [URLs]\n\n-h or --help: This help screen\n-pb or --pb: Opens [URLs] in private browsing mode\n-P <profile name>: Use a profile named <profile name> instead of the default profile.",
 "aboutRyouko": "About Ryouko",
 "aboutRyoukoHKey": "About &Ryouko",
 "codename": "Codename",
@@ -11,6 +11,7 @@
 "webInspector": "Web Inspector",
 "error": "Error",
 "isRunning": "Ryouko thinks that you already have Ryouko open. Is this correct?",
+"profileError": "You have attempted to create a profile that already exists. Ryouko has loaded the existing profile instead.",
 "bookmarkError": "Please fill out the name and URL fields.",
 "query": "Query",
 "enterValue": "Enter a value here:",

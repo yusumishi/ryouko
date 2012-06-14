@@ -29,7 +29,7 @@ SOFTWARE.
 
 from __future__ import print_function
 
-import os, sys, json, time, datetime, string
+import os, sys, json, time, datetime, string, shutil
 from subprocess import Popen, PIPE
 from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 if not sys.platform.startswith("win"):
@@ -86,8 +86,11 @@ def changeProfile(name, init = False):
     app_lock = os.path.join(app_profile, ".lockfile")
     app_cookies = os.path.join(app_profile, "cookies.json")
     app_instance2 = os.path.join(app_profile, "instance2-says.txt")
+    migrate = False
     if not os.path.isdir(app_home):
         os.mkdir(app_home)
+    else:
+        migrate = True
     if not os.path.isdir(app_profile_folder):
         os.mkdir(app_profile_folder)
     if not os.path.isdir(app_profile):
@@ -95,6 +98,13 @@ def changeProfile(name, init = False):
     else:
         if init == False:
             app_profile_exists = True
+    if migrate == True:
+        l = os.listdir(app_home)
+        for fname in l:
+            fpath = os.path.join(app_home, fname)
+            if not fpath == app_profile_folder:
+                if not os.path.exists(os.path.join(app_profile, fname)):
+                    shutil.move(fpath, app_profile)
 
 changeProfile("default", True)
 
@@ -2478,7 +2488,7 @@ class Ryouko(QtGui.QWidget):
         global win
         win.show()
         if app_profile_exists == True:
-            message("")
+            message(tr("error"), tr("profileError"), "warn")
 
 def main():
     if "--help" in sys.argv or "-h" in sys.argv:
