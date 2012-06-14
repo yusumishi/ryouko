@@ -764,7 +764,6 @@ class RWebView(QtWebKit.QWebView):
         super(RWebView, self).__init__()
         self.parent = parent
         self.newWindows = [0]
-        self.oldURL = False
         self.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
         downloaderThread.fileDownloaded.connect(self.loadXspf)
         if os.path.exists(app_logo):
@@ -851,10 +850,11 @@ class RWebView(QtWebKit.QWebView):
         self.updateSettings()
         self.establishPBMode(pb)
         self.loadFinished.connect(self.loadLinks)
-        if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.parent != None and self.parent != False:
+        if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == ""):
             self.buildNewTabPage()
             if not type(self.parent) == Browser:
                 self.loadControls()
+            self.updateTitle()
 
     def showInspector(self):
         if self.parent.webInspectorDock:
@@ -1041,41 +1041,46 @@ window.onload = function browserDetect() {
             downloaderThread.start()
 
     def updateTitle(self):
-        if self.title() != self.windowTitle() and self.oldURL != unicode(self.url().toString()):
-            if self.parent == None or self.parent == False:
-                self.setWindowTitle(qstring("%s (PB)" % (unicode(self.title()))))
+        if self.title() != self.windowTitle():
+            t = self.title()
+            if self.pb:
+                self.setWindowTitle(qstring("%s (PB)" % (unicode(t))))
             else:
-                self.setWindowTitle(self.title())
-            self.oldURL = unicode(self.url().toString())
+                self.setWindowTitle(t)
 
     def buildNewTabPage(self, forceLoad = True):
         if forceLoad == True:
             self.load(QtCore.QUrl("about:blank"))
         f = str(searchManager.currentSearch.replace("%s", ""))
-        html = "<!DOCTYPE html><html><head><title>" + tr('newTabTitle') + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('search') + ":</b><form method='get' action='" + f + "' style='display: inline-block;'><input type='text'  name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
+        if type(self.parent) == Browser:
+            t = tr('newTab')
+        else:
+            t = tr('newWindow')
+        html = "<!DOCTYPE html><html><head><title>" + t + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('search') + ":</b><form method='get' action='" + f + "' style='display: inline-block;'><input type='text'  name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
         h = tr('newTabShortcuts')
-        try: self.parent.closedTabList
+        try: self.parent.parent.closedTabList
         except:
             doNothing()
         else:
-            if len(self.parent.closedTabList) > 0:
+            if len(self.parent.parent.closedTabList) > 0:
                 html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><b>" + tr('rCTabs') + "</b><br/>"
             urls = []
-            for link in self.parent.closedTabList:
-                breakyes = False
-                for item in urls:
-                    if item == link['url']:
-                        breakyes = True
-                        break
-                if breakyes == True:
-                    doNothing()
-                else:
-                    html = html + "<a href=\"" + link['url'] + "\">" + link['title'] + "</a><br/>"
-                    urls.append(link['url'])
-            if len(self.parent.closedTabList) > 0:
-                html = "%s</td>" % (html)
-            if not len(self.parent.closedTabList) > 0:
-                h = h.replace("style='padding-left: 4px;'", "")
+            if 1:
+                for link in self.parent.parent.closedTabList:
+                    breakyes = False
+                    for item in urls:
+                        if item == link['url']:
+                            breakyes = True
+                            break
+                    if breakyes == True:
+                        doNothing()
+                    else:
+                        html = html + "<a href=\"" + link['url'] + "\">" + link['title'] + "</a><br/>"
+                        urls.append(link['url'])
+                if len(self.parent.parent.closedTabList) > 0:
+                    html = "%s</td>" % (html)
+                if not len(self.parent.parent.closedTabList) > 0:
+                    h = h.replace("style='padding-left: 4px;'", "")
         html = html + h + "</tr></body></html>"
         self.setHtml(html)
 
@@ -2195,7 +2200,10 @@ class TabBrowser(QtGui.QMainWindow):
             self.tabCount += 1
             s = str(self.tabCount)
             if url != False:
-                exec("tab" + s + " = Browser(self, \"" + metaunquote(url) + "\")")
+                try:
+                    exec("tab" + s + " = Browser(self, \"" + metaunquote(url) + "\")")
+                except:
+                    exec("tab" + s + " = Browser(self, \"" + url + "\")")
             else:
                 exec("tab%s = Browser(self)" % (s))
             exec("tab%s.webView.titleChanged.connect(self.updateTitles)" % (s))
@@ -2220,8 +2228,11 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def newWindow(self):
-        nwin = TabBrowser(self)
-        nwin.show()
+        if settingsManager.settings['oldSchoolWindows']:
+            self.tabs.widget(self.tabs.currentIndex()).webView.newWindow()
+        else:
+            nwin = TabBrowser(self)
+            nwin.show()
 
     def openHistoryItem(self, item):
         if self.searchOn == False:
