@@ -1162,7 +1162,9 @@ window.onload = function browserDetect() {
                 exec("self.newWindow%s.loadControls()" % (s))
                 exec("self.newWindow%s.show()" % (s))
                 exec("self.newWindows.append(self.newWindow%s)" % (s))
+                exec("n = self.newWindow%s" % (s))
                 self.createNewWindow.emit(windowType)
+                return n
         else:
             if win.closed:
                 global win
