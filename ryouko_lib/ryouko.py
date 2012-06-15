@@ -807,7 +807,7 @@ class RAboutDialog(QtWebKit.QWebView):
     def __init__(self, parent=None):
         super(RAboutDialog, self).__init__()
         self.parent = parent
-        self.setWindowModality(QtCore.Qt.ApplicationModal)
+#        self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.closeWindowAction = QtGui.QAction(self)
         self.closeWindowAction.setShortcuts(["Ctrl+W", "Esc", "Enter"])
