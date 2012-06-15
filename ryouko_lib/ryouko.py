@@ -81,7 +81,11 @@ for arg in sys.argv:
 app_logo = os.path.join(app_icons, "logo.svg")
 user_links = ""
 
-settingsManager = SettingsManager()
+class RSettingsManager(SettingsManager):
+    def errorMessage(self, backend):
+        message("Error!", "Backend %s could not be found!" % (backend), "warn")
+
+settingsManager = RSettingsManager()
 
 def changeProfile(name, init = False):
     global app_profile_name
@@ -169,8 +173,6 @@ cornerWidgetsSheet = """
         background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shadow), stop:1 palette(button));
         }
         """
-
-xspfReader = XSPFReader()
 
 trManager = translate.TranslationManager()
 trManager.setDirectory(os.path.join(app_lib, "translations"))
@@ -268,6 +270,10 @@ def inputDialog(title=tr('query'), content=tr('enterValue'), value=""):
             return ""
     else:
         return ""
+
+def saveDialog(fname="", filters = "All files (*)"):
+    saveDialog = QtGui.QFileDialog.getSaveFileName(None, "Save As", os.path.join(os.getcwd(), fname), filters)
+    return saveDialog
 
 class RTabBar(QtGui.QTabBar):
     def __init__(self, parent=None):
@@ -825,9 +831,10 @@ class RWebView(QtWebKit.QWebView):
     def __init__(self, parent=False, pb=False):
         super(RWebView, self).__init__()
         self.parent = parent
+        self.destinations = []
+        self.replies = []
         self.newWindows = [0]
         self.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
-        downloaderThread.fileDownloaded.connect(self.loadXspf)
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
         if pb:
@@ -906,7 +913,7 @@ class RWebView(QtWebKit.QWebView):
         self.addAction(self.page().action(QtWebKit.QWebPage.InspectElement))
 
         self.page().setForwardUnsupportedContent(True)
-        self.page().unsupportedContent.connect(self.checkContentType)
+        self.page().unsupportedContent.connect(self.downloadUnsupportedContent)
         self.page().downloadRequested.connect(self.downloadFile)
         self.loadFinished.connect(self.checkForAds)
         self.updateSettings()
@@ -1011,96 +1018,49 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             except:
                 print("Error! %s does not have an updateSettings() method!" % (self.newWindows[child]))
 
-    def saveDialog(self, fname="", filters = "All files (*)"):
-        saveDialog = QtGui.QFileDialog.getSaveFileName(None, "Save As", os.path.join(os.getcwd(), fname), filters)
-        return saveDialog
+    def downloadUnsupportedContent(self, reply):
+        self.downloadFile(reply.request())
 
-    def checkContentType(self, request):
-        mimetype = get_mimetype(unicode(request.url().toString()))
-        if mimetype == None:
-            mimetype = ""
-        if mimetype != None:
-            if "xspf" in mimetype:
-                self.downloadFile(request, os.path.join(app_profile, "temp", "playlist.tmp.xspf"))
-            else:
-                self.downloadFile(request)
-
-    def loadXspf(self):
-        self.load(QtCore.QUrl("about:blank"))
-        l = os.listdir(os.path.join(app_profile, "temp"))
-        try: l[0]
-        except:
-            doNothing()
-        else:
-            f = open(os.path.join(app_profile, "temp", l[0]), "r")
-            contents = f.readlines()
-            f.close()
-            nucontents = ""
-            for line in contents:
-                nucontents = nucontents + line
-            xspfReader.feed(nucontents)
-            html = """
-        <html>
-        <head>
-        <title>Playlist</title>
-        </head>
-        <body style=\"font-family: sans-serif;\">
-        <div id=\"playerBox\" valign=\"top\">
-<script text=\"text/javascript\">
-window.onload = function browserDetect() {
-    var foo,i; 
-    foo=document.getElementsByTagName(\"a\"); 
-    for(i=0;i<foo.length;i++){
-      try {
-      var href=foo[i].getAttribute('media');
-        if((href.search(/.ogv$/)!=-1 || href.search(/.oga$/)!=-1 || href.search(/.mp4$/)!=-1 || href.search(/.m4a$/)!=-1 || href.search(/.m3a$/)!=-1 || href.search(/.wav$/)!=-1 || href.search(/.webm$/)!=-1 || href.search(/.flac$/)!=-1 || href.search(/.mp3$/)!=-1 || href.search(/.ogg$/)!=-1 || href.indexOf(\"soundcloud\")!=-1) && href.search(/JOrbisPlayer.php/)==-1) {
-          foo[i].href = \"javascript:document.getElementById('audioPlayer').setAttribute('src', '\" + href + \"'); document.getElementById('audioPlayer').load(); document.getElementById('audioPlayer').play();\";
-          if (userAgent.indexOf(\"firefox\") == -1) {
-            foo[i].href = foo[i].href + \" document.getElementById('nowPlaying').innerHTML = '\" + foo[i].innerHTML + \"';\";
-          }
-        }
-      }
-      catch(err) {
-        var hello = 'dummy';
-      }
-    }
-}
-</script>
-<div id=\"controlsBox\" style=\"background: Window; color: WindowText; width: 100%; position: fixed; border-top: 1px solid ThreeDShadow; bottom: 0; left: 0; right: 0;\">
-<div id=\"nowPlaying\" style=\"font-weight: bold;\">No track selected</div>
-<audio controls=\"controls\" style=\"border: 0; width: 100%;\" id=\"audioPlayer\" src=\"\"></audio>
-</div>
-<div id=\"linkBox\" style=\"margin-bottom: 64px;\">"""
-            for item in xspfReader.playlist:
-                if item['title'] == "":
-                    item['title'] = "(Untitled)"
-                html =  "%s<a media=\"%s\">%s</a><a style='float: right;' href=\"%s\">[Download]</a><br/>" % (html, item['location'], item['title'], item['location'])
-            html = html + """
-        </div>
-        </div>
-        </body>
-        </html>
-        """
-            self.setHtml(html)
-            shred_directory(os.path.join(app_profile, "temp"))
+    def checkForFinishedDownloads(self):
+        for i in range(len(self.replies)):
+            if self.replies[i].isFinished():
+                data = self.replies[i].readAll()
+                f = QtCore.QFile(self.destinations[i])
+                f.open(QtCore.QIODevice.WriteOnly)
+                f.writeData(data)
+                f.flush()
+                f.close()
+                del self.replies[i]
+                del self.destinations[i]
+                break
 
     def downloadFile(self, request, fname = ""):
         if not os.path.isdir(os.path.dirname(fname)):
-            fname = self.saveDialog(os.path.split(unicode(request.url().toString()))[1])
+            fname = saveDialog(os.path.split(unicode(request.url().toString()))[1])
         if fname:
-            downloaderThread.setUrl(unicode(request.url().toString()))
-            downloaderThread.setDestination(fname)
-            username = False
-            password = False
-            if settingsManager.settings['loginToDownload'] == True:
-                username = inputDialog("Enter a username", "Enter a username here [optional]:")
-                if username.replace(" ", "") != "":
-                    password = inputDialog("Enter a username", "Enter a password here [optional]:")
+            if settingsManager.settings['backend'] == "qt":
+                self.destinations.append(fname)
+                nm = self.page().networkAccessManager()
+                if type(request) == QtNetwork.QNetworkReply:
+                    reply = nm.get(request.request())
                 else:
-                    username = False
-            downloaderThread.username = username
-            downloaderThread.password = password
-            downloaderThread.start()
+                    reply = nm.get(request)
+                self.replies.append(reply)
+                reply.finished.connect(self.checkForFinishedDownloads)
+            else:
+                downloaderThread.setUrl(unicode(request.url().toString()))
+                downloaderThread.setDestination(fname)
+                username = False
+                password = False
+                if settingsManager.settings['loginToDownload'] == True:
+                    username = inputDialog("Enter a username", "Enter a username here [optional]:")
+                    if username.replace(" ", "") != "":
+                        password = inputDialog("Enter a username", "Enter a password here [optional]:")
+                    else:
+                        username = False
+                downloaderThread.username = username
+                downloaderThread.password = password
+                downloaderThread.start()
 
     def updateTitle(self):
         if self.title() != self.windowTitle():
@@ -1677,6 +1637,7 @@ class CDialog(QtGui.QMainWindow):
         backendBox = QtGui.QLabel(tr('downloadBackend'))
         self.layout.addWidget(backendBox)
         self.selectBackend = QtGui.QComboBox()
+        self.selectBackend.addItem('qt')
         self.selectBackend.addItem('python')
         self.selectBackend.addItem('aria2')
         self.selectBackend.addItem('axel')
@@ -1776,6 +1737,12 @@ class CDialog(QtGui.QMainWindow):
                     if unicode(self.selectBackend.itemText(index)).lower() == self.settings['backend']:
                         self.selectBackend.setCurrentIndex(index)
                         break
+            qtb = os.path.join(app_profile, "qtbck.conf")
+            if not os.path.exists(qtb):
+                self.selectBackend.setCurrentIndex(0)
+                f = open(qtb, "w")
+                f.write("")
+                f.close()
         try:
             global app_windows
             for window in app_windows:

@@ -31,6 +31,7 @@ def do_nothing():
     return
 
 import os.path, sys, json
+from subprocess import Popen, PIPE
 
 try:
     filename = __file__
@@ -140,7 +141,7 @@ def unescape(text):
 
 class SettingsManager():
     def __init__(self, app_profile = os.path.join(os.path.expanduser("~"), ".ryouko-data", "profiles", "default")):
-        self.settings = {'openInTabs' : True, 'oldSchoolWindows' : False, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'python', 'loginToDownload' : False, 'adBlock' : False}
+        self.settings = {'openInTabs' : True, 'oldSchoolWindows' : False, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : False}
         self.filters = []
         self.app_profile = app_profile
         self.loadSettings()
@@ -173,71 +174,14 @@ class SettingsManager():
         check = False
         if backend == "aria2":
             check = Popen(["which", "aria2c"], stdout=PIPE).communicate()[0]
-        elif backend != "python":
+        elif backend != "python" and backend != "qt":
             check = Popen(["which", backend], stdout=PIPE).communicate()[0]
         else:
             check = True
         if check:
             self.settings['backend'] = backend
         else:
-            message("Error!", "Backend %s could not be found!" % (backend), "warn")
-            self.settings['backend'] = "python"
-
-if sys.version_info[0] >= 3:
-    class XSPFReader(HTMLParser):
-        event_list = []
-        event_contents = ""
-        in_track = False
-        tag = ""
-        data = {"title": "", "location": ""}
-        playlist = []
-        def handle_starttag(self, tag, attrs):
-            self.tag = tag
-            if tag == "track":
-                self.in_track = True
-                self.data = {"title": "", "location": ""}
-        def handle_startendtag(self, tag, attrs):
-            self.tag = tag
-            self.attributes = attrs
-        def handle_endtag(self, tag):
-            self.tag = ""
-            if tag == "track":
-                self.in_track = False
-                self.playlist.append(self.data)
-        def handle_data(self, data):
-            if self.tag == "playlist":
-                self.playlist = []
-            elif self.in_track == True:
-                if self.tag == "title":
-                    self.data['title'] = data
-                elif self.tag == "location":
-                    self.data['location'] = data
-else:
-    class XSPFReader(HTMLParser.HTMLParser):
-        event_list = []
-        event_contents = ""
-        in_track = False
-        tag = ""
-        data = {"title": "", "location": ""}
-        playlist = []
-        def handle_starttag(self, tag, attrs):
-            self.tag = tag
-            if tag == "track":
-                self.in_track = True
-                self.data = {"title": "", "location": ""}
-        def handle_startendtag(self, tag, attrs):
-            self.tag = tag
-            self.attributes = attrs
-        def handle_endtag(self, tag):
-            self.tag = ""
-            if tag == "track":
-                self.in_track = False
-                self.playlist.append(self.data)
-        def handle_data(self, data):
-            if self.tag == "playlist":
-                self.playlist = []
-            elif self.in_track == True:
-                if self.tag == "title":
-                    self.data['title'] = data
-                elif self.tag == "location":
-                    self.data['location'] = data
+            self.errorMessage(backend)
+            self.settings['backend'] = "qt"
+    def errorMessage(self, backend=""):
+        print("Error! Backend %s could not be found!" % (backend))
