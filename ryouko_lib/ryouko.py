@@ -59,10 +59,19 @@ import translate
 from ryouko_common import *
 
 app_windows = []
-app_icons = os.path.join(app_lib, 'icons')
-
-app_gui = os.path.join(app_lib, "mainwindow.ui")
 app_info = os.path.join(app_lib, "info.txt")
+app_icons = os.path.join(app_lib, 'icons')
+app_version = "N/A"
+app_codename = "N/A"
+if os.path.exists(app_info):
+    readVersionFile = open(app_info)
+    metadata = readVersionFile.readlines()
+    readVersionFile.close()
+    if len(metadata) > 0:
+        app_version = metadata[0].rstrip("\n")
+        if len(metadata) > 1:
+            app_codename = metadata[1].rstrip("\n")
+app_gui = os.path.join(app_lib, "mainwindow.ui")
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
 app_profile_folder = os.path.join(app_home, "profiles")
 app_commandline = ""
@@ -71,6 +80,8 @@ for arg in sys.argv:
     app_commandline = "%s%s " % (app_commandline, arg)
 app_logo = os.path.join(app_icons, "logo.svg")
 user_links = ""
+
+settingsManager = SettingsManager()
 
 def changeProfile(name, init = False):
     global app_profile_name
@@ -105,6 +116,7 @@ def changeProfile(name, init = False):
             if not fpath == app_profile_folder:
                 if not os.path.exists(os.path.join(app_profile, fname)):
                     shutil.move(fpath, app_profile)
+    settingsManager.changeProfile(app_profile)
 
 changeProfile("default", True)
 
@@ -707,49 +719,6 @@ class BrowserHistory(QtCore.QObject):
 
 browserHistory = BrowserHistory()
 
-class SettingsManager():
-    def __init__(self):
-        self.settings = {'openInTabs' : True, 'oldSchoolWindows' : False, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'python', 'loginToDownload' : False, 'adBlock' : False}
-        self.filters = []
-        self.loadSettings()
-    def loadSettings(self):
-        settingsFile = os.path.join(app_profile, "settings.json")
-        if os.path.exists(settingsFile):
-            fstream = open(settingsFile, "r")
-            self.settings = json.load(fstream)
-            fstream.close()
-        self.applyFilters()
-    def saveSettings(self):
-        settingsFile = os.path.join(app_profile, "settings.json")
-        fstream = open(settingsFile, "w")
-        json.dump(self.settings, fstream)
-        fstream.close()
-    def applyFilters(self):
-        if os.path.isdir(os.path.join(app_profile, "adblock")):
-            self.filters = []
-            l = os.listdir(os.path.join(app_profile, "adblock"))
-            for fname in l:
-                f = open(os.path.join(app_profile, "adblock", fname))
-                contents = f.readlines()
-                f.close()
-                for g in contents:
-                    self.filters.append(g.rstrip("\n"))
-    def setBackend(self, backend = "python"):
-        check = False
-        if backend == "aria2":
-            check = Popen(["which", "aria2c"], stdout=PIPE).communicate()[0]
-        elif backend != "python":
-            check = Popen(["which", backend], stdout=PIPE).communicate()[0]
-        else:
-            check = True
-        if check:
-            self.settings['backend'] = backend
-        else:
-            message("Error!", "Backend %s could not be found!" % (backend), "warn")
-            self.settings['backend'] = "python"
-        
-settingsManager = SettingsManager()
-
 def runThroughFilters(url):
     remove = False
     invert = False
@@ -791,6 +760,65 @@ def runThroughFilters(url):
             else:
                 break
     return remove
+
+def showAboutPage(webView):
+    webView.setHtml("""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+        <html>
+        <head>
+        <title>""" + tr('aboutRyouko') + """</title>
+        <script type='text/javascript'>
+        window.onload = function() {
+            document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;
+        }
+        </script>
+        <style type="text/css">
+        b, h1 {
+        font-family: sans-serif;
+        }
+
+        *:not(b):not(h1) {
+        font-family: monospace;
+        }
+        </style>
+        </head>
+        <body style='font-family: sans-serif; font-size: 11pt;'>
+        <center>
+        <div style=\"max-width: 640px;\">
+        <h1 style='margin-bottom: 0;'>""" + tr('aboutRyouko') + """</h1>
+        <img src='file://%""" + os.path.join(app_icons, "about-logo.png") + """'></img><br/>
+        <div style=\"text-align: left;\">
+        <b>Ryouko:</b> """ + app_version + """<br/>
+        <b>""" + tr('codename') + """:</b> \"""" + app_codename + """\"<br/>
+        <b>OS:</b> """ + sys.platform + """<br/>
+        <b>Qt:</b> """ + str(QtCore.qVersion()) + """<br/>
+        <b>Python:</b> """ + str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2]) + """<br/>
+        <b>""" + tr("userAgent") + """:</b> <span id="userAgent">JavaScript must be enabled to display the user agent!</span><br/>
+        <b>""" + tr("commandLine") + """:</b> """ + app_commandline + "<br/>\
+        <b>" + tr('executablePath') + ":</b> " + os.path.realpath(__file__) + "<br/></div></div></center></body></html>")
+
+class RAboutDialog(QtWebKit.QWebView):
+    def __init__(self, parent=None):
+        super(RAboutDialog, self).__init__()
+        self.parent = parent
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
+        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.closeWindowAction = QtGui.QAction(self)
+        self.closeWindowAction.setShortcuts(["Ctrl+W", "Esc", "Enter"])
+        self.closeWindowAction.triggered.connect(self.close)
+        self.addAction(self.closeWindowAction)
+        self.setWindowTitle(tr('aboutRyouko'))
+        showAboutPage(self)
+    def center(self):        
+        fg = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        fg.moveCenter(cp)
+        self.move(fg.topLeft())
+    def show(self):
+        self.center()
+        self.setVisible(True)
+
+aboutDialog = None
 
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
@@ -1242,16 +1270,6 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.pb = pb
         self.tempHistory = []
         self.findText = ""
-        self.version = "N/A"
-        self.codename = "N/A"
-        if os.path.exists(app_info):
-            readVersionFile = open(app_info)
-            metadata = readVersionFile.readlines()
-            readVersionFile.close()
-            if len(metadata) > 0:
-                self.version = metadata[0].rstrip("\n")
-            if len(metadata) > 1:
-                self.codename = metadata[1].rstrip("\n")
         self.initUI(url)
     def initUI(self, url):
         if not sys.platform.startswith("win"):
@@ -1561,44 +1579,10 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
             else:
                 if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and not "javascript:" in unicode(urlBar):
                     header = "http://"
-                url = qstring(header + unicode(urlBar))
                 if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
-                    self.webView.load(QtCore.QUrl("about:blank"))
-                    self.webView.setHtml("""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
-                    "http://www.w3.org/TR/html4/strict.dtd">
-                    <html>
-                    <head>
-                    <title>""" + tr('aboutRyouko') + """</title>
-                    <script type='text/javascript'>
-                    window.onload = function() {
-                        document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;
-                    }
-                    </script>
-                    <style type="text/css">
-                    b, h1 {
-                    font-family: sans-serif;
-                    }
-                    
-                    *:not(b):not(h1) {
-                    font-family: monospace;
-                    }
-                    </style>
-                    </head>
-                    <body style='font-family: sans-serif; font-size: 11pt;'>
-                    <center>
-                    <div style=\"max-width: 640px;\">
-                    <h1 style='margin-bottom: 0;'>""" + tr('aboutRyouko') + """</h1>
-                    <img src='file://%""" + os.path.join(app_icons, "about-logo.png") + """'></img><br/>
-                    <div style=\"text-align: left;\">
-                    <b>Ryouko:</b> """ + self.version + """<br/>
-                    <b>""" + tr('codename') + """:</b> \"""" + self.codename + """\"<br/>
-                    <b>OS:</b> """ + sys.platform + """<br/>
-                    <b>Qt:</b> """ + str(QtCore.qVersion()) + """<br/>
-                    <b>Python:</b> """ + str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2]) + """<br/>
-                    <b>""" + tr("userAgent") + """:</b> <span id="userAgent">JavaScript must be enabled to display the user agent!</span><br/>
-                    <b>""" + tr("commandLine") + """:</b> """ + app_commandline + "<br/>\
-                    <b>" + tr('executablePath') + ":</b> " + os.path.realpath(__file__) + "<br/></div></div></center></body></html>")
+                    showAboutPage(self.webView)
                 else:
+                    url = qstring(header + unicode(urlBar))
                     url = QtCore.QUrl(url)
                     self.webView.load(url)
     def syncText(self):
@@ -1921,9 +1905,7 @@ class TabBrowser(QtGui.QMainWindow):
         return QtGui.QMainWindow.closeEvent(self, ev)
 
     def aboutRyoukoHKey(self):
-        self.newTab()
-        self.tabs.widget(self.tabs.currentIndex()).urlBar.setText("about:version")
-        self.tabs.widget(self.tabs.currentIndex()).updateWeb()
+        aboutDialog.show()
 
     def createClearHistoryDialog(self):
         self.clearHistoryToolBar = QtGui.QToolBar("Clear History Dialog Toolbar")
@@ -2480,6 +2462,8 @@ class Ryouko(QtGui.QWidget):
         global searchEditor
         global cDialog
         global win
+        global aboutDialog
+        aboutDialog = RAboutDialog()
         bookmarksManagerGUI = BookmarksManagerGUI()
         searchEditor = SearchEditor()
         cDialog = CDialog(self)
