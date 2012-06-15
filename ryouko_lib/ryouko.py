@@ -83,7 +83,7 @@ user_links = ""
 
 class RSettingsManager(SettingsManager):
     def errorMessage(self, backend):
-        message("Error!", "Backend %s could not be found!" % (backend), "warn")
+        notificationMessage("Error!", "Backend %s could not be found!" % (backend))
 
 settingsManager = RSettingsManager()
 
@@ -240,6 +240,15 @@ if sys.version_info[0] >= 3:
     def unicode(data):
         return str(data)
 
+def hiddenNotificationMessage(message="This is a message."):
+    notificationWindow.history.addItem(str(notificationWindow.history.count() + 1) + ": " + message)
+    notificationWindow.history.setCurrentRow(notificationWindow.history.count() - 1)
+
+def notificationMessage(message="This is a message."):
+    notificationWindow.show()
+    notificationWindow.history.addItem(str(notificationWindow.history.count() + 1) + ": " + message)
+    notificationWindow.history.setCurrentRow(notificationWindow.history.count() - 1)
+
 def message(title="Alert", content="This is a message.", icon="info"):
     message = QtGui.QMessageBox()
     message.setWindowTitle(title)
@@ -379,14 +388,14 @@ class SearchManager(QtCore.QObject):
         if name:
             try: self.searchEngines[unicode(name)]
             except:
-                message(tr('error'), tr('searchError'), "warn")
+                notificationMessage(tr('searchError'))
             else:
                 del self.searchEngines[unicode(name)]
                 self.save()
     def change(self, name=""):
         try: self.searchEngines[unicode(name)]["expression"]
         except:
-            message(tr('error'), tr('searchError'), "warn")
+            notificationMessage(tr('searchError'))
         else:
             self.currentSearch = self.searchEngines[unicode(name)]["expression"]
             self.save()
@@ -493,13 +502,13 @@ class SearchEditor(RMenuPopupWindow):
                 searchManager.add(name, self.expEntry.text(), keyword)
             self.reload()
         else:
-            message(tr('error'), tr('newSearchError'), 'warn')
+            notificationMessage(tr('newSearchError'))
 
     def applySearch(self, item=False, old=False):
         if item:
             try: unicode(item.text()).split("\n")[0]
             except:
-                message(tr('error'), tr('searchError'))
+                notificationMessage(tr('searchError'))
             else:
                 searchManager.change(unicode(item.text()).split("\n")[0])
 
@@ -623,7 +632,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         if unicode(self.nameField.text()) != "" and unicode(self.urlField.text()) != "":
             bookmarksManager.add(unicode(self.urlField.text()), unicode(self.nameField.text()))
         else:
-            message(tr("error"), tr('bookmarkError'))
+            notificationMessage(tr('bookmarkError'))
     def removeBookmarkIfFocused(self):
         if self.bookmarksList.hasFocus():
             removeBookmark()
@@ -668,7 +677,7 @@ class BrowserHistory(QtCore.QObject):
                     index = 0
                     count = 1
                     for item in self.history:
-                        if item['url'].lower() == url:
+                        if item['url'] == url:
                             add = False
                             index = self.history.index(item)
                             break
@@ -690,7 +699,7 @@ class BrowserHistory(QtCore.QObject):
             except:
                 self.reset()
     def reset(self):
-        message(tr('error'), tr('historyError'), "critical")
+        notificationMessage(tr('historyError'))
         self.history = []
         self.save()
         self.reload()
@@ -826,11 +835,46 @@ class RAboutDialog(QtWebKit.QWebView):
 
 aboutDialog = None
 
+class NotificationWindow(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        super(NotificationWindow, self).__init__()
+        if os.path.exists(app_logo):
+            self.setWindowIcon(QtGui.QIcon(app_logo))
+        self.setWindowTitle(tr('notifications'))
+        closeWindowAction = QtGui.QAction(self)
+        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+N", "Esc", "Enter"])
+        closeWindowAction.triggered.connect(self.close)
+        self.addAction(closeWindowAction)
+        self.parent = parent
+        self.toolBar = QtGui.QToolBar()
+        self.toolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.toolBar.setStyleSheet(dialogToolBarSheet)
+        self.toolBar.setMovable(False)
+        self.clearButton = QtGui.QPushButton(tr('clear'))
+        self.toolBar.addWidget(self.clearButton)
+        self.closeButton = QtGui.QPushButton(tr('close'))
+        self.closeButton.clicked.connect(self.close)
+        self.toolBar.addWidget(self.closeButton)
+        self.history = QtGui.QListWidget()
+        self.history.setWordWrap(True)
+        self.clearButton.clicked.connect(self.history.clear)
+        self.setCentralWidget(self.history)
+        self.addToolBar(self.toolBar)
+        self.hide()
+    def show(self):
+        self.move(0, 0)
+        self.setVisible(True)        
+        self.activateWindow()
+
+notificationWindow = None
+
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
     def __init__(self, parent=False, pb=False):
         super(RWebView, self).__init__()
         self.parent = parent
+        self.autoBack = QtCore.QTimer()
+        self.autoBack.timeout.connect(self.autoGoBack)
         self.destinations = []
         self.replies = []
         self.newWindows = [0]
@@ -1032,7 +1076,15 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                 f.close()
                 del self.replies[i]
                 del self.destinations[i]
+                if type(self.parent) == Browser:
+                    notificationMessage(tr('downloadFinished'))
+                else:
+                    self.evaluateJavaScript("alert(\"" + tr('downloadFinished') + "\");")
                 break
+
+    def autoGoBack(self):
+        self.back()
+        self.autoBack.stop()
 
     def downloadFile(self, request, fname = ""):
         if not os.path.isdir(os.path.dirname(fname)):
@@ -1047,6 +1099,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                     reply = nm.get(request)
                 self.replies.append(reply)
                 reply.finished.connect(self.checkForFinishedDownloads)
+                notificationMessage(tr('downloadStarted'))
             else:
                 downloaderThread.setUrl(unicode(request.url().toString()))
                 downloaderThread.setDestination(fname)
@@ -1644,7 +1697,7 @@ class CDialog(QtGui.QMainWindow):
         self.layout.addWidget(self.selectBackend)
         self.lDBox = QtGui.QCheckBox(tr('loginToDownload'))
         self.layout.addWidget(self.lDBox)
-        self.editSearchButton = QtGui.QPushButton("Manage search engines...")
+        self.editSearchButton = QtGui.QPushButton(tr('manageSearchEngines'))
         try: self.editSearchButton.clicked.connect(searchEditor.display)
         except:
             doNothing()
@@ -1653,10 +1706,10 @@ class CDialog(QtGui.QMainWindow):
         self.cToolBar.setStyleSheet(dialogToolBarSheet)
         self.cToolBar.setMovable(False)
         self.cToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        applyAction = QtGui.QPushButton("&Apply")
+        applyAction = QtGui.QPushButton(tr('apply'))
         applyAction.setShortcut("Ctrl+S")
         applyAction.clicked.connect(self.saveSettings)
-        closeAction = QtGui.QPushButton("&Close")
+        closeAction = QtGui.QPushButton(tr('close'))
         closeAction.setShortcut("Esc")
         closeAction.clicked.connect(self.hide)
         self.cToolBar.addWidget(applyAction)
@@ -1947,6 +2000,12 @@ class TabBrowser(QtGui.QMainWindow):
         manageBookmarksAction.triggered.connect(bookmarksManagerGUI.display)
         self.addAction(manageBookmarksAction)
 
+        # Bookmarks manager! FINALLY! Yay!
+        viewNotificationsAction = QtGui.QAction(tr('viewNotifications'), self)
+        viewNotificationsAction.setShortcut("Ctrl+Alt+N")
+        viewNotificationsAction.triggered.connect(notificationWindow.show)
+        self.addAction(viewNotificationsAction)
+
         # Tabs
         self.tabs = RTabWidget(self)
         self.tabs.currentChanged.connect(self.hideInspectors)
@@ -2087,6 +2146,7 @@ class TabBrowser(QtGui.QMainWindow):
         configAction.setShortcuts(['Ctrl+Shift+P'])
         configAction.triggered.connect(self.showSettings)
         self.addAction(configAction)
+        self.mainMenu.addAction(viewNotificationsAction)
         self.mainMenu.addAction(configAction)
         self.mainMenu.addSeparator()
 
@@ -2339,10 +2399,10 @@ class TabBrowser(QtGui.QMainWindow):
             self.reloadHistory()
         elif self.selectRange.currentIndex() == 14:
             self.killCookies = True
-            message(tr('ryoukoSays'), tr('clearCookiesMsg'), "warn")
+            notificationMessage(tr('clearCookiesMsg'))
         elif self.selectRange.currentIndex() == 15:
             self.killTempFiles = True
-            message(tr('ryoukoSays'), tr('clearTempFilesMsg'), "warn")
+            notificationMessage(tr('clearTempFilesMsg'))
     def historyToggle(self):
         self.historyDock.setVisible(not self.historyDock.isVisible())
         if self.historyDock.isVisible():
@@ -2431,7 +2491,9 @@ class Ryouko(QtGui.QWidget):
         global cDialog
         global win
         global aboutDialog
+        global notificationWindow
         aboutDialog = RAboutDialog()
+        notificationWindow = NotificationWindow()
         bookmarksManagerGUI = BookmarksManagerGUI()
         searchEditor = SearchEditor()
         cDialog = CDialog(self)
@@ -2440,7 +2502,7 @@ class Ryouko(QtGui.QWidget):
         global win
         win.show()
         if app_profile_exists == True:
-            message(tr("error"), tr("profileError"), "warn")
+            notificationMessage(tr("profileError"))
 
 def main():
     if "--help" in sys.argv or "-h" in sys.argv:
