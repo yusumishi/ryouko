@@ -819,6 +819,8 @@ class RAboutDialog(QtWebKit.QWebView):
     def __init__(self, parent=None):
         super(RAboutDialog, self).__init__()
         self.parent = parent
+        if os.path.exists(app_logo):
+            self.setWindowIcon(QtGui.QIcon(app_logo))
 #        self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.closeWindowAction = QtGui.QAction(self)
