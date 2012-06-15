@@ -1,2 +1,2 @@
-0.6.6pre
-Kore wa nan desu ka?
+0.7.0pre
+Minasan! Mite kudasai!
