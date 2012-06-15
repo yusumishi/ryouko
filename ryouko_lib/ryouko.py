@@ -1749,7 +1749,6 @@ class CDialog(QtGui.QMainWindow):
         applyAction.setShortcut("Ctrl+S")
         applyAction.clicked.connect(self.saveSettings)
         closeAction = QtGui.QPushButton(tr('close'))
-        closeAction.setShortcut("Esc")
         closeAction.clicked.connect(self.hide)
         self.cToolBar.addWidget(applyAction)
         self.cToolBar.addWidget(closeAction)
