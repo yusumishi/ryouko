@@ -1283,13 +1283,16 @@ def undoCloseWindow():
     try:
         global app_windows
         global app_closed_windows
-        print(app_windows)
-        print(app_closed_windows)
         app_windows.append(app_closed_windows[len(app_closed_windows) - 1])
         del app_closed_windows[len(app_closed_windows) - 1]
-        app_windows[len(app_windows) - 1].show()
     except:
         print("No more windows left!")
+    else:
+        if type(app_windows[len(app_windows) - 1]) == TabBrowser:
+            if app_windows[len(app_windows) - 1].tabs.count() < 1:
+                app_windows[len(app_windows) - 1].newTab()
+                app_windows[len(app_windows) - 1].tabs.widget(app_windows[len(app_windows) - 1].tabs.currentIndex()).webView.buildNewTabPage()
+        app_windows[len(app_windows) - 1].show()
 
 class HistoryCompletionList(QtGui.QListWidget):
     if sys.version_info[0] <= 2:
