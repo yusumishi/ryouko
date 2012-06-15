@@ -2125,7 +2125,9 @@ class TabBrowser(QtGui.QMainWindow):
         self.mainMenu.addSeparator()
 
         closeTabAction = QtGui.QAction(tr('closeTab'), self)
+        closeTabAction.setShortcut("Ctrl+W")
         closeTabAction.triggered.connect(self.closeTab)
+        self.addAction(closeTabAction)
         closeLeftTabsAction = QtGui.QAction(tr('closeLeftTabs'), self)
         closeLeftTabsAction.triggered.connect(self.closeLeftTabs)
         closeRightTabsAction = QtGui.QAction(tr('closeRighttTabs'), self)
@@ -2164,10 +2166,6 @@ class TabBrowser(QtGui.QMainWindow):
 
         self.mainMenu.addAction(quitAction)
 
-        closeTabAction = QtGui.QAction(self)
-        closeTabAction.setShortcuts(['Ctrl+W'])
-        closeTabAction.triggered.connect(self.closeTab)
-        self.addAction(closeTabAction)
         self.setCentralWidget(self.tabs)
         if len(sys.argv) == 1:
             self.newTab()
