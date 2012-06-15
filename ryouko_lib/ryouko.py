@@ -301,14 +301,16 @@ class RTabWidget(QtGui.QTabWidget):
         self.nuTabBar = RTabBar(self.parent)
         self.setTabBar(self.nuTabBar)
         self.setDocumentMode(True)
-        self.setStyleSheet("""
-QTabBar {
+        if sys.platform.startswith("win"):
+            a = ""
+        else:
+            a = """QTabBar {
 border-top: 1px solid palette(shadow);
 border-right: 1px solid palette(shadow);
 border-top-right-radius:4px;
 background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(midlight), stop:1 palette(window));
-}
-
+}"""
+        self.setStyleSheet(a + """\n
 QTabBar::tab {
 padding: 4px;
 border: 1px solid palette(shadow);
@@ -973,7 +975,6 @@ class RWebView(QtWebKit.QWebView):
             if not type(self.parent) == Browser:
                 self.loadControls()
             self.updateTitle()
-        print(self.parent)
         if not type(self.parent) == Browser:
             self.isWindow = True
             global app_windows
@@ -2091,7 +2092,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.mainMenuButton.setShortcut("Alt+M")
         self.mainMenuButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.mainMenuButton.clicked.connect(self.showCornerWidgetsMenu)
-        self.mainMenuButton.setStyleSheet("""
+        mmSheet = """
         QPushButton {
         padding: 4px;
         padding-left: 8px;
@@ -2110,7 +2111,10 @@ class TabBrowser(QtGui.QMainWindow):
         color: palette(highlighted-text);
         background-color: palette(highlight);
         }
-        """)
+        """
+        if sys.platform.startswith("win"):
+            mmSheet = mmSheet.replace("border-bottom: 1px solid palette(shadow);", "border-bottom-left-radius: 4px;")
+        self.mainMenuButton.setStyleSheet(mmSheet)
 #        self.mainMenuButton.setArrowType(QtCore.Qt.DownArrow)
         self.mainMenu = QtGui.QMenu(self)
 
