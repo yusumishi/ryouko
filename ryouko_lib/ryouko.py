@@ -1743,6 +1743,7 @@ class CDialog(QtGui.QMainWindow):
                 f = open(qtb, "w")
                 f.write("")
                 f.close()
+                self.saveSettings()
         try:
             global app_windows
             for window in app_windows:
