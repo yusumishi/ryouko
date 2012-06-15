@@ -842,7 +842,7 @@ class NotificationWindow(QtGui.QMainWindow):
             self.setWindowIcon(QtGui.QIcon(app_logo))
         self.setWindowTitle(tr('notifications'))
         closeWindowAction = QtGui.QAction(self)
-        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+N", "Esc", "Enter"])
+        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+N", "Esc"])
         closeWindowAction.triggered.connect(self.close)
         self.addAction(closeWindowAction)
         self.parent = parent
@@ -1662,6 +1662,11 @@ class CDialog(QtGui.QMainWindow):
         self.setings = {}
         self.initUI()
     def initUI(self):
+        closeWindowAction = QtGui.QAction(self)
+        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Shift+P", "Esc"])
+        closeWindowAction.triggered.connect(self.close)
+        self.addAction(closeWindowAction)
+
         self.setWindowTitle(tr('preferences'))
         self.setWindowIcon(QtGui.QIcon(app_logo))
         self.mainWidget = QtGui.QWidget()
