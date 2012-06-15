@@ -99,6 +99,7 @@
 "closeTabForever": "Cerrar este pestaña &permanentemente",
 "undoCloseTabBtn": "&Reabrir un pestaña que estaba cerrado",
 "undoCloseTabBtnTT": "<b>Reabrir un pestaña que estaba cerrado</b><br>Ctrl+Shift+T",
+"undoCloseWindow": "&Reabrir un ventana que estaba cerrado",
 "viewHistoryBtn": "Abrir/cerrar la barra lateral de historia",
 "viewHistoryBtnTT": "<b>Ver la historia</b><br>Ctrl+H",
 "newPBTabBtn": "Pestaña &nuevo del modo de navegación privada",
