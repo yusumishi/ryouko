@@ -59,6 +59,7 @@ import translate
 from ryouko_common import *
 
 app_windows = []
+app_closed_windows = []
 app_info = os.path.join(app_lib, "info.txt")
 app_icons = os.path.join(app_lib, 'icons')
 app_version = "N/A"
@@ -952,6 +953,10 @@ class RWebView(QtWebKit.QWebView):
         self.zoomResetAction.triggered.connect(self.zoomReset)
         self.addAction(self.zoomResetAction)
 
+        self.undoCloseWindowAction = QtGui.QAction(tr('undoCloseWindow'), self)
+        self.undoCloseWindowAction.triggered.connect(undoCloseWindow)
+        self.addAction(self.undoCloseWindowAction)
+
         self.page().action(QtWebKit.QWebPage.InspectElement).setShortcut("F12")
         self.page().action(QtWebKit.QWebPage.InspectElement).triggered.connect(self.showInspector)
         self.addAction(self.page().action(QtWebKit.QWebPage.InspectElement))
@@ -968,6 +973,22 @@ class RWebView(QtWebKit.QWebView):
             if not type(self.parent) == Browser:
                 self.loadControls()
             self.updateTitle()
+        print(self.parent)
+        if not type(self.parent) == Browser:
+            self.isWindow = True
+            global app_windows
+            app_windows.append(self)
+        else:
+            self.isWindow = False
+
+    def closeEvent(self, ev):
+        if self.isWindow == True:
+            global app_windows
+            if self in app_windows:
+                del app_windows[app_windows.index(self)]
+            global app_closed_windows
+            app_closed_windows.append(self)
+        return QtGui.QMainWindow.closeEvent(self, ev)
 
     def showInspector(self):
         if self.parent.webInspectorDock:
@@ -1211,6 +1232,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         self.zoomInAction.setShortcuts(['Ctrl+Shift+=', 'Ctrl+='])
         self.zoomOutAction.setShortcut('Ctrl+-')
         self.zoomResetAction.setShortcut('Ctrl+0')
+        self.undoCloseWindowAction.setShortcut("Ctrl+Shift+N")
 
     def createWindow(self, windowType):
         s = str(len(self.newWindows))
@@ -1228,9 +1250,9 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                 return win.tabs.widget(win.tabs.currentIndex()).webView
             else:
                 if self.pb == True:
-                    exec("self.newWindow%s = RWebView(self.parent, True)" % (s))
+                    exec("self.newWindow%s = RWebView(self, True)" % (s))
                 else:
-                    exec("self.newWindow%s = RWebView(self.parent, False)" % (s))
+                    exec("self.newWindow%s = RWebView(self, False)" % (s))
                 exec("self.newWindow%s.buildNewTabPage()" % (s))
                 exec("self.newWindow%s.applyShortcuts()" % (s))
                 exec("self.newWindow%s.enableControls()" % (s))
@@ -1256,6 +1278,18 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                 exec("n = self.newWindow%s" % (s))
             n.show()
             return n.tabs.widget(n.tabs.currentIndex()).webView
+
+def undoCloseWindow():
+    try:
+        global app_windows
+        global app_closed_windows
+        print(app_windows)
+        print(app_closed_windows)
+        app_windows.append(app_closed_windows[len(app_closed_windows) - 1])
+        del app_closed_windows[len(app_closed_windows) - 1]
+        app_windows[len(app_windows) - 1].show()
+    except:
+        print("No more windows left!")
 
 class HistoryCompletionList(QtGui.QListWidget):
     if sys.version_info[0] <= 2:
@@ -1663,7 +1697,7 @@ class CDialog(QtGui.QMainWindow):
         self.initUI()
     def initUI(self):
         closeWindowAction = QtGui.QAction(self)
-        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Shift+P", "Esc"])
+        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+P", "Esc"])
         closeWindowAction.triggered.connect(self.close)
         self.addAction(closeWindowAction)
 
@@ -1925,6 +1959,10 @@ class TabBrowser(QtGui.QMainWindow):
         global app_windows
         if self in app_windows:
             del app_windows[app_windows.index(self)]
+            global app_closed_windows
+            if len(app_closed_windows) >= 10:
+                del app_closed_windows[0]
+            app_closed_windows.append(self)
         self.saveCookies()
         self.closed = True
         self.checkTempFiles()
@@ -2103,6 +2141,12 @@ class TabBrowser(QtGui.QMainWindow):
         self.addAction(undoCloseTabAction)
         self.mainMenu.addAction(undoCloseTabAction)
 
+        undoCloseWindowAction = QtGui.QAction(tr('undoCloseWindow'), self)
+        undoCloseWindowAction.setShortcut("Ctrl+Shift+N")
+        undoCloseWindowAction.triggered.connect(undoCloseWindow)
+        self.addAction(undoCloseWindowAction)
+        self.mainMenu.addAction(undoCloseWindowAction)
+
         # History sidebar button
         historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(app_icons, "history.png"))), tr('viewHistoryBtn'), self)
         historyToggleAction.setToolTip(tr('viewHistoryBtnTT'))
@@ -2115,7 +2159,7 @@ class TabBrowser(QtGui.QMainWindow):
         # New private browsing tab button
         newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(app_icons, 'pb.png'))), tr('newPBTabBtn'), self)
         newpbTabAction.setToolTip(tr('newPBTabBtnTT'))
-        newpbTabAction.setShortcuts(['Ctrl+Shift+N'])
+        newpbTabAction.setShortcuts(['Ctrl+Shift+P'])
         newpbTabAction.triggered.connect(self.newpbTab)
         self.addAction(newpbTabAction)
         self.mainMenu.addAction(newpbTabAction)
@@ -2150,7 +2194,7 @@ class TabBrowser(QtGui.QMainWindow):
         # Config button
         configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_icons, 'settings.png'))), tr('preferencesButton'), self)
         configAction.setToolTip(tr('preferencesButtonTT'))
-        configAction.setShortcuts(['Ctrl+Shift+P'])
+        configAction.setShortcuts(['Ctrl+Alt+P'])
         configAction.triggered.connect(self.showSettings)
         self.addAction(configAction)
         self.mainMenu.addAction(viewNotificationsAction)

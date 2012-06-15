@@ -101,6 +101,7 @@
 "closeTabForever": "Close tab &permanently",
 "undoCloseTabBtn": "&Undo Close Tab",
 "undoCloseTabBtnTT": "<b>Undo Close Tab</b><br>Ctrl+Shift+T",
+"undoCloseWindow": "&Undo Close Window",
 "viewHistoryBtn": "View &History",
 "viewHistoryBtnTT": "<b>View History</b><br>Ctrl+H",
 "newPBTabBtn": "&New Private Browsing Tab",
