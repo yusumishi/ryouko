@@ -706,6 +706,22 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         self.parent = parent
         browserHistory.historyChanged.connect(self.reload_)
 
+        self.searchToolBar = QtGui.QToolBar("")
+        self.searchToolBar.setMovable(False)
+        self.searchToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+
+        self.searchBox = QtGui.QLineEdit()
+        self.searchBox.textChanged.connect(self.searchHistoryFromBox)
+        self.searchToolBar.addWidget(self.searchBox)
+
+        findAction = QtGui.QAction(self)
+        findAction.setShortcuts(["Ctrl+F", "Ctrl+K"])
+        findAction.triggered.connect(self.searchBox.setFocus)
+        findAction.triggered.connect(self.searchBox.selectAll)
+        self.addAction(findAction)
+
+        self.addToolBar(self.searchToolBar)
+        self.addToolBarBreak()
         self.createClearHistoryToolBar()
 
         self.historyView = QtGui.QTreeWidget()
@@ -727,6 +743,34 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         self.addAction(closeWindowAction)
 
         self.reload_()
+
+    def searchHistoryFromBox(self):
+        if self.searchBox.text() != "":
+            self.searchHistory(self.searchBox.text())
+        else:
+            self.reload_()
+
+    def searchHistory(self, string=""):
+        string = unicode(string)
+        if string != "":
+            self.searchOn = True
+            self.historyView.clear()
+            history = []
+            string = unicode(string)
+            for item in browserHistory.history:
+                add = False
+                for subitem in item:
+                    if string.lower() in unicode(item[subitem]).lower():
+                        add = True
+                        break
+                if add == True:
+                    history.append(item)
+            for item in history:
+                t = self.buildItem(item)
+                self.historyView.addTopLevelItem(t)
+        else:
+            self.searchOn = False
+            self.reloadHistory()
 
     def createClearHistoryToolBar(self):
         self.clearHistoryToolBar = QtGui.QToolBar("Clear History Dialog Toolbar")
@@ -869,10 +913,14 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
             self.resize(800, 480)
             self.activateWindow()
 
+    def buildItem(self, item):
+        t = QtGui.QTreeWidgetItem(qstringlist([item['name'], str(item['count']), item['weekday'], str(item['year']) + "/" + str(item['month']) + "/" + str(item['monthday']), item['timestamp'], item['url']]))
+        return t
+
     def reload_(self):
         self.historyView.clear()
         for item in browserHistory.history:
-            t = QtGui.QTreeWidgetItem(qstringlist([item['name'], str(item['count']), item['weekday'], str(item['year']) + "/" + str(item['month']) + "/" + str(item['monthday']), item['timestamp'], item['url']]))
+            t = self.buildItem(item)
             self.historyView.addTopLevelItem(t)
 
 class Library(QtGui.QMainWindow):
@@ -1834,6 +1882,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
                 for subitem in item:
                     if string.lower() in unicode(item[subitem]).lower():
                         add = True
+                        break
                 if add == True:
                     history.append(item)
                     self.historyCompletion.addItem(item['name'])
@@ -2611,6 +2660,7 @@ class TabBrowser(QtGui.QMainWindow):
                 for subitem in item:
                     if string.lower() in unicode(item[subitem]).lower():
                         add = True
+                        break
                 if add == True:
                     history.append(item)
                     self.historyList.addItem(item['name'])
