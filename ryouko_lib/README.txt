@@ -13,7 +13,7 @@ Ryouko requires Python 2.x and PyQt4 to be installed. Once that's done, run the 
 COMPILING ON WINDOWS:
 Ryouko is compiled on Windows by compiling the extension-less script named "ryouko" using cx_Freeze with the following options:
 
---base-name="Win32GUI" --include-modules="PyQt4.QtCore,PyQt4.QtGui,PyQt4.QtWebKit,PyQt4.QtNetwork,json,string,shutil,urllib,time,datetime,os,sys,subprocess,HTMLParser,xml.sax.saxutils" --exclude-modules="ryouko_lib,PyQt4.uic" --icon="/path/to/ryouko/root/folder/ryouko_lib/icons/ryouko.ico"
+--base-name="Win32GUI" --include-modules="PyQt4.QtCore,PyQt4.QtGui,PyQt4.QtWebKit,PyQt4.QtNetwork,json,string,shutil,urllib,time,datetime,os,sys,subprocess,HTMLParser,xml.sax.saxutils" --exclude-modules="ryouko_lib,PyQt4.uic" --icon="\path\to\ryouko\root\folder\ryouko_lib\icons\ryouko.ico"
 
 This should create a folder called "dist" (no quotes); from now on, this folder will be referred to as the "target folder". Once this has been done, you'll need to create a file called "qt.conf" (no quotes) in the target folder that contains the following text:
 
