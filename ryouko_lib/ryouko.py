@@ -1100,6 +1100,7 @@ def runThroughFilters(url):
     return remove
 
 def showAboutPage(webView):
+    webView.load(QtCore.QUrl("about:blank"))
     webView.setHtml("""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
         "http://www.w3.org/TR/html4/strict.dtd">
         <html>
@@ -1111,18 +1112,20 @@ def showAboutPage(webView):
         }
         </script>
         <style type="text/css">
-        b, h1 {
+        b, h1, h2 {
         font-family: sans-serif;
         }
 
-        *:not(b):not(h1) {
+        *:not(b):not(h1):not(h2) {
         font-family: monospace;
         }
         </style>
         </head>
         <body style='font-family: sans-serif; font-size: 11pt;'>
+        <span style='position: fixed; top: 0; left: 0;'><a style='font-family: sans-serif;' href='#about'>""" + tr('aboutRyouko') + """</a> <a style='font-family: sans-serif;' href='#licensing'>""" + tr('license') + """</a></span>
         <center>
         <div style=\"max-width: 640px;\">
+        <a name='about'></a>
         <h1 style='margin-bottom: 0;'>""" + tr('aboutRyouko') + """</h1>
         <img src='file://%""" + os.path.join(app_icons, "about-logo.png") + """'></img><br/>
         <div style=\"text-align: left;\">
@@ -1133,7 +1136,10 @@ def showAboutPage(webView):
         <b>Python:</b> """ + str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2]) + """<br/>
         <b>""" + tr("userAgent") + """:</b> <span id="userAgent">JavaScript must be enabled to display the user agent!</span><br/>
         <b>""" + tr("commandLine") + """:</b> """ + app_commandline + "<br/>\
-        <b>" + tr('executablePath') + ":</b> " + os.path.realpath(__file__) + "<br/></div></div></center></body></html>")
+        <b>" + tr('executablePath') + ":</b> " + os.path.realpath(__file__) + "<br/><center>\
+        <a name='licensing'></a>\
+        <h1>" + tr('license') + "</h1>\
+        <iframe style='border: 0; width: 100%; height: 640px;' src='file://%" + os.path.join(app_lib, "LICENSE.txt") + "'></iframe></center></div></div></center></body></html>")
 
 class RAboutDialog(QtWebKit.QWebView):
     def __init__(self, parent=None):
@@ -1149,6 +1155,7 @@ class RAboutDialog(QtWebKit.QWebView):
         self.addAction(self.closeWindowAction)
         self.setWindowTitle(tr('aboutRyouko'))
         showAboutPage(self)
+
     def center(self):        
         fg = self.frameGeometry()
         cp = QtGui.QDesktopWidget().availableGeometry().center()
