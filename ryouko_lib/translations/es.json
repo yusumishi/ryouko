@@ -70,10 +70,12 @@
 "clear": "Limpiar",
 "history": "Historia",
 "clearHistory": "Limpiar la historia",
+"clearHistoryTT": "<b>Limpiar la historia</b><br>Ctrl+Shift+Del",
 "viewBookmarks": "Abrir los marcadores",
 "addBookmark": "Añadir un marcador",
 "addBookmarkTT": "<b>Añadir este página</b><br>Ctrl+D",
 "bookmarks": "Marcadores",
+"library": "Catálogo",
 "viewNotifications": "Abrir las notificaciones",
 "name": "Nombre",
 "add": "Añadir",
@@ -103,6 +105,7 @@
 "undoCloseWindow": "&Reabrir un ventana que estaba cerrado",
 "viewHistoryBtn": "Abrir/cerrar la barra lateral de historia",
 "viewHistoryBtnTT": "<b>Ver la historia</b><br>Ctrl+H",
+"viewAdvHistory": "Abrir hi&storia en detalle",
 "newPBTabBtn": "Pestaña &nuevo del modo de navegación privada",
 "newPBTabBtnTT": "<b>Pestaña &nuevo del modo de navegación privada</b><br>Ctrl+Shift+N",
 "preferencesButton": "&Preferencias",
@@ -111,5 +114,10 @@
 "newWindow": "Ventana nuevo",
 "undoCloseTab": "Reabrir un pestaña que estaba cerrado",
 "newPBTab": "Pestaña nuevo (MNP)",
-"searchError": "Ryouko se encuentra un error cuando intenta a modificar la buscar."
+"searchError": "Ryouko se encuentra un error cuando intenta a modificar la buscar.",
+"title": "Título",
+"count": "Cuenta",
+"weekday": "Día de la semana",
+"date": "Fecha",
+"time": "Tiempo"
 }

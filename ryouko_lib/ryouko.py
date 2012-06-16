@@ -250,6 +250,16 @@ def qstring(string):
     else:
         return(string)
 
+def qstringlist(li):
+    if sys.version_info[0] <= 2:
+        t = QtCore.QStringList()
+        for i in li:
+            t.append(qstring(i))
+        return t
+    else:
+        return li
+        
+
 if sys.version_info[0] >= 3:
     def unicode(data):
         return str(data)
@@ -620,8 +630,17 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.addAction(removeBookmarkAction)
         closeWindowAction = QtGui.QAction(self)
         closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Shift+B"])
-        closeWindowAction.triggered.connect(self.close)
+        if self.parent:
+            closeWindowAction.triggered.connect(self.parent.close)
+        else:
+            closeWindowAction.triggered.connect(self.close)
         self.addAction(closeWindowAction)
+
+        otherTabAction = QtGui.QAction(self)
+        otherTabAction.setShortcut("Ctrl+Shift+H")
+        otherTabAction.triggered.connect(self.switchTabs)
+        self.addAction(otherTabAction)
+
         bookmarksManager.bookmarksChanged.connect(self.reload_)
         self.addToolBar(self.nameToolBar)
         self.addToolBarBreak()
@@ -630,12 +649,25 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.addToolBar(self.finishToolBar)
         self.setCentralWidget(self.bookmarksList)
         self.reload_()
+
+    def switchTabs(self):
+        if self.parent.tabs:
+            self.parent.tabs.setCurrentIndex(1)
+
     def display(self):
-        self.show()
-        self.resize(800, 480)
-        self.nameField.setFocus()
-        self.nameField.selectAll()
-        self.activateWindow()
+        if self.parent.display and self.parent.tabs:
+            self.parent.display()
+            self.parent.tabs.setCurrentIndex(0)
+            self.show()
+            self.nameField.setFocus()
+            self.nameField.selectAll()
+            self.activateWindow()
+        else:
+            self.show()
+            self.resize(800, 480)
+            self.nameField.setFocus()
+            self.nameField.selectAll()
+            self.activateWindow()
     def reload_(self):
         self.bookmarksList.clear()
         for bookmark in bookmarksManager.bookmarks:
@@ -659,8 +691,100 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
             removeBookmark()
     def removeBookmark(self):
         bookmarksManager.removeByName(unicode(self.bookmarksList.currentItem().text()))
+    def closeEvent(self, ev):
+        try:
+            self.parent.close()
+        except:
+            doNothing()
+        return QtGui.QMainWindow.closeEvent(self, ev)
 
-bookmarksManagerGUI = ""
+class AdvancedHistoryViewGUI(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        super(AdvancedHistoryViewGUI, self).__init__()
+        self.parent = parent
+        browserHistory.historyChanged.connect(self.reload_)
+        self.historyView = QtGui.QTreeWidget()
+        self.historyView.setHeaderLabels([tr("title"), tr("count"), tr("weekday"), tr("date"), tr("time"), tr('url')])
+        self.historyView.itemActivated.connect(self.loadHistoryItem)
+        self.setCentralWidget(self.historyView)
+
+        otherTabAction = QtGui.QAction(self)
+        otherTabAction.setShortcut("Ctrl+Shift+B")
+        otherTabAction.triggered.connect(self.switchTabs)
+        self.addAction(otherTabAction)
+
+        closeWindowAction = QtGui.QAction(self)
+        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Shift+H"])
+        if self.parent:
+            closeWindowAction.triggered.connect(self.parent.close)
+        else:
+            closeWindowAction.triggered.connect(self.close)
+        self.addAction(closeWindowAction)
+
+        self.reload_()
+
+    def loadHistoryItem(self, item):
+        u = ""
+        if sys.version_info[0] <= 2:
+            u = unicode(item.data(5, 0).toString())
+        else:
+            u = unicode(item.data(5, 0))
+        if win.closed:
+            win.show()
+            win.closed = False
+            win.resize(800, 480)
+        win.newTab(u)
+
+    def switchTabs(self):
+        if self.parent.tabs:
+            self.parent.tabs.setCurrentIndex(0)
+
+    def clear(self):
+        self.historyView.clear()
+
+    def closeEvent(self, ev):
+        try:
+            self.parent.close()
+        except:
+            doNothing()
+        return QtGui.QMainWindow.closeEvent(self, ev)
+    
+    def display(self):
+        if self.parent.display and self.parent.tabs:
+            self.parent.display()
+            self.parent.tabs.setCurrentIndex(1)
+            self.show()
+            self.activateWindow()
+        else:
+            self.show()
+            self.resize(800, 480)
+            self.activateWindow()
+
+    def reload_(self):
+        self.clear()
+        for item in browserHistory.history:
+            t = QtGui.QTreeWidgetItem(qstringlist([item['name'], str(item['count']), item['weekday'], str(item['year']) + "/" + str(item['month']) + "/" + str(item['monthday']), item['timestamp'], item['url']]))
+            self.historyView.addTopLevelItem(t)
+
+class Library(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        super(Library, self).__init__()
+        self.parent = parent
+        if os.path.exists(app_logo):
+            self.setWindowIcon(QtGui.QIcon(app_logo))
+        self.setWindowTitle(tr('library'))
+        self.tabs = QtGui.QTabWidget()
+        self.setCentralWidget(self.tabs)
+        self.bookmarksManagerGUI = BookmarksManagerGUI(self)
+        self.tabs.addTab(self.bookmarksManagerGUI, tr('bookmarks'))
+        self.advancedHistoryViewGUI = AdvancedHistoryViewGUI(self)
+        self.tabs.addTab(self.advancedHistoryViewGUI, tr('history'))
+    def display(self):
+        self.show()
+        self.resize(800, 480)
+        self.activateWindow()
+
+library = ""
 
 class BrowserHistory(QtCore.QObject):
     historyChanged = QtCore.pyqtSignal()
@@ -703,7 +827,7 @@ class BrowserHistory(QtCore.QObject):
                             index = self.history.index(item)
                             break
                     if add == True:
-                        self.history.insert(0, {'url' : url, 'name' : name, 'count' : count, 'time' : time.time(), 'weekday' : time.strftime("%A"), 'month' : time.strftime("%B"), 'monthday' : time.strftime("%d"), 'year' : "%d" % now.year, 'timestamp' : time.strftime("%H:%M:%S")})
+                        self.history.insert(0, {'url' : url, 'name' : name, 'count' : count, 'time' : time.time(), 'weekday' : time.strftime("%A"), 'month' : time.strftime("%m"), 'monthday' : time.strftime("%d"), 'year' : "%d" % now.year, 'timestamp' : time.strftime("%H:%M:%S")})
                     else:
                         if not 'count' in self.history[index]:
                             self.history[index]['count'] = 1
@@ -712,6 +836,11 @@ class BrowserHistory(QtCore.QObject):
                         count = self.history[index]['count'] + 1
                         self.history[index]['count'] = count
                         self.history[index]['time'] = time.time()
+                        self.history[index]['weekday'] = time.strftime("%A")
+                        self.history[index]['month'] = time.strftime("%m")
+                        self.history[index]['monthday'] = time.strftime("%d")
+                        self.history[index]['weekday'] = "%d" % now.year
+                        self.history[index]['timestamp'] = time.strftime("%H:%M:%S")
                         tempIndex = self.history[index]
                         del self.history[index]
                         self.history.insert(0, tempIndex)
@@ -1456,7 +1585,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.searchEditButton.setToolTip(tr("editSearchTT"))
         historySearchAction = QtGui.QAction(self)
         historySearchAction.triggered.connect(self.parent.focusHistorySearch)
-        historySearchAction.setShortcuts(["Ctrl+Shift+H"])
+        historySearchAction.setShortcuts(["Alt+H"])
         self.addAction(historySearchAction)
         if sys.platform.startswith("win"):
             self.reloadButton.setIconSize(QtCore.QSize(22, 22))
@@ -1996,6 +2125,7 @@ class TabBrowser(QtGui.QMainWindow):
 
     def createClearHistoryDialog(self):
         self.clearHistoryToolBar = QtGui.QToolBar("Clear History Dialog Toolbar")
+        self.clearHistoryToolBar.setStyleSheet(dialogToolBarSheet.replace("QToolButton, QPushButton", "QToolButton {border: 1px solid transparent; background: transparent; padding: 4px; margin-left: 2px;} QToolButton:hover, QPushButton:hover, QPushButton"))
         self.clearHistoryToolBar.setMovable(False)
         self.historyDockWindow.addToolBarBreak()
         self.historyDockWindow.addToolBar(self.clearHistoryToolBar)
@@ -2036,6 +2166,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.historyDockWindow = QtGui.QMainWindow()
         self.historyToolBar = QtGui.QToolBar("History Toolbar")
         self.historyToolBar.setMovable(False)
+        self.historyToolBar.setStyleSheet(dialogToolBarSheet.replace("QToolButton, QPushButton", "QToolButton {border: 1px solid transparent; background: transparent; padding: 4px; margin-left: 2px;} QToolButton:hover, QPushButton:hover, QPushButton"))
         self.historyList = QtGui.QListWidget()
         self.historyList.itemActivated.connect(self.openHistoryItem)
         deleteHistoryItemAction = QtGui.QAction(self)
@@ -2045,6 +2176,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.searchHistoryField = QtGui.QLineEdit()
         self.searchHistoryField.textChanged.connect(self.searchHistory)
         clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(app_icons, "clear.png"))), tr('clearHistory'), self)
+        clearHistoryAction.setToolTip(tr('clearHistoryTT'))
         clearHistoryAction.setShortcut("Ctrl+Shift+Del")
         clearHistoryAction.triggered.connect(self.showClearHistoryDialog)
         clearHistoryAction.triggered.connect(self.historyDock.show)
@@ -2062,8 +2194,8 @@ class TabBrowser(QtGui.QMainWindow):
 
         # Bookmarks manager! FINALLY! Yay!
         manageBookmarksAction = QtGui.QAction(tr('viewBookmarks'), self)
-        manageBookmarksAction.setShortcut("Ctrl+Shift+B")
-        manageBookmarksAction.triggered.connect(bookmarksManagerGUI.display)
+        manageBookmarksAction.setShortcuts(["Ctrl+Shift+O", "Ctrl+Shift+B"])
+        manageBookmarksAction.triggered.connect(library.bookmarksManagerGUI.display)
         self.addAction(manageBookmarksAction)
 
         # Bookmarks manager! FINALLY! Yay!
@@ -2182,6 +2314,12 @@ class TabBrowser(QtGui.QMainWindow):
         self.addAction(historyToggleAction)
         self.mainMenu.addAction(historyToggleAction)
 
+        advHistoryAction = QtGui.QAction(tr('viewAdvHistory'), self)
+        advHistoryAction.setShortcut("Ctrl+Shift+H")
+        advHistoryAction.triggered.connect(library.advancedHistoryViewGUI.display)
+        self.addAction(advHistoryAction)
+        self.mainMenu.addAction(advHistoryAction)
+
         # New private browsing tab button
         newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(app_icons, 'pb.png'))), tr('newPBTabBtn'), self)
         newpbTabAction.setToolTip(tr('newPBTabBtnTT'))
@@ -2203,6 +2341,8 @@ class TabBrowser(QtGui.QMainWindow):
         closeRightTabsAction = QtGui.QAction(tr('closeRighttTabs'), self)
         closeRightTabsAction.triggered.connect(self.closeRightTabs)
         closeTabForeverAction = QtGui.QAction(tr('closeTabForever'), self)
+        closeTabForeverAction.setShortcut("Ctrl+Shift+W")
+        self.addAction(closeTabForeverAction)
         closeTabForeverAction.triggered.connect(self.permanentCloseTab)
 
         self.tabsContextMenu = QtGui.QMenu()
@@ -2225,6 +2365,7 @@ class TabBrowser(QtGui.QMainWindow):
         configAction.triggered.connect(self.showSettings)
         self.addAction(configAction)
         self.mainMenu.addAction(viewNotificationsAction)
+        self.mainMenu.addAction(clearHistoryAction)
         self.mainMenu.addAction(configAction)
         self.mainMenu.addSeparator()
 
@@ -2560,7 +2701,7 @@ win = None
 
 class Ryouko(QtGui.QWidget):
     def __init__(self):
-        global bookmarksManagerGUI
+        global library
         global searchEditor
         global cDialog
         global win
@@ -2568,7 +2709,7 @@ class Ryouko(QtGui.QWidget):
         global notificationWindow
         aboutDialog = RAboutDialog()
         notificationWindow = NotificationWindow()
-        bookmarksManagerGUI = BookmarksManagerGUI()
+        library = Library()
         searchEditor = SearchEditor()
         cDialog = CDialog(self)
         win = TabBrowser(self)
