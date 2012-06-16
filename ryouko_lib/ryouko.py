@@ -31,13 +31,6 @@ from __future__ import print_function
 
 import os, sys, json, time, datetime, string, shutil
 from subprocess import Popen, PIPE
-from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
-if not sys.platform.startswith("win"):
-    from PyQt4 import uic
-    class Ui_MainWindow():
-        pass
-else:
-    from mainwindow import Ui_MainWindow
 try: from urllib.request import urlretrieve
 except ImportError:
     try: from urllib import urlretrieve
@@ -57,6 +50,13 @@ sys.path.append(app_lib)
 
 import translate
 from ryouko_common import *
+
+trManager = translate.TranslationManager()
+trManager.setDirectory(os.path.join(app_lib, "translations"))
+trManager.loadTranslation()
+
+def tr(key):
+    return trManager.tr(key)
 
 app_windows = []
 app_closed_windows = []
@@ -81,6 +81,26 @@ for arg in sys.argv:
     app_commandline = "%s%s " % (app_commandline, arg)
 app_logo = os.path.join(app_icons, "logo.svg")
 user_links = ""
+
+try:
+    from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
+except:
+    from Tkinter import *
+    root = Tk()
+    root.title(tr('error'))
+    w = Label(root, text=tr('noPyQtError'))
+    w.pack()
+    button = Button(root, text="OK", command=sys.exit)
+    button.pack()
+    root.mainloop()
+    sys.exit()
+else:
+    if not sys.platform.startswith("win"):
+        from PyQt4 import uic
+        class Ui_MainWindow():
+            pass
+    else:
+        from mainwindow import Ui_MainWindow
 
 class RSettingsManager(SettingsManager):
     def errorMessage(self, backend):
@@ -175,10 +195,6 @@ cornerWidgetsSheet = """
         }
         """
 
-trManager = translate.TranslationManager()
-trManager.setDirectory(os.path.join(app_lib, "translations"))
-trManager.loadTranslation()
-
 # From http://stackoverflow.com/questions/448207/python-downloading-a-file-over-http-with-progress-bar-and-basic-authentication
 def urlretrieve_adv(url, filename=None, reporthook=None, data=None, username="", password=""):
     if sys.version_info[0] < 3:
@@ -190,9 +206,6 @@ def urlretrieve_adv(url, filename=None, reporthook=None, data=None, username="",
             def prompt_user_passwd(self, host, realm):
                 return username, password
     return OpenerWithAuth().retrieve(url, filename, reporthook, data)
-
-def tr(key):
-    return trManager.tr(key)
 
 def doNothing():
     return
