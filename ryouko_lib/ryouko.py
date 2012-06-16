@@ -863,6 +863,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
             browserHistory.save()
             for win in app_windows:
                 win.reloadHistory()
+            self.reload_()
         elif self.selectRange.currentIndex() == 12:
             if sys.platform.startswith("linux"):
                 os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
@@ -873,6 +874,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
             browserHistory.save()
             for win in app_windows:
                 win.reloadHistory()
+            self.reload_()
         elif self.selectRange.currentIndex() == 14:
             global app_kill_cookies
             app_kill_cookies = True
