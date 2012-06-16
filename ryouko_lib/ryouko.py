@@ -489,7 +489,7 @@ class SearchEditor(RMenuPopupWindow):
         self.expEntry = QtGui.QLineEdit()
         self.expEntry.returnPressed.connect(self.addSearch)
         self.entryBar.addWidget(self.expEntry)
-        self.addSearchButton = QtGui.QPushButton("Add")
+        self.addSearchButton = QtGui.QPushButton(tr("add"))
         self.addSearchButton.clicked.connect(self.addSearch)
         self.entryBar.addWidget(self.addSearchButton)
 
@@ -625,6 +625,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.removeButton.clicked.connect(self.removeBookmark)
         self.finishToolBar.addWidget(self.removeButton)
         self.bookmarksList = QtGui.QListWidget()
+        self.bookmarksList.currentRowChanged.connect(self.setText)
         self.bookmarksList.itemActivated.connect(self.openBookmark)
         removeBookmarkAction = QtGui.QAction(self)
         removeBookmarkAction.setShortcut("Del")
@@ -651,6 +652,13 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.addToolBar(self.finishToolBar)
         self.setCentralWidget(self.bookmarksList)
         self.reload_()
+
+    def setText(self):
+        if self.bookmarksList.currentItem():
+            self.nameField.setText(self.bookmarksList.currentItem().text())
+            for bookmark in bookmarksManager.bookmarks:
+                if bookmark["name"] == unicode(self.bookmarksList.currentItem().text()):
+                    self.urlField.setText(bookmark["url"])
 
     def switchTabs(self):
         if self.parent.tabs:
@@ -705,6 +713,8 @@ class ClearHistoryDialog(QtGui.QMainWindow):
         super(ClearHistoryDialog, self).__init__()
         self.parent = parent
 
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
+
         self.setWindowTitle(tr('clearHistory'))
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
@@ -719,6 +729,16 @@ class ClearHistoryDialog(QtGui.QMainWindow):
         self.contents.setLayout(self.layout)
         self.setCentralWidget(self.contents)
         self.createClearHistoryToolBar()
+
+    def center(self):
+        fg = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        fg.moveCenter(cp)
+        self.move(fg.topLeft())
+
+    def show(self):
+        self.setVisible(True)
+        self.center()
 
     def display(self):
         self.show()
@@ -876,8 +896,9 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         super(AdvancedHistoryViewGUI, self).__init__()
         self.parent = parent
 
+        self.setStyleSheet(dialogToolBarSheet.replace("QToolButton, QPushButton", "QToolButton {border: 1px solid transparent; background: transparent; padding: 4px; margin-left: 2px;} QToolButton:hover, QPushButton:hover, QPushButton"))
+
         self.searchToolBar = QtGui.QToolBar("")
-        self.searchToolBar.setStyleSheet(dialogToolBarSheet)
         self.searchToolBar.setMovable(False)
         self.searchToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 
@@ -897,6 +918,16 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         self.addToolBar(self.searchToolBar)
         self.addToolBarBreak()
 
+        self.manageToolBar = QtGui.QToolBar("")
+        self.manageToolBar.setMovable(False)
+        self.addToolBar(self.manageToolBar)
+
+        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(app_icons, "clear.png"))), tr('clearHistoryHKey'), self)
+        clearHistoryAction.setToolTip(tr('clearHistoryTT'))
+        clearHistoryAction.setShortcut("Ctrl+Shift+Del")
+        clearHistoryAction.triggered.connect(clearHistoryDialog.show)
+        self.manageToolBar.addAction(clearHistoryAction)
+
         self.historyView = QtGui.QTreeWidget()
         self.historyView.setHeaderLabels([tr("title"), tr("count"), tr("weekday"), tr("date"), tr("time"), tr('url')])
         self.historyView.itemActivated.connect(self.loadHistoryItem)
@@ -910,6 +941,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
 
         self.historyViewMenu = RMenu()
         self.historyView.customContextMenuRequested.connect(self.historyViewMenu.show)
+        self.historyViewMenu.addAction(deleteHistoryItemAction)
 
         otherTabAction = QtGui.QAction(self)
         otherTabAction.setShortcuts(["Ctrl+Shift+B", "Ctrl+Shift+O"])
@@ -1023,11 +1055,6 @@ class Library(QtGui.QMainWindow):
         self.parent = parent
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
-
-        clearHistoryAction = QtGui.QAction(self)
-        clearHistoryAction.setShortcut("Ctrl+Shift+Del")
-        clearHistoryAction.triggered.connect(clearHistoryDialog.show)
-        self.addAction(clearHistoryAction)
 
         self.setWindowTitle(tr('library'))
         self.tabs = RTabWidget(self, True)
