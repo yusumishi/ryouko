@@ -703,6 +703,9 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         super(AdvancedHistoryViewGUI, self).__init__()
         self.parent = parent
         browserHistory.historyChanged.connect(self.reload_)
+
+        self.createClearHistoryToolBar()
+
         self.historyView = QtGui.QTreeWidget()
         self.historyView.setHeaderLabels([tr("title"), tr("count"), tr("weekday"), tr("date"), tr("time"), tr('url')])
         self.historyView.itemActivated.connect(self.loadHistoryItem)
@@ -722,6 +725,110 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         self.addAction(closeWindowAction)
 
         self.reload_()
+
+    def createClearHistoryToolBar(self):
+        self.clearHistoryToolBar = QtGui.QToolBar("Clear History Dialog Toolbar")
+        self.clearHistoryToolBar.setStyleSheet(dialogToolBarSheet.replace("QToolButton, QPushButton", "QToolButton {border: 1px solid transparent; background: transparent; padding: 4px; margin-left: 2px;} QToolButton:hover, QPushButton:hover, QPushButton"))
+        self.clearHistoryToolBar.setMovable(False)
+        self.addToolBar(self.clearHistoryToolBar)
+        self.selectRange = QtGui.QComboBox()
+        self.selectRange.addItem(tr('lastMin'))
+        self.selectRange.addItem(tr('last2Min'))
+        self.selectRange.addItem(tr('last5Min'))
+        self.selectRange.addItem(tr('last10Min'))
+        self.selectRange.addItem(tr('last15Min'))
+        self.selectRange.addItem(tr('last30Min'))
+        self.selectRange.addItem(tr('lastHr'))
+        self.selectRange.addItem(tr('last2Hr'))
+        self.selectRange.addItem(tr('last4Hr'))
+        self.selectRange.addItem(tr('last8Hr'))
+        self.selectRange.addItem(tr('last24Hr'))
+        self.selectRange.addItem(tr('today'))
+        self.selectRange.addItem(tr('everything'))
+        self.selectRange.addItem("----------------")
+        self.selectRange.addItem(tr('cookies'))
+        self.selectRange.addItem(tr('tempFiles'))
+        self.clearHistoryToolBar.addWidget(self.selectRange)
+        self.clearHistoryButton = QtGui.QPushButton(tr('clear'))
+        self.clearHistoryButton.clicked.connect(self.clearHistory)
+        self.clearHistoryToolBar.addWidget(self.clearHistoryButton)
+
+    def clearHistoryRange(self, timeRange=0.0):
+        if sys.platform.startswith("linux"):
+            os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
+        try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
+        except:
+            doNothing()
+        saveTime = time.time()
+        for item in browserHistory.history:
+            try:
+                difference = saveTime - item['time']
+            except:
+                browserHistory.reset()
+                break
+            if difference <= timeRange:
+                del browserHistory.history[browserHistory.history.index(item)]
+        browserHistory.save()
+        for win in app_windows:
+            win.reloadHistory()
+        self.reload_()
+    def clearHistory(self):
+        if self.selectRange.currentIndex() == 0:
+            self.clearHistoryRange(60.0)
+        elif self.selectRange.currentIndex() == 1:
+            self.clearHistoryRange(120.0)
+        elif self.selectRange.currentIndex() == 2:
+            self.clearHistoryRange(300.0)
+        elif self.selectRange.currentIndex() == 3:
+            self.clearHistoryRange(600.0)
+        elif self.selectRange.currentIndex() == 4:
+            self.clearHistoryRange(900.0)
+        elif self.selectRange.currentIndex() == 5:
+            self.clearHistoryRange(1800.0)
+        elif self.selectRange.currentIndex() == 6:
+            self.clearHistoryRange(3600.0)
+        elif self.selectRange.currentIndex() == 7:
+            self.clearHistoryRange(7200.0)
+        elif self.selectRange.currentIndex() == 8:
+            self.clearHistoryRange(14400.0)
+        elif self.selectRange.currentIndex() == 9:
+            self.clearHistoryRange(28800.0)
+        elif self.selectRange.currentIndex() == 10:
+            self.clearHistoryRange(86400.0)
+        elif self.selectRange.currentIndex() == 11:
+            if sys.platform.startswith("linux"):
+                os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
+            try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
+            except:
+                doNothing()
+            saveMonth = time.strftime("%B")
+            saveDay = time.strftime("%d")
+            now = datetime.datetime.now()
+            saveYear = "%d" % now.year
+            for item in browserHistory.history:
+                if item['month'] == saveMonth and item['monthday'] == saveDay and item['year'] == saveYear:
+                    del browserHistory.history[browserHistory.history.index(item)]
+            browserHistory.save()
+            for win in app_windows:
+                win.reloadHistory()
+        elif self.selectRange.currentIndex() == 12:
+            if sys.platform.startswith("linux"):
+                os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
+            try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
+            except:
+                doNothing()
+            browserHistory.history = []
+            browserHistory.save()
+            for win in app_windows:
+                win.reloadHistory()
+        elif self.selectRange.currentIndex() == 14:
+            global killCookies
+            killCookies = True
+            notificationMessage(tr('clearCookiesMsg'))
+        elif self.selectRange.currentIndex() == 15:
+            global killTempFiles
+            killTempFiles = True
+            notificationMessage(tr('clearTempFilesMsg'))
 
     def loadHistoryItem(self, item):
         u = ""
@@ -761,7 +868,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
             self.activateWindow()
 
     def reload_(self):
-        self.clear()
+        self.historyView.clear()
         for item in browserHistory.history:
             t = QtGui.QTreeWidgetItem(qstringlist([item['name'], str(item['count']), item['weekday'], str(item['year']) + "/" + str(item['month']) + "/" + str(item['monthday']), item['timestamp'], item['url']]))
             self.historyView.addTopLevelItem(t)
@@ -2024,8 +2131,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.cookieJar = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
         self.loadCookies()
         self.tabCount = 0
-        self.killCookies = False
-        self.killTempFiles = False
         self.closed = False
         self.closedTabList = []
         self.searchOn = False
@@ -2064,7 +2169,7 @@ class TabBrowser(QtGui.QMainWindow):
             f.close()
 
     def checkTempFiles(self):
-        if self.killTempFiles == True:
+        if killTempFiles == True:
             shred_directory(os.path.join(app_profile, "temp"))
 
     def loadCookies(self):
@@ -2087,7 +2192,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.cookieJar.setAllCookies(cookies)
 
     def saveCookies(self):
-        if self.killCookies == False:
+        if killCookies == False:
             cookieFile = open(app_cookies, "wb")
             cookies = []
             for c in self.cookieJar.allCookies():
@@ -2123,35 +2228,6 @@ class TabBrowser(QtGui.QMainWindow):
     def aboutRyoukoHKey(self):
         aboutDialog.show()
 
-    def createClearHistoryDialog(self):
-        self.clearHistoryToolBar = QtGui.QToolBar("Clear History Dialog Toolbar")
-        self.clearHistoryToolBar.setStyleSheet(dialogToolBarSheet.replace("QToolButton, QPushButton", "QToolButton {border: 1px solid transparent; background: transparent; padding: 4px; margin-left: 2px;} QToolButton:hover, QPushButton:hover, QPushButton"))
-        self.clearHistoryToolBar.setMovable(False)
-        self.historyDockWindow.addToolBarBreak()
-        self.historyDockWindow.addToolBar(self.clearHistoryToolBar)
-        self.clearHistoryToolBar.hide()
-        self.selectRange = QtGui.QComboBox()
-        self.selectRange.addItem(tr('lastMin'))
-        self.selectRange.addItem(tr('last2Min'))
-        self.selectRange.addItem(tr('last5Min'))
-        self.selectRange.addItem(tr('last10Min'))
-        self.selectRange.addItem(tr('last15Min'))
-        self.selectRange.addItem(tr('last30Min'))
-        self.selectRange.addItem(tr('lastHr'))
-        self.selectRange.addItem(tr('last2Hr'))
-        self.selectRange.addItem(tr('last4Hr'))
-        self.selectRange.addItem(tr('last8Hr'))
-        self.selectRange.addItem(tr('last24Hr'))
-        self.selectRange.addItem(tr('today'))
-        self.selectRange.addItem(tr('everything'))
-        self.selectRange.addItem("----------------")
-        self.selectRange.addItem(tr('cookies'))
-        self.selectRange.addItem(tr('tempFiles'))
-        self.clearHistoryToolBar.addWidget(self.selectRange)
-        self.clearHistoryButton = QtGui.QPushButton(tr('clear'))
-        self.clearHistoryButton.clicked.connect(self.clearHistory)
-        self.clearHistoryToolBar.addWidget(self.clearHistoryButton)
-
     def initUI(self):
 
         # Quit action
@@ -2184,7 +2260,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.historyToolBar.addWidget(self.searchHistoryField)
         self.historyToolBar.addAction(clearHistoryAction)
         self.historyDockWindow.addToolBar(self.historyToolBar)
-        self.createClearHistoryDialog()
         self.historyDockWindow.setCentralWidget(self.historyList)
         self.historyDock.setWidget(self.historyDockWindow)
         browserHistory.historyChanged.connect(self.reloadHistory)
@@ -2547,77 +2622,8 @@ class TabBrowser(QtGui.QMainWindow):
             browserHistory.save()
             self.reloadHistory()
     def showClearHistoryDialog(self):
-        self.clearHistoryToolBar.setVisible(not self.clearHistoryToolBar.isVisible())
-    def clearHistoryRange(self, timeRange=0.0):
-        if sys.platform.startswith("linux"):
-            os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
-        try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
-        except:
-            doNothing()
-        saveTime = time.time()
-        for item in browserHistory.history:
-            try:
-                difference = saveTime - item['time']
-            except:
-                browserHistory.reset()
-                break
-            if difference <= timeRange:
-                del browserHistory.history[browserHistory.history.index(item)]
-        browserHistory.save()
-        self.reloadHistory()
-    def clearHistory(self):
-        if self.selectRange.currentIndex() == 0:
-            self.clearHistoryRange(60.0)
-        elif self.selectRange.currentIndex() == 1:
-            self.clearHistoryRange(120.0)
-        elif self.selectRange.currentIndex() == 2:
-            self.clearHistoryRange(300.0)
-        elif self.selectRange.currentIndex() == 3:
-            self.clearHistoryRange(600.0)
-        elif self.selectRange.currentIndex() == 4:
-            self.clearHistoryRange(900.0)
-        elif self.selectRange.currentIndex() == 5:
-            self.clearHistoryRange(1800.0)
-        elif self.selectRange.currentIndex() == 6:
-            self.clearHistoryRange(3600.0)
-        elif self.selectRange.currentIndex() == 7:
-            self.clearHistoryRange(7200.0)
-        elif self.selectRange.currentIndex() == 8:
-            self.clearHistoryRange(14400.0)
-        elif self.selectRange.currentIndex() == 9:
-            self.clearHistoryRange(28800.0)
-        elif self.selectRange.currentIndex() == 10:
-            self.clearHistoryRange(86400.0)
-        elif self.selectRange.currentIndex() == 11:
-            if sys.platform.startswith("linux"):
-                os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
-            try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
-            except:
-                doNothing()
-            saveMonth = time.strftime("%B")
-            saveDay = time.strftime("%d")
-            now = datetime.datetime.now()
-            saveYear = "%d" % now.year
-            for item in browserHistory.history:
-                if item['month'] == saveMonth and item['monthday'] == saveDay and item['year'] == saveYear:
-                    del browserHistory.history[browserHistory.history.index(item)]
-            browserHistory.save()
-            self.reloadHistory()
-        elif self.selectRange.currentIndex() == 12:
-            if sys.platform.startswith("linux"):
-                os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
-            try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
-            except:
-                doNothing()
-            browserHistory.history = []
-            browserHistory.save()
-            self.reloadHistory()
-        elif self.selectRange.currentIndex() == 14:
-            self.killCookies = True
-            notificationMessage(tr('clearCookiesMsg'))
-        elif self.selectRange.currentIndex() == 15:
-            self.killTempFiles = True
-            notificationMessage(tr('clearTempFilesMsg'))
+        library.advancedHistoryViewGUI.display()
+
     def historyToggle(self):
         self.historyDock.setVisible(not self.historyDock.isVisible())
         if self.historyDock.isVisible():
