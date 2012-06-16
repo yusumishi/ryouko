@@ -1006,7 +1006,7 @@ class BrowserHistory(QtCore.QObject):
                         self.history[index]['weekday'] = time.strftime("%A")
                         self.history[index]['month'] = time.strftime("%m")
                         self.history[index]['monthday'] = time.strftime("%d")
-                        self.history[index]['weekday'] = "%d" % now.year
+                        self.history[index]['year'] = "%d" % now.year
                         self.history[index]['timestamp'] = time.strftime("%H:%M:%S")
                         tempIndex = self.history[index]
                         del self.history[index]
@@ -1039,6 +1039,8 @@ class BrowserHistory(QtCore.QObject):
             self.save()
         except:
             self.reset()
+        else:
+            self.historyChanged.emit()
     def removeByUrl(self, url=""):
         try:
             self.reload()
@@ -1048,6 +1050,8 @@ class BrowserHistory(QtCore.QObject):
             self.save()
         except:
             self.reset()
+        else:
+            self.historyChanged.emit()
 
 browserHistory = BrowserHistory()
 
