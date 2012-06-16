@@ -77,6 +77,8 @@ app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
 app_profile_folder = os.path.join(app_home, "profiles")
 app_commandline = ""
 app_profile_exists = False
+app_kill_cookies = False
+app_kill_temp_files = False
 for arg in sys.argv:
     app_commandline = "%s%s " % (app_commandline, arg)
 app_logo = os.path.join(app_icons, "logo.svg")
@@ -629,7 +631,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         removeBookmarkAction.triggered.connect(self.removeBookmark)
         self.addAction(removeBookmarkAction)
         closeWindowAction = QtGui.QAction(self)
-        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Shift+B"])
+        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Shift+B", "Ctrl+Shift+O"])
         if self.parent:
             closeWindowAction.triggered.connect(self.parent.close)
         else:
@@ -712,7 +714,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         self.setCentralWidget(self.historyView)
 
         otherTabAction = QtGui.QAction(self)
-        otherTabAction.setShortcut("Ctrl+Shift+B")
+        otherTabAction.setShortcuts(["Ctrl+Shift+B", "Ctrl+Shift+O"])
         otherTabAction.triggered.connect(self.switchTabs)
         self.addAction(otherTabAction)
 
@@ -822,12 +824,12 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
             for win in app_windows:
                 win.reloadHistory()
         elif self.selectRange.currentIndex() == 14:
-            global killCookies
-            killCookies = True
+            global app_kill_cookies
+            app_kill_cookies = True
             notificationMessage(tr('clearCookiesMsg'))
         elif self.selectRange.currentIndex() == 15:
-            global killTempFiles
-            killTempFiles = True
+            global app_kill_temp_files
+            app_kill_temp_files = True
             notificationMessage(tr('clearTempFilesMsg'))
 
     def loadHistoryItem(self, item):
@@ -2169,7 +2171,7 @@ class TabBrowser(QtGui.QMainWindow):
             f.close()
 
     def checkTempFiles(self):
-        if killTempFiles == True:
+        if app_kill_temp_files == True:
             shred_directory(os.path.join(app_profile, "temp"))
 
     def loadCookies(self):
@@ -2192,7 +2194,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.cookieJar.setAllCookies(cookies)
 
     def saveCookies(self):
-        if killCookies == False:
+        if app_kill_cookies == False:
             cookieFile = open(app_cookies, "wb")
             cookies = []
             for c in self.cookieJar.allCookies():
