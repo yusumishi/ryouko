@@ -601,7 +601,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         removeBookmarkAction.triggered.connect(self.removeBookmark)
         self.addAction(removeBookmarkAction)
         closeWindowAction = QtGui.QAction(self)
-        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+B"])
+        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Shift+B"])
         closeWindowAction.triggered.connect(self.close)
         self.addAction(closeWindowAction)
         bookmarksManager.bookmarksChanged.connect(self.reload_)
@@ -2044,7 +2044,7 @@ class TabBrowser(QtGui.QMainWindow):
 
         # Bookmarks manager! FINALLY! Yay!
         manageBookmarksAction = QtGui.QAction(tr('viewBookmarks'), self)
-        manageBookmarksAction.setShortcut("Ctrl+B")
+        manageBookmarksAction.setShortcut("Ctrl+Shift+B")
         manageBookmarksAction.triggered.connect(bookmarksManagerGUI.display)
         self.addAction(manageBookmarksAction)
 
@@ -2198,6 +2198,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabsContextMenu.addAction(closeTabForeverAction)
         self.tabsContextMenu.addSeparator()
         self.tabsContextMenu.addAction(undoCloseTabAction)
+        self.tabsContextMenu.addAction(undoCloseWindowAction)
 
         # Config button
         configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_icons, 'settings.png'))), tr('preferencesButton'), self)
