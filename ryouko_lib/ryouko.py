@@ -461,6 +461,11 @@ class SearchEditor(RMenuPopupWindow):
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
 
+        closeWindowAction = QtGui.QAction(self)
+        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Shift+K"])
+        closeWindowAction.triggered.connect(self.close)
+        self.addAction(closeWindowAction)
+
         self.entryBar = QtGui.QToolBar()
         self.entryBar.setStyleSheet(dialogToolBarSheet)
         self.entryBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
