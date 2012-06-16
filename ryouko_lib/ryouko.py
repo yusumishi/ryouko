@@ -558,7 +558,7 @@ class BookmarksManager(QtCore.QObject):
         self.parent = parent
         self.bookmarks = []
         self.reload_()
-    def reload_(self, ):
+    def reload_(self):
         self.bookmarks = []
         if not os.path.isdir(app_links):
             os.mkdir(app_links)
@@ -700,11 +700,181 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
             doNothing()
         return QtGui.QMainWindow.closeEvent(self, ev)
 
+class ClearHistoryDialog(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        super(ClearHistoryDialog, self).__init__()
+        self.parent = parent
+
+        self.setWindowTitle(tr('clearHistory'))
+        if os.path.exists(app_logo):
+            self.setWindowIcon(QtGui.QIcon(app_logo))
+
+        closeWindowAction = QtGui.QAction(self)
+        closeWindowAction.setShortcuts(["Esc", "Ctrl+W", "Ctrl+Shift+Del"])
+        closeWindowAction.triggered.connect(self.close)
+        self.addAction(closeWindowAction)
+
+        self.contents = QtGui.QWidget()
+        self.layout = QtGui.QVBoxLayout()
+        self.contents.setLayout(self.layout)
+        self.setCentralWidget(self.contents)
+        self.createClearHistoryToolBar()
+
+    def display(self):
+        self.show()
+        self.activateWindow()
+
+    def createClearHistoryToolBar(self):
+        self.setStyleSheet(dialogToolBarSheet.replace("QToolButton, QPushButton", "QToolButton {border: 1px solid transparent; background: transparent; padding: 4px; margin-left: 2px;} QToolButton:hover, QPushButton:hover, QPushButton"))
+        label = QtGui.QLabel(tr("clearHistoryDesc") + ":")
+        self.layout.addWidget(label)
+        self.selectRange = QtGui.QComboBox()
+        self.selectRange.addItem(tr('lastMin'))
+        self.selectRange.addItem(tr('last2Min'))
+        self.selectRange.addItem(tr('last5Min'))
+        self.selectRange.addItem(tr('last10Min'))
+        self.selectRange.addItem(tr('last15Min'))
+        self.selectRange.addItem(tr('last30Min'))
+        self.selectRange.addItem(tr('lastHr'))
+        self.selectRange.addItem(tr('last2Hr'))
+        self.selectRange.addItem(tr('last4Hr'))
+        self.selectRange.addItem(tr('last8Hr'))
+        self.selectRange.addItem(tr('last24Hr'))
+        self.selectRange.addItem(tr('today'))
+        self.selectRange.addItem(tr('everything'))
+        self.selectRange.addItem("----------------")
+        self.selectRange.addItem(tr('cookies'))
+        self.selectRange.addItem(tr('tempFiles'))
+        self.layout.addWidget(self.selectRange)
+        self.toolBar = QtGui.QToolBar("")
+        self.toolBar.setMovable(False)
+        self.toolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.addToolBar(QtCore.Qt.BottomToolBarArea, self.toolBar)
+        self.clearHistoryButton = QtGui.QPushButton(tr('clear'))
+        self.clearHistoryButton.clicked.connect(self.clearHistory)
+        self.toolBar.addWidget(self.clearHistoryButton)
+        self.closeButton = QtGui.QPushButton(tr('close'))
+        self.closeButton.clicked.connect(self.close)
+        self.toolBar.addWidget(self.closeButton)
+
+    def clearHistoryRange(self, timeRange=0.0):
+        question = QtGui.QMessageBox.question(None, tr("warning"),
+        tr("clearHistoryWarn"), QtGui.QMessageBox.Yes | 
+        QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        if question == QtGui.QMessageBox.Yes:
+            if sys.platform.startswith("linux"):
+                os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
+            try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
+            except:
+                doNothing()
+            saveTime = time.time()
+            for item in browserHistory.history:
+                try:
+                    difference = saveTime - int(item['time'])
+                except:
+                    browserHistory.reset()
+                    break
+                if difference <= timeRange:
+                    del browserHistory.history[browserHistory.history.index(item)]
+            browserHistory.save()
+            for win in app_windows:
+                try:
+                    win.reloadHistory()
+                except:
+                    doNothing()
+            if library.advancedHistoryViewGUI.reload_:
+                library.advancedHistoryViewGUI.reload_()
+
+    def clearHistory(self):
+        if self.selectRange.currentIndex() == 0:
+            self.clearHistoryRange(60.0)
+        elif self.selectRange.currentIndex() == 1:
+            self.clearHistoryRange(120.0)
+        elif self.selectRange.currentIndex() == 2:
+            self.clearHistoryRange(300.0)
+        elif self.selectRange.currentIndex() == 3:
+            self.clearHistoryRange(600.0)
+        elif self.selectRange.currentIndex() == 4:
+            self.clearHistoryRange(900.0)
+        elif self.selectRange.currentIndex() == 5:
+            self.clearHistoryRange(1800.0)
+        elif self.selectRange.currentIndex() == 6:
+            self.clearHistoryRange(3600.0)
+        elif self.selectRange.currentIndex() == 7:
+            self.clearHistoryRange(7200.0)
+        elif self.selectRange.currentIndex() == 8:
+            self.clearHistoryRange(14400.0)
+        elif self.selectRange.currentIndex() == 9:
+            self.clearHistoryRange(28800.0)
+        elif self.selectRange.currentIndex() == 10:
+            self.clearHistoryRange(86400.0)
+        elif self.selectRange.currentIndex() == 11:
+            question = QtGui.QMessageBox.question(None, tr("warning"),
+            tr("clearHistoryWarn"), QtGui.QMessageBox.Yes | 
+            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            if question == QtGui.QMessageBox.Yes:
+                if sys.platform.startswith("linux"):
+                    os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
+                try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
+                except:
+                    doNothing()
+                saveMonth = time.strftime("%B")
+                saveDay = time.strftime("%d")
+                now = datetime.datetime.now()
+                saveYear = "%d" % now.year
+                for item in browserHistory.history:
+                    if item['month'] == saveMonth and item['monthday'] == saveDay and item['year'] == saveYear:
+                        del browserHistory.history[browserHistory.history.index(item)]
+                browserHistory.save()
+                for win in app_windows:
+                    try:
+                        win.reloadHistory()
+                    except:
+                        doNothing()
+                if library.advancedHistoryViewGUI.reload_:
+                    library.advancedHistoryViewGUI.reload_()
+        elif self.selectRange.currentIndex() == 12:
+            question = QtGui.QMessageBox.question(None, tr("warning"),
+            tr("clearHistoryWarn"), QtGui.QMessageBox.Yes | 
+            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            if question == QtGui.QMessageBox.Yes:
+                if sys.platform.startswith("linux"):
+                    os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
+                try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
+                except:
+                    doNothing()
+                browserHistory.history = []
+                browserHistory.save()
+                for win in app_windows:
+                    try:
+                        win.reloadHistory()
+                    except:
+                        doNothing()
+                if library.advancedHistoryViewGUI.reload_:
+                    library.advancedHistoryViewGUI.reload_()
+        elif self.selectRange.currentIndex() == 14:
+            question = QtGui.QMessageBox.question(None, tr("warning"),
+        tr("clearHistoryWarn"), QtGui.QMessageBox.Yes | 
+        QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            if question == QtGui.QMessageBox.Yes:
+                global app_kill_cookies
+                app_kill_cookies = True
+                notificationMessage(tr('clearCookiesMsg'))
+        elif self.selectRange.currentIndex() == 15:
+            question = QtGui.QMessageBox.question(None, tr("warning"),
+        tr("clearHistoryWarn"), QtGui.QMessageBox.Yes | 
+        QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            if question == QtGui.QMessageBox.Yes:
+                global app_kill_temp_files
+                app_kill_temp_files = True
+                notificationMessage(tr('clearTempFilesMsg'))
+
+clearHistoryDialog = None
+
 class AdvancedHistoryViewGUI(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(AdvancedHistoryViewGUI, self).__init__()
         self.parent = parent
-        browserHistory.historyChanged.connect(self.reload_)
 
         self.searchToolBar = QtGui.QToolBar("")
         self.searchToolBar.setStyleSheet(dialogToolBarSheet)
@@ -726,12 +896,20 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
 
         self.addToolBar(self.searchToolBar)
         self.addToolBarBreak()
-        self.createClearHistoryToolBar()
 
         self.historyView = QtGui.QTreeWidget()
         self.historyView.setHeaderLabels([tr("title"), tr("count"), tr("weekday"), tr("date"), tr("time"), tr('url')])
         self.historyView.itemActivated.connect(self.loadHistoryItem)
+        self.historyView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.setCentralWidget(self.historyView)
+
+        deleteHistoryItemAction = QtGui.QAction(tr("delete"), self)
+        deleteHistoryItemAction.setShortcut("Del")
+        deleteHistoryItemAction.triggered.connect(self.deleteHistoryItem)
+        self.addAction(deleteHistoryItemAction)
+
+        self.historyViewMenu = RMenu()
+        self.historyView.customContextMenuRequested.connect(self.historyViewMenu.show)
 
         otherTabAction = QtGui.QAction(self)
         otherTabAction.setShortcuts(["Ctrl+Shift+B", "Ctrl+Shift+O"])
@@ -746,7 +924,19 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
             closeWindowAction.triggered.connect(self.close)
         self.addAction(closeWindowAction)
 
+        browserHistory.historyChanged.connect(self.reload_)
+
         self.reload_()
+
+    def deleteHistoryItem(self):
+        if self.historyView.hasFocus():
+            u = ""
+            item = self.historyView.currentItem()
+            if sys.version_info[0] <= 2:
+                u = unicode(item.data(5, 0).toString())
+            else:
+                u = unicode(item.data(5, 0))
+            browserHistory.removeByUrl(u)
 
     def searchHistoryFromBox(self):
         if self.searchBox.text() != "":
@@ -775,114 +965,6 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         else:
             self.searchOn = False
             self.reloadHistory()
-
-    def createClearHistoryToolBar(self):
-        self.clearHistoryToolBar = QtGui.QToolBar("Clear History Dialog Toolbar")
-        self.clearHistoryToolBar.setStyleSheet(dialogToolBarSheet.replace("QToolButton, QPushButton", "QToolButton {border: 1px solid transparent; background: transparent; padding: 4px; margin-left: 2px;} QToolButton:hover, QPushButton:hover, QPushButton"))
-        self.clearHistoryToolBar.setMovable(False)
-        self.addToolBar(self.clearHistoryToolBar)
-        label = QtGui.QLabel(tr("clearHistoryLabel") + ": ")
-        self.clearHistoryToolBar.addWidget(label)
-        self.selectRange = QtGui.QComboBox()
-        self.selectRange.addItem(tr('lastMin'))
-        self.selectRange.addItem(tr('last2Min'))
-        self.selectRange.addItem(tr('last5Min'))
-        self.selectRange.addItem(tr('last10Min'))
-        self.selectRange.addItem(tr('last15Min'))
-        self.selectRange.addItem(tr('last30Min'))
-        self.selectRange.addItem(tr('lastHr'))
-        self.selectRange.addItem(tr('last2Hr'))
-        self.selectRange.addItem(tr('last4Hr'))
-        self.selectRange.addItem(tr('last8Hr'))
-        self.selectRange.addItem(tr('last24Hr'))
-        self.selectRange.addItem(tr('today'))
-        self.selectRange.addItem(tr('everything'))
-        self.selectRange.addItem("----------------")
-        self.selectRange.addItem(tr('cookies'))
-        self.selectRange.addItem(tr('tempFiles'))
-        self.clearHistoryToolBar.addWidget(self.selectRange)
-        self.clearHistoryButton = QtGui.QPushButton(tr('clear'))
-        self.clearHistoryButton.clicked.connect(self.clearHistory)
-        self.clearHistoryToolBar.addWidget(self.clearHistoryButton)
-
-    def clearHistoryRange(self, timeRange=0.0):
-        if sys.platform.startswith("linux"):
-            os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
-        try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
-        except:
-            doNothing()
-        saveTime = time.time()
-        for item in browserHistory.history:
-            try:
-                difference = saveTime - item['time']
-            except:
-                browserHistory.reset()
-                break
-            if difference <= timeRange:
-                del browserHistory.history[browserHistory.history.index(item)]
-        browserHistory.save()
-        for win in app_windows:
-            win.reloadHistory()
-        self.reload_()
-    def clearHistory(self):
-        if self.selectRange.currentIndex() == 0:
-            self.clearHistoryRange(60.0)
-        elif self.selectRange.currentIndex() == 1:
-            self.clearHistoryRange(120.0)
-        elif self.selectRange.currentIndex() == 2:
-            self.clearHistoryRange(300.0)
-        elif self.selectRange.currentIndex() == 3:
-            self.clearHistoryRange(600.0)
-        elif self.selectRange.currentIndex() == 4:
-            self.clearHistoryRange(900.0)
-        elif self.selectRange.currentIndex() == 5:
-            self.clearHistoryRange(1800.0)
-        elif self.selectRange.currentIndex() == 6:
-            self.clearHistoryRange(3600.0)
-        elif self.selectRange.currentIndex() == 7:
-            self.clearHistoryRange(7200.0)
-        elif self.selectRange.currentIndex() == 8:
-            self.clearHistoryRange(14400.0)
-        elif self.selectRange.currentIndex() == 9:
-            self.clearHistoryRange(28800.0)
-        elif self.selectRange.currentIndex() == 10:
-            self.clearHistoryRange(86400.0)
-        elif self.selectRange.currentIndex() == 11:
-            if sys.platform.startswith("linux"):
-                os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
-            try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
-            except:
-                doNothing()
-            saveMonth = time.strftime("%B")
-            saveDay = time.strftime("%d")
-            now = datetime.datetime.now()
-            saveYear = "%d" % now.year
-            for item in browserHistory.history:
-                if item['month'] == saveMonth and item['monthday'] == saveDay and item['year'] == saveYear:
-                    del browserHistory.history[browserHistory.history.index(item)]
-            browserHistory.save()
-            for win in app_windows:
-                win.reloadHistory()
-            self.reload_()
-        elif self.selectRange.currentIndex() == 12:
-            if sys.platform.startswith("linux"):
-                os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
-            try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
-            except:
-                doNothing()
-            browserHistory.history = []
-            browserHistory.save()
-            for win in app_windows:
-                win.reloadHistory()
-            self.reload_()
-        elif self.selectRange.currentIndex() == 14:
-            global app_kill_cookies
-            app_kill_cookies = True
-            notificationMessage(tr('clearCookiesMsg'))
-        elif self.selectRange.currentIndex() == 15:
-            global app_kill_temp_files
-            app_kill_temp_files = True
-            notificationMessage(tr('clearTempFilesMsg'))
 
     def loadHistoryItem(self, item):
         u = ""
@@ -941,6 +1023,12 @@ class Library(QtGui.QMainWindow):
         self.parent = parent
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
+
+        clearHistoryAction = QtGui.QAction(self)
+        clearHistoryAction.setShortcut("Ctrl+Shift+Del")
+        clearHistoryAction.triggered.connect(clearHistoryDialog.show)
+        self.addAction(clearHistoryAction)
+
         self.setWindowTitle(tr('library'))
         self.tabs = RTabWidget(self, True)
         self.setCentralWidget(self.tabs)
@@ -979,6 +1067,7 @@ class BrowserHistory(QtCore.QObject):
         history = open(os.path.join(app_profile, "history.json"), "w")
         json.dump(self.history, history)
         history.close()
+        self.historyChanged.emit()
     def append(self, url, name=""):
         if unicode(url.toString()) != "about:blank":
             try:
@@ -1036,24 +1125,20 @@ class BrowserHistory(QtCore.QObject):
         try:
             self.reload()
             for item in self.history:
-                if item['name'].lower() == name.lower():
-                    del item
+                if item['name'] == name:
+                    del self.history[self.history.index(item)]
             self.save()
         except:
-            self.reset()
-        else:
-            self.historyChanged.emit()
+            doNothing()
     def removeByUrl(self, url=""):
         try:
             self.reload()
             for item in self.history:
-                if item['url'].lower() == url.lower():
-                    del item
+                if item['url'] == url:
+                    del self.history[self.history.index(item)]
             self.save()
         except:
-            self.reset()
-        else:
-            self.historyChanged.emit()
+            doNothing()
 
 browserHistory = BrowserHistory()
 
@@ -1172,6 +1257,17 @@ def showAboutPage(webView):
         <a name='licensing'></a>\
         <h1>" + tr('license') + "</h1>\
         <iframe style='border: 0; width: 100%; height: 640px;' src='file://%" + os.path.join(app_lib, "LICENSE.txt") + "'></iframe></center></div></div></center></body></html>")
+
+class RMenu(QtGui.QMenu):
+    def show(self):
+        x = QtCore.QPoint(QtGui.QCursor.pos()).x()
+        if x + self.width() > QtGui.QApplication.desktop().size().width():
+            x = x - self.width()
+        y = QtCore.QPoint(QtGui.QCursor.pos()).y()
+        if y + self.height() > QtGui.QApplication.desktop().size().height():
+            y = y - self.height()
+        self.move(x, y)
+        self.setVisible(True)
 
 class RAboutDialog(QtWebKit.QWebView):
     def __init__(self, parent=None):
@@ -2355,7 +2451,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.addAction(deleteHistoryItemAction)
         self.searchHistoryField = QtGui.QLineEdit()
         self.searchHistoryField.textChanged.connect(self.searchHistory)
-        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(app_icons, "clear.png"))), tr('clearHistory'), self)
+        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(app_icons, "clear.png"))), tr('clearHistoryHKey'), self)
         clearHistoryAction.setToolTip(tr('clearHistoryTT'))
         clearHistoryAction.setShortcut("Ctrl+Shift+Del")
         clearHistoryAction.triggered.connect(self.showClearHistoryDialog)
@@ -2386,7 +2482,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabs = RTabWidget(self)
         self.tabs.currentChanged.connect(self.hideInspectors)
         self.tabs.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.tabs.customContextMenuRequested.connect(self.showTabsContextMenu)
         self.tabs.setMovable(True)
         self.nextTabAction = QtGui.QAction(self)
         self.nextTabAction.triggered.connect(self.nextTab)
@@ -2523,7 +2618,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.addAction(closeTabForeverAction)
         closeTabForeverAction.triggered.connect(self.permanentCloseTab)
 
-        self.tabsContextMenu = QtGui.QMenu()
+        self.tabsContextMenu = RMenu()
         self.tabsContextMenu.addAction(newTabAction)
         self.tabsContextMenu.addAction(newWindowAction)
         self.tabsContextMenu.addAction(newpbTabAction)
@@ -2535,6 +2630,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabsContextMenu.addSeparator()
         self.tabsContextMenu.addAction(undoCloseTabAction)
         self.tabsContextMenu.addAction(undoCloseWindowAction)
+
+        self.tabs.customContextMenuRequested.connect(self.tabsContextMenu.show)
 
         # Config button
         configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_icons, 'settings.png'))), tr('preferencesButton'), self)
@@ -2722,11 +2819,10 @@ class TabBrowser(QtGui.QMainWindow):
             self.reloadHistory()
     def deleteHistoryItem(self):
         if self.historyList.hasFocus():
-            del browserHistory.history[self.historyList.row(self.historyList.currentItem())]
-            browserHistory.save()
-            self.reloadHistory()
+            browserHistory.removeByName(unicode(self.historyList.currentItem().text()))
+
     def showClearHistoryDialog(self):
-        library.advancedHistoryViewGUI.display()
+        clearHistoryDialog.display()
 
     def historyToggle(self):
         self.historyDock.setVisible(not self.historyDock.isVisible())
@@ -2817,8 +2913,10 @@ class Ryouko(QtGui.QWidget):
         global win
         global aboutDialog
         global notificationWindow
+        global clearHistoryDialog
         aboutDialog = RAboutDialog()
         notificationWindow = NotificationWindow()
+        clearHistoryDialog = ClearHistoryDialog()
         library = Library()
         searchEditor = SearchEditor()
         cDialog = CDialog(self)
