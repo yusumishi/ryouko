@@ -1103,7 +1103,7 @@ def showAboutPage(webView):
     webView.load(QtCore.QUrl("about:blank"))
     webView.setHtml("""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
         "http://www.w3.org/TR/html4/strict.dtd">
-        <html>
+        <html style='padding-bottom: 19.25pt;'>
         <head>
         <title>""" + tr('aboutRyouko') + """</title>
         <script type='text/javascript'>
@@ -1119,10 +1119,42 @@ def showAboutPage(webView):
         *:not(b):not(h1):not(h2) {
         font-family: monospace;
         }
+
+        #toolbar {
+        overflow-y: auto;
+        height: 19.25pt;
+        width: 100%;
+        left: 0;
+        bottom: 0;
+        padding: 2px;
+        padding-left: 0;
+        padding-right:0;
+        background: ThreeDFace;
+        position: fixed;
+        visibility: visible;
+        z-index: 9001;
+        border-top: 1px solid ThreeDShadow;
+        }
+
+        #toolbar * {
+        font-family: sans-serif;
+        font-size: 11pt;
+        background: transparent;
+        padding: 0;
+        border: 0;
+        color: ButtonText;
+        text-decoration: none;
+        -webkit-appearance: none;
+        }
+
+        #toolbar a:hover,
+        #ryouko-toolbar input:hover {
+        text-decoration: underline;
+        }
         </style>
         </head>
         <body style='font-family: sans-serif; font-size: 11pt;'>
-        <span style='position: fixed; top: 0; left: 0;'><a style='font-family: sans-serif;' href='#about'>""" + tr('aboutRyouko') + """</a> <a style='font-family: sans-serif;' href='#licensing'>""" + tr('license') + """</a></span>
+        <span id='toolbar'><a style='font-family: sans-serif;' href='#about'>""" + tr('aboutRyouko') + """</a> <a style='font-family: sans-serif;' href='#licensing'>""" + tr('license') + """</a></span>
         <center>
         <div style=\"max-width: 640px;\">
         <a name='about'></a>
@@ -1342,7 +1374,7 @@ class RWebView(QtWebKit.QWebView):
 
     def buildToolBar(self):
         if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
-            self.page().mainFrame().findFirstElement("body").appendInside("""<style type="text/css">html{padding-bottom: 19.25pt;}#ryouko-toolbar {overflow-y: auto; height: 19.25pt; width: 100%; left: 0;padding: 2px;padding-left: 0;padding-right:0;background: ThreeDFace;border-radius: 2px;position: fixed;visibility: visible;z-index: 9001;}#ryouko-toolbar *{font-family: sans-serif; font-size: 11pt; background: transparent; padding: 0; border: 0; color: ButtonText; text-decoration: none; -webkit-appearance: none;} #ryouko-toolbar a:hover, #ryouko-toolbar input:hover{text-decoration: underline; }</style><span id='ryouko-toolbar' style='bottom: 0; border-top: 1px solid ThreeDShadow;'><span id='ryouko-browser-controls'></span><span id='ryouko-link-bar-container'></span><input id='ryouko-switch-button' style='float: right;' value='Move up' type='button' onclick="if (document.getElementById('ryouko-toolbar').getAttribute('style')=='top: 0; border-bottom: 1px solid ThreeDShadow;') { document.getElementById('ryouko-toolbar').setAttribute('style', 'bottom: 0; border-top: 1px solid ThreeDShadow;'); document.getElementsByTagName('html')[0].setAttribute('style', 'padding-top: 0; padding-bottom: 19.25pt;'); document.getElementById('ryouko-switch-button').setAttribute('value','Move up'); } else { document.getElementById('ryouko-toolbar').setAttribute('style', 'top: 0; border-bottom: 1px solid ThreeDShadow;'); document.getElementsByTagName('html')[0].setAttribute('style', 'padding-top: 19.25pt; padding-bottom: 0;'); document.getElementById('ryouko-switch-button').setAttribute('value','Move down'); }"></input></span>""")
+            self.page().mainFrame().findFirstElement("body").appendInside("""<style type="text/css">html{padding-bottom: 19.25pt;}#ryouko-toolbar {overflow-y: auto; height: 19.25pt; width: 100%; left: 0;padding: 2px;padding-left: 0;padding-right:0;background: ThreeDFace;position: fixed;visibility: visible;z-index: 9001;}#ryouko-toolbar *{font-family: sans-serif; font-size: 11pt; background: transparent; padding: 0; border: 0; color: ButtonText; text-decoration: none; -webkit-appearance: none;} #ryouko-toolbar a:hover, #ryouko-toolbar input:hover{text-decoration: underline; }</style><span id='ryouko-toolbar' style='bottom: 0; border-top: 1px solid ThreeDShadow;'><span id='ryouko-browser-controls'></span><span id='ryouko-link-bar-container'></span><input id='ryouko-switch-button' style='float: right;' value='Move up' type='button' onclick="if (document.getElementById('ryouko-toolbar').getAttribute('style')=='top: 0; border-bottom: 1px solid ThreeDShadow;') { document.getElementById('ryouko-toolbar').setAttribute('style', 'bottom: 0; border-top: 1px solid ThreeDShadow;'); document.getElementsByTagName('html')[0].setAttribute('style', 'padding-top: 0; padding-bottom: 19.25pt;'); document.getElementById('ryouko-switch-button').setAttribute('value','Move up'); } else { document.getElementById('ryouko-toolbar').setAttribute('style', 'top: 0; border-bottom: 1px solid ThreeDShadow;'); document.getElementsByTagName('html')[0].setAttribute('style', 'padding-top: 19.25pt; padding-bottom: 0;'); document.getElementById('ryouko-switch-button').setAttribute('value','Move down'); }"></input></span>""")
 
     def loadControls(self):
         if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
