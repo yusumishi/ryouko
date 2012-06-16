@@ -2359,7 +2359,6 @@ class TabBrowser(QtGui.QMainWindow):
         clearHistoryAction.setToolTip(tr('clearHistoryTT'))
         clearHistoryAction.setShortcut("Ctrl+Shift+Del")
         clearHistoryAction.triggered.connect(self.showClearHistoryDialog)
-        clearHistoryAction.triggered.connect(self.historyDock.show)
         self.addAction(clearHistoryAction)
         self.historyToolBar.addWidget(self.searchHistoryField)
         self.historyToolBar.addAction(clearHistoryAction)
