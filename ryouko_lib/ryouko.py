@@ -320,13 +320,13 @@ class RTabBar(QtGui.QTabBar):
         self.parent.tabs.widget(self.parent.tabs.currentIndex()).webView.buildNewTabPage()
 
 class RTabWidget(QtGui.QTabWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, forcea=False):
         super(RTabWidget, self).__init__(parent)
         self.parent = parent
         self.nuTabBar = RTabBar(self.parent)
         self.setTabBar(self.nuTabBar)
         self.setDocumentMode(True)
-        if sys.platform.startswith("win"):
+        if sys.platform.startswith("win") or forcea == True:
             a = ""
         else:
             a = """QTabBar {
@@ -602,7 +602,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.nameToolBar = QtGui.QToolBar("Add a bookmarky")
         self.nameToolBar.setMovable(False)
         self.nameToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        nameLabel = QtGui.QLabel(tr('name') + ":")
+        nameLabel = QtGui.QLabel(tr('name') + ": ")
         self.nameField = QtGui.QLineEdit()
         self.nameField.returnPressed.connect(self.addBookmark)
         self.nameToolBar.addWidget(nameLabel)
@@ -610,7 +610,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.urlToolBar = QtGui.QToolBar("Add a bookmarky")
         self.urlToolBar.setMovable(False)
         self.urlToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        uLabel = QtGui.QLabel(tr('url') + ":")
+        uLabel = QtGui.QLabel(tr('url') + ": ")
         self.urlField = QtGui.QLineEdit()
         self.urlField.returnPressed.connect(self.addBookmark)
         self.urlToolBar.addWidget(uLabel)
@@ -707,8 +707,12 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         browserHistory.historyChanged.connect(self.reload_)
 
         self.searchToolBar = QtGui.QToolBar("")
+        self.searchToolBar.setStyleSheet(dialogToolBarSheet)
         self.searchToolBar.setMovable(False)
         self.searchToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+
+        searchLabel = QtGui.QLabel(tr("searchLabel") + ": ")
+        self.searchToolBar.addWidget(searchLabel)
 
         self.searchBox = QtGui.QLineEdit()
         self.searchBox.textChanged.connect(self.searchHistoryFromBox)
@@ -777,6 +781,8 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         self.clearHistoryToolBar.setStyleSheet(dialogToolBarSheet.replace("QToolButton, QPushButton", "QToolButton {border: 1px solid transparent; background: transparent; padding: 4px; margin-left: 2px;} QToolButton:hover, QPushButton:hover, QPushButton"))
         self.clearHistoryToolBar.setMovable(False)
         self.addToolBar(self.clearHistoryToolBar)
+        label = QtGui.QLabel(tr("clearHistoryLabel") + ": ")
+        self.clearHistoryToolBar.addWidget(label)
         self.selectRange = QtGui.QComboBox()
         self.selectRange.addItem(tr('lastMin'))
         self.selectRange.addItem(tr('last2Min'))
@@ -907,10 +913,14 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
             self.parent.display()
             self.parent.tabs.setCurrentIndex(1)
             self.show()
+            self.searchBox.setFocus()
+            self.searchBox.selectAll()
             self.activateWindow()
         else:
             self.show()
             self.resize(800, 480)
+            self.searchBox.setFocus()
+            self.searchBox.selectAll()
             self.activateWindow()
 
     def buildItem(self, item):
@@ -930,7 +940,7 @@ class Library(QtGui.QMainWindow):
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
         self.setWindowTitle(tr('library'))
-        self.tabs = QtGui.QTabWidget()
+        self.tabs = RTabWidget(self, True)
         self.setCentralWidget(self.tabs)
         self.bookmarksManagerGUI = BookmarksManagerGUI(self)
         self.tabs.addTab(self.bookmarksManagerGUI, tr('bookmarks'))
