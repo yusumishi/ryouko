@@ -104,6 +104,7 @@
 "editSearchTT": "<b>Editar los buscadores...</b><br>Ctrl+Shift+K",
 "newWindowBtn": "&Ventana nuevo",
 "newWindowBtnTT": "<b>Ventana nuevo</b><br>Ctrl+N",
+"closeTab": "&Cerrar pestaña",
 "closeLeftTabs": "Cerrar las pestañas en la &izquierda",
 "closeRighttTabs": "Cerrar las pestañas en el &derecho",
 "closeTabForever": "Cerrar este pestaña &permanentemente",
