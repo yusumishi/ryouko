@@ -88,7 +88,7 @@
 "add": "Añadir/Cambiar",
 "remove": "Quitar",
 "url": "URL",
-"backBtn": "Previo",
+"back": "Previo",
 "backBtnTT": "<b>Previo</b><br>Alt+Izquierdo",
 "nextBtnTT": "<b>Próximo</b><br>Alt+Derecho",
 "stopBtnTT": "<b>Detener</b><br>Esc",
