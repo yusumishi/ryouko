@@ -1330,7 +1330,7 @@ class NotificationWindow(QtGui.QMainWindow):
         self.setWindowTitle(tr('notifications'))
         closeWindowAction = QtGui.QAction(self)
         closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+N", "Esc"])
-        closeWindowAction.triggered.connect(self.close)
+        closeWindowAction.triggered.connect(self.hide)
         self.addAction(closeWindowAction)
         self.parent = parent
         self.toolBar = QtGui.QToolBar()
@@ -1340,7 +1340,7 @@ class NotificationWindow(QtGui.QMainWindow):
         self.clearButton = QtGui.QPushButton(tr('clear'))
         self.toolBar.addWidget(self.clearButton)
         self.closeButton = QtGui.QPushButton(tr('close'))
-        self.closeButton.clicked.connect(self.close)
+        self.closeButton.clicked.connect(self.hide)
         self.toolBar.addWidget(self.closeButton)
         self.history = QtGui.QListWidget()
         self.history.setWordWrap(True)
@@ -1348,9 +1348,16 @@ class NotificationWindow(QtGui.QMainWindow):
         self.setCentralWidget(self.history)
         self.addToolBar(self.toolBar)
         self.hide()
+
+    def center(self):
+        fg = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        fg.moveCenter(cp)
+        self.move(fg.topLeft())
+
     def show(self):
-        self.move(0, 0)
-        self.setVisible(True)        
+        self.setVisible(True)
+        self.center()
         self.activateWindow()
 
 notificationWindow = None
