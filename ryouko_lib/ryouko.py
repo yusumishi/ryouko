@@ -901,6 +901,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         self.historyToolBar = QtGui.QToolBar("")
         self.historyToolBar.setMovable(False)
         self.historyToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.addToolBar(self.historyToolBar)
 
         clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(app_icons, "clear.png"))), tr('clearHistoryHKey'), self)
         clearHistoryAction.setToolTip(tr('clearHistoryTT'))
