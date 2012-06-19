@@ -838,7 +838,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
                 try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
                 except:
                     doNothing()
-                saveMonth = time.strftime("%B")
+                saveMonth = time.strftime("%m")
                 saveDay = time.strftime("%d")
                 now = datetime.datetime.now()
                 saveYear = "%d" % now.year
