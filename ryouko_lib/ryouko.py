@@ -898,35 +898,30 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
 
         self.setStyleSheet(dialogToolBarSheet.replace("QToolButton, QPushButton", "QToolButton {border: 1px solid transparent; background: transparent; padding: 4px; margin-left: 2px;} QToolButton:hover, QPushButton:hover, QPushButton"))
 
-        self.searchToolBar = QtGui.QToolBar("")
-        self.searchToolBar.setMovable(False)
-        self.searchToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.historyToolBar = QtGui.QToolBar("")
+        self.historyToolBar.setMovable(False)
+        self.historyToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+
+        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(app_icons, "clear.png"))), tr('clearHistoryHKey'), self)
+        clearHistoryAction.setToolTip(tr('clearHistoryTT'))
+        clearHistoryAction.setShortcut("Ctrl+Shift+Del")
+        clearHistoryAction.triggered.connect(clearHistoryDialog.show)
+        self.historyToolBar.addAction(clearHistoryAction)
+
+        self.historyToolBar.addSeparator()
 
         searchLabel = QtGui.QLabel(tr("searchLabel") + ": ")
-        self.searchToolBar.addWidget(searchLabel)
+        self.historyToolBar.addWidget(searchLabel)
 
         self.searchBox = QtGui.QLineEdit()
         self.searchBox.textChanged.connect(self.searchHistoryFromBox)
-        self.searchToolBar.addWidget(self.searchBox)
+        self.historyToolBar.addWidget(self.searchBox)
 
         findAction = QtGui.QAction(self)
         findAction.setShortcuts(["Ctrl+F", "Ctrl+K"])
         findAction.triggered.connect(self.searchBox.setFocus)
         findAction.triggered.connect(self.searchBox.selectAll)
         self.addAction(findAction)
-
-        self.addToolBar(self.searchToolBar)
-        self.addToolBarBreak()
-
-        self.manageToolBar = QtGui.QToolBar("")
-        self.manageToolBar.setMovable(False)
-        self.addToolBar(self.manageToolBar)
-
-        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(app_icons, "clear.png"))), tr('clearHistoryHKey'), self)
-        clearHistoryAction.setToolTip(tr('clearHistoryTT'))
-        clearHistoryAction.setShortcut("Ctrl+Shift+Del")
-        clearHistoryAction.triggered.connect(clearHistoryDialog.show)
-        self.manageToolBar.addAction(clearHistoryAction)
 
         self.historyView = QtGui.QTreeWidget()
         self.historyView.setHeaderLabels([tr("title"), tr("count"), tr("weekday"), tr("date"), tr("time"), tr('url')])
