@@ -119,7 +119,7 @@
 "preferencesButtonTT": "<b>Preferencias</b><br>Ctrl+Shift+P",
 "newTab": "Pestaña nuevo",
 "newWindow": "Ventana nuevo",
-"undoCloseTab": "Reabrir un pestaña que estaba cerrado",
+"undoCloseTab": "Deshacer el cierre de la última pestaña",
 "newPBTab": "Pestaña nuevo (MNP)",
 "searchError": "Ryouko se encuentra un error cuando intenta a modificar la buscar.",
 "title": "Título",
