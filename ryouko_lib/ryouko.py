@@ -81,7 +81,10 @@ app_kill_cookies = False
 app_kill_temp_files = False
 for arg in sys.argv:
     app_commandline = "%s%s " % (app_commandline, arg)
-app_logo = os.path.join(app_icons, "logo.svg")
+if sys.platform.startswith("win"):
+    app_logo = os.path.join(app_icons, 'about-logo.png')
+else:
+    app_logo = os.path.join(app_icons, "logo.svg")
 user_links = ""
 
 try:
