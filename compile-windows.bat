@@ -1,7 +1,7 @@
 @echo off
 cd /d %~dp0
 echo This script will compile Ryouko for you! Before you continue, make sure that:
-echo 1) Python is installed to C:\Python27
+echo 1) Python 2 is installed to C:\Python27.
 echo 2) PyQt4 is installed.
 echo 3) cx_Freeze is installed.
 PAUSE
