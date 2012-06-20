@@ -69,6 +69,7 @@
 "downloadStarted": "Downloading file; will notify you when complete.",
 "downloadFinished": "File has been successfully downloaded! Yay!",
 "tempFiles": "Temporary files",
+"localStorage": "Local storage",
 "clearCookiesMsg": "Cookies will be cleared on browser restart.",
 "clearTempFilesMsg": "Temporary files will be cleared on browser restart.",
 "clear": "Clear",

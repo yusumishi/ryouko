@@ -571,7 +571,8 @@ class BookmarksManager(QtCore.QObject):
                 f.close()
                 link = link.replace("\n", "")
                 self.bookmarks.append({"name": fname.rstrip(".txt"), "url": link})
-            self.bookmarks.sort()
+            if sys.version_info[0] < 3:
+                self.bookmarks.sort()
             reload_user_links()
             self.bookmarksChanged.emit()
     def add(self, url, name):
@@ -764,7 +765,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
         self.selectRange.addItem(tr('everything'))
         self.selectRange.addItem("----------------")
         self.selectRange.addItem(tr('cookies'))
-        self.selectRange.addItem(tr('tempFiles'))
+        self.selectRange.addItem(tr('localStorage'))
         self.layout.addWidget(self.selectRange)
         self.toolBar = QtGui.QToolBar("")
         self.toolBar.setMovable(False)
@@ -885,9 +886,13 @@ class ClearHistoryDialog(QtGui.QMainWindow):
         tr("clearHistoryWarn"), QtGui.QMessageBox.Yes | 
         QtGui.QMessageBox.No, QtGui.QMessageBox.No)
             if question == QtGui.QMessageBox.Yes:
-                global app_kill_temp_files
-                app_kill_temp_files = True
-                notificationMessage(tr('clearTempFilesMsg'))
+                d = os.path.join(app_profile, "LocalStorage")
+                if sys.platform.startswith("linux"):
+                    os.chdir(d)
+                    os.system("find \"" + d + "\" -type f -exec shred {} \;")
+                try: shutil.rmtree(d)
+                except:
+                    doNothing()
 
 clearHistoryDialog = None
 
@@ -1177,7 +1182,10 @@ def runThroughFilters(url):
             invert = True
         if beginning:
             f = f.strip("||")
-            string.split(f, "://")
+            if sys.version_info[0] < 3:
+                string.split(f, "://")
+            else:
+                f.split("://")
             if url.startswith(f):
                 remove = True
                 if invert == True:
@@ -1192,7 +1200,10 @@ def runThroughFilters(url):
                     remove = False
                 else:
                     break
-        g = string.split(f, "*")
+        if sys.version_info[0] < 3:
+            g = string.split(f, "*")
+        else:
+            g = f.split("*")
         h = 0
         for word in g:
             if not word in url:
