@@ -678,7 +678,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
             self.activateWindow()
         else:
             self.show()
-            self.resize(800, 480)
+            self.resize(640, 480)
             self.nameField.setFocus()
             self.nameField.selectAll()
             self.activateWindow()
@@ -1038,7 +1038,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
             self.activateWindow()
         else:
             self.show()
-            self.resize(800, 480)
+            self.resize(640, 480)
             self.searchBox.setFocus()
             self.searchBox.selectAll()
             self.activateWindow()
@@ -1069,7 +1069,7 @@ class Library(QtGui.QMainWindow):
         self.tabs.addTab(self.advancedHistoryViewGUI, tr('history'))
     def display(self):
         self.show()
-        self.resize(800, 480)
+        self.resize(640, 480)
         self.activateWindow()
 
 library = ""
