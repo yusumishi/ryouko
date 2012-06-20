@@ -1564,7 +1564,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                 self.settings().setOfflineStoragePath(qstring(""))
                 self.settings().setLocalStoragePath(qstring(""))
                 self.settings().setOfflineWebApplicationCachePath(qstring(""))
-                self.webView.settings().setIconDatabasePath(qstring(app_profile))
+                self.settings().setIconDatabasePath(qstring(app_profile))
         try: settingsManager.settings['pluginsEnabled']
         except: 
             print("", end = "")
