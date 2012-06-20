@@ -141,7 +141,7 @@ def unescape(text):
 
 class SettingsManager():
     def __init__(self, app_profile = os.path.join(os.path.expanduser("~"), ".ryouko-data", "profiles", "default")):
-        self.settings = {'openInTabs' : True, 'oldSchoolWindows' : False, 'loadImages' : True, 'jsEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : False}
+        self.settings = {'openInTabs' : True, 'oldSchoolWindows' : False, 'loadImages' : True, 'jsEnabled' : True, 'storageEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : False}
         self.filters = []
         self.app_profile = app_profile
         self.loadSettings()

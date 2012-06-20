@@ -1554,6 +1554,14 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             print("", end = "")
         else:
             self.settings().setAttribute(QtWebKit.QWebSettings.JavascriptEnabled, settingsManager.settings['jsEnabled'])
+        try: settingsManager.settings['storageEnabled']
+        except:
+            self.settings().enablePersistentStorage(qstring(app_profile))
+        else:
+            if settingsManager.settings['storageEnabled'] == True:
+                self.settings().enablePersistentStorage(qstring(app_profile))
+            else:
+                self.settings().enablePersistentStorage(qstring(""))
         try: settingsManager.settings['pluginsEnabled']
         except: 
             print("", end = "")
@@ -2208,6 +2216,8 @@ class CDialog(QtGui.QMainWindow):
         self.layout.addWidget(self.imagesBox)
         self.jsBox = QtGui.QCheckBox(tr('enableJS'))
         self.layout.addWidget(self.jsBox)
+		self.storageBox = QtGui.QCheckBox(tr('enableStorage'))
+		self.layout.addWidget(self.storageBox)
         self.pluginsBox = QtGui.QCheckBox(tr('enablePlugins'))
         self.layout.addWidget(self.pluginsBox)
         self.pbBox = QtGui.QCheckBox(tr('enablePB'))
@@ -2286,6 +2296,11 @@ class CDialog(QtGui.QMainWindow):
             self.jsBox.setChecked(True)
         else:
             self.jsBox.setChecked(self.settings['jsEnabled'])
+        try: self.settings['storageEnabled']
+        except: 
+            self.storageBox.setChecked(True)
+        else:
+            self.storageBox.setChecked(self.settings['storageEnabled'])
         try: self.settings['pluginsEnabled']
         except: 
             self.pluginsBox.setChecked(False)
