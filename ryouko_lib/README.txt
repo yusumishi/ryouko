@@ -21,5 +21,4 @@ This should create a folder called "dist" (no quotes); from now on, this folder 
 Prefix = ./PyQt4
 Binaries = ./PyQt4
 
-
 Once this is done, create a new folder called "PyQt4" (no quotes) inside the target folder. Then create a folder named "plugins" inside the new folder. From your PyQt4 installation (usually C:\PythonXX\Lib\site-packages\PyQt4), open the "plugins" folder and copy the folder named "imageformats" into the folder "<target folder>/PyQt4/plugins" Lastly, you'll have to copy the entire folder named "ryouko_lib" from Ryouko's root folder into the target folder. To run, simply double-click ryouko.exe.
