@@ -161,44 +161,7 @@ terminals=[ ["terminator",      "-x "],
             ["xterm",           ""],
             ["konsole",         "-e="] ]
 
-dialogToolBarSheet = """QToolBar {
-                        border: 0;
-                        background: transparent;
-                        }
-
-                        QToolButton, QPushButton {
-                        padding: 4px;
-                        margin-left: 2px;
-                        border-radius: 4px;
-                        border: 1px solid palette(shadow);
-                        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(light), stop:1 palette(button));
-                        }
-
-                        QToolButton:pressed, QPushButton:pressed {
-                        border: 1px solid palette(shadow);
-                        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(shadow), stop:1 palette(button));
-                        }"""
-
-cornerWidgetsSheet = """
-        QToolButton, QPushButton {
-        min-width: 24px;
-		icon-size: 16px;
-        border: 1px solid transparent;
-        padding: 4px;
-        border-radius: 4px;
-        background-color: transparent;
-        }
-
-        QToolButton:hover, QPushButton:hover {
-        border: 1px solid palette(shadow);
-        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(light), stop:1 palette(button));
-        }
-
-        QToolButton:pressed, QPushButton:pressed {
-        border: 1px solid palette(shadow);
-        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shadow), stop:1 palette(button));
-        }
-        """
+blanktoolbarsheet = "QToolBar { border: 0; }"
 
 # From http://stackoverflow.com/questions/448207/python-downloading-a-file-over-http-with-progress-bar-and-basic-authentication
 def urlretrieve_adv(url, filename=None, reporthook=None, data=None, username="", password=""):
@@ -414,7 +377,7 @@ class RMenuPopupWindow(QtGui.QMainWindow):
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setContentsMargins(0,0,0,0)
         self.mainLayout.setSpacing(0)
-        self.styleSheet = "QMainWindow { border: 1px solid palette(shadow);} %s QToolButton:focus, QPushButton:focus { background: palette(highlight); border: 1px solid palette(highlight); color: palette(highlighted-text); }" % (cornerWidgetsSheet.replace("min-width: 24px;", "text-align: left;"))
+        self.styleSheet = "QMainWindow { border: 1px solid palette(shadow);} QToolButton:focus, QPushButton:focus { background: palette(highlight); border: 1px solid palette(highlight); color: palette(highlighted-text); }"
         self.widget.setLayout(self.mainLayout)
     def layout(self):
         return self.mainLayout
@@ -444,7 +407,7 @@ class SearchEditor(RMenuPopupWindow):
         super(SearchEditor, self).__init__(parent)
         self.parent = parent
         self.setWindowTitle(tr('searchEditor'))
-        self.styleSheet = "QMainWindow { border: 1px solid palette(shadow);} " + cornerWidgetsSheet.replace("min-width: 24px;", "text-align: left;")
+        self.styleSheet = "QMainWindow { border: 1px solid palette(shadow);} QToolBar { border: 0; }"
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
 
@@ -454,7 +417,7 @@ class SearchEditor(RMenuPopupWindow):
         self.addAction(closeWindowAction)
 
         self.entryBar = QtGui.QToolBar()
-        self.entryBar.setStyleSheet(dialogToolBarSheet)
+        self.entryBar.setStyleSheet(blanktoolbarsheet)
         self.entryBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.entryBar.setMovable(False)
         self.addToolBar(self.entryBar)
@@ -574,8 +537,8 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
         self.setWindowTitle(tr('bookmarks'))
-        self.setStyleSheet(dialogToolBarSheet)
         self.nameToolBar = QtGui.QToolBar("Add a bookmarky")
+        self.nameToolBar.setStyleSheet(blanktoolbarsheet)
         self.nameToolBar.setMovable(False)
         self.nameToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         nameLabel = QtGui.QLabel(tr('name') + ": ")
@@ -584,6 +547,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.nameToolBar.addWidget(nameLabel)
         self.nameToolBar.addWidget(self.nameField)
         self.urlToolBar = QtGui.QToolBar("Add a bookmarky")
+        self.urlToolBar.setStyleSheet(blanktoolbarsheet)
         self.urlToolBar.setMovable(False)
         self.urlToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         uLabel = QtGui.QLabel(tr('url') + ": ")
@@ -592,6 +556,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.urlToolBar.addWidget(uLabel)
         self.urlToolBar.addWidget(self.urlField)
         self.finishToolBar = QtGui.QToolBar()
+        self.finishToolBar.setStyleSheet(blanktoolbarsheet)
         self.finishToolBar.setMovable(False)
         self.finishToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addButton = QtGui.QPushButton(tr('add'))
@@ -721,7 +686,6 @@ class ClearHistoryDialog(QtGui.QMainWindow):
         self.activateWindow()
 
     def createClearHistoryToolBar(self):
-        self.setStyleSheet(dialogToolBarSheet.replace("QToolButton, QPushButton", "QToolButton {border: 1px solid transparent; background: transparent; padding: 4px; margin-left: 2px;} QToolButton:hover, QPushButton:hover, QPushButton"))
         label = QtGui.QLabel(tr("clearHistoryDesc") + ":")
         self.layout.addWidget(label)
         self.selectRange = QtGui.QComboBox()
@@ -743,6 +707,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
         self.selectRange.addItem(tr('localStorage'))
         self.layout.addWidget(self.selectRange)
         self.toolBar = QtGui.QToolBar("")
+        self.toolBar.setStyleSheet(blanktoolbarsheet)
         self.toolBar.setMovable(False)
         self.toolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.toolBar)
@@ -876,9 +841,8 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         super(AdvancedHistoryViewGUI, self).__init__()
         self.parent = parent
 
-        self.setStyleSheet(dialogToolBarSheet.replace("QToolButton, QPushButton", "QToolButton {border: 1px solid transparent; background: transparent; padding: 4px; margin-left: 2px;} QToolButton:hover, QPushButton:hover, QPushButton"))
-
         self.historyToolBar = QtGui.QToolBar("")
+        self.historyToolBar.setStyleSheet(blanktoolbarsheet)
         self.historyToolBar.setMovable(False)
         self.historyToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addToolBar(self.historyToolBar)
@@ -1316,8 +1280,8 @@ class NotificationWindow(QtGui.QMainWindow):
         self.addAction(closeWindowAction)
         self.parent = parent
         self.toolBar = QtGui.QToolBar()
+        self.toolBar.setStyleSheet(blanktoolbarsheet)
         self.toolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.toolBar.setStyleSheet(dialogToolBarSheet)
         self.toolBar.setMovable(False)
         self.clearButton = QtGui.QPushButton(tr('clear'))
         self.toolBar.addWidget(self.clearButton)
@@ -2243,7 +2207,7 @@ class CDialog(QtGui.QMainWindow):
             doNothing()
         self.layout.addWidget(self.editSearchButton)
         self.cToolBar = QtGui.QToolBar()
-        self.cToolBar.setStyleSheet(dialogToolBarSheet)
+        self.cToolBar.setStyleSheet(blanktoolbarsheet)
         self.cToolBar.setMovable(False)
         self.cToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         applyAction = QtGui.QPushButton(tr('apply'))
@@ -2487,8 +2451,8 @@ class TabBrowser(QtGui.QMainWindow):
         self.historyDock.setFeatures(QtGui.QDockWidget.DockWidgetClosable)
         self.historyDockWindow = QtGui.QMainWindow()
         self.historyToolBar = QtGui.QToolBar("History Toolbar")
+        self.historyToolBar.setStyleSheet(blanktoolbarsheet)
         self.historyToolBar.setMovable(False)
-        self.historyToolBar.setStyleSheet(dialogToolBarSheet.replace("QToolButton, QPushButton", "QToolButton {border: 1px solid transparent; background: transparent; padding: 4px; margin-left: 2px;} QToolButton:hover, QPushButton:hover, QPushButton"))
         self.historyList = QtGui.QListWidget()
         self.historyList.itemActivated.connect(self.openHistoryItem)
         deleteHistoryItemAction = QtGui.QAction(self)
