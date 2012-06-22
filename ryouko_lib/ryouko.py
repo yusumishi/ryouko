@@ -99,13 +99,6 @@ except:
     button.pack()
     root.mainloop()
     sys.exit()
-else:
-    if not sys.platform.startswith("win"):
-        from PyQt4 import uic
-        class Ui_MainWindow():
-            pass
-    else:
-        from mainwindow import Ui_MainWindow
 
 class RSettingsManager(SettingsManager):
     def errorMessage(self, backend):
@@ -292,16 +285,7 @@ class RTabWidget(QtGui.QTabWidget):
         self.nuTabBar = RTabBar(self.parent)
         self.setTabBar(self.nuTabBar)
         self.setDocumentMode(True)
-        if sys.platform.startswith("win") or forcea == True:
-            a = ""
-        else:
-            a = """QTabBar {
-border-top: 1px solid palette(shadow);
-border-right: 1px solid palette(shadow);
-border-top-right-radius:4px;
-background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(midlight), stop:1 palette(window));
-}"""
-        self.setStyleSheet(a + """\n
+        self.setStyleSheet("""
 QTabBar::tab {
 padding: 4px;
 border: 1px solid palette(shadow);
@@ -1790,7 +1774,7 @@ class HistoryCompletionList(QtGui.QListWidget):
             except:
                 self.statusMessage.emit(qstring(""))
 
-class Browser(QtGui.QMainWindow, Ui_MainWindow):
+class Browser(QtGui.QMainWindow):
     def __init__(self, parent=None, url=False, pb=False):
         super(Browser, self).__init__()
         self.parent = parent
@@ -1799,10 +1783,14 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.findText = ""
         self.initUI(url)
     def initUI(self, url):
-        if not sys.platform.startswith("win"):
-            uic.loadUi(app_gui, self)
-        else:
-            self.setupUi(self)
+        self.mainToolBar = QtGui.QToolBar("")
+        self.mainToolBar.setMovable(False)
+        self.mainToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.addToolBar(self.mainToolBar)
+        self.centralWidget = QtGui.QWidget()
+        self.mainLayout = QtGui.QGridLayout()
+        self.centralWidget.setLayout(self.mainLayout)
+        self.setCentralWidget(self.centralWidget)
         self.mainToolBar.setMovable(False)
         self.mainToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.mainToolBar.setStyleSheet("""
@@ -1814,8 +1802,6 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         """)
         self.webView = RWebView(self, self.pb)
         self.updateSettings()
-        self.webView.statusBarMessage.connect(self.statusMessage.setText)
-        self.mainLayout.addWidget(self.webView, 2, 0)
 
         self.webInspector = QtWebKit.QWebInspector(self)
         self.webInspector.setPage(self.webView.page())
@@ -1847,8 +1833,6 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.historyCompletion = HistoryCompletionList(self)
         self.historyCompletion.setWordWrap(True)
         self.historyCompletion.itemActivated.connect(self.openHistoryItem)
-        self.historyCompletion.statusMessage.connect(self.statusMessage.setText)
-        self.progressBar.hide()
 
         self.mainLayout.setSpacing(0);
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
@@ -1859,6 +1843,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.backAction.triggered.connect(self.webView.back)
         self.backAction.setIcon(QtGui.QIcon().fromTheme("go-previous", QtGui.QIcon(os.path.join(app_icons, 'back.png'))))
         self.mainToolBar.addAction(self.backAction)
+        self.mainToolBar.widgetForAction(self.backAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         self.nextAction = QtGui.QAction(self)
         self.nextAction.setToolTip(tr("nextBtnTT"))
@@ -1866,6 +1851,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.nextAction.setText("")
         self.nextAction.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_icons, 'next.png'))))
         self.mainToolBar.addAction(self.nextAction)
+        self.mainToolBar.widgetForAction(self.nextAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         historySearchAction = QtGui.QAction(self)
         historySearchAction.triggered.connect(self.parent.focusHistorySearch)
@@ -1878,6 +1864,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.reloadAction.setToolTip(tr("reloadBtnTT"))
         self.reloadAction.setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
         self.mainToolBar.addAction(self.reloadAction)
+        self.mainToolBar.widgetForAction(self.reloadAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         self.stopAction = QtGui.QAction(self)
         self.stopAction.setShortcut("Esc")
@@ -1889,6 +1876,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.stopAction.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, 'stop.png'))))
         self.mainToolBar.addAction(self.stopAction)
         self.addAction(self.stopAction)
+        self.mainToolBar.widgetForAction(self.stopAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         self.findAction = QtGui.QAction(self)
         self.findAction.triggered.connect(self.webView.find)
@@ -1896,6 +1884,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.findAction.setToolTip(tr("findBtnTT"))
         self.findAction.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_icons, 'find.png'))))
         self.mainToolBar.addAction(self.findAction)
+        self.mainToolBar.widgetForAction(self.findAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         self.findNextAction = QtGui.QAction(self)
         self.findNextAction.triggered.connect(self.webView.findNext)
@@ -1903,6 +1892,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.findNextAction.setToolTip(tr("findNextBtnTT"))
         self.findNextAction.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(os.path.join(app_icons, 'find-next.png'))))
         self.mainToolBar.addAction(self.findNextAction)
+        self.mainToolBar.widgetForAction(self.findNextAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         self.urlBar = QtGui.QLineEdit()
         self.mainToolBar.addWidget(self.urlBar)
@@ -1934,6 +1924,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
 
 
         self.addBookmarkButton = QtGui.QToolButton(self)
+        self.addBookmarkButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.addBookmarkButton.clicked.connect(self.bookmarkPage)
         self.addBookmarkButton.setText("")
         self.addBookmarkButton.setToolTip(tr("addBookmarkTT"))
@@ -1943,6 +1934,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.mainToolBar.addWidget(self.addBookmarkButton)
 
         self.goButton = QtGui.QToolButton(self)
+        self.goButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.goButton.clicked.connect(self.updateWeb)
         self.goButton.setText("")
         self.goButton.setToolTip(tr("go"))
@@ -1951,6 +1943,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.mainToolBar.addWidget(self.goButton)
 
         self.searchButton = QtGui.QPushButton(self)
+        self.searchButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.searchButton.clicked.connect(self.searchWeb)
         self.searchButton.setText(tr("searchBtn"))
         self.searchButton.setToolTip(tr("searchBtnTT"))
@@ -1962,6 +1955,7 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.searchEditButtonContainerLayout.setContentsMargins(0, 0, 0, 0)
         self.searchEditButtonContainer.setLayout(self.searchEditButtonContainerLayout)
         self.searchEditButton = QtGui.QToolButton(self)
+        self.searchEditButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.searchEditButton.setToolTip(tr("searchBtnTT"))
         self.searchEditButton.clicked.connect(self.editSearch)
         self.searchEditButton.setShortcut("Ctrl+Shift+K")
@@ -1975,11 +1969,93 @@ class Browser(QtGui.QMainWindow, Ui_MainWindow):
         self.focusURLBarAction.setShortcuts(["Alt+D", "Ctrl+L"])
         self.focusURLBarAction.triggered.connect(self.focusURLBar)
         self.addAction(self.focusURLBarAction)
+        self.mainLayout.addWidget(self.webView, 2, 0)
         self.webView.settings().setIconDatabasePath(qstring(app_profile))
         self.webView.page().linkHovered.connect(self.updateStatusMessage)
+
+        self.statusBarBorder = QtGui.QWidget()
+        self.statusBarBorder.setStyleSheet("""
+        background: palette(shadow);
+        """)
+        self.statusBarBorder.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed))
+        self.statusBarBorder.setMinimumHeight(1)
+        self.mainLayout.addWidget(self.statusBarBorder, 3, 0)
+        self.statusBar = QtGui.QWidget()
+        self.mainLayout.addWidget(self.statusBar, 4, 0)
+        self.statusBarLayout = QtGui.QHBoxLayout()
+        self.statusBarLayout.setContentsMargins(0,0,0,0)        
+        self.statusBar.setLayout(self.statusBarLayout)
+        self.statusMessage = QtGui.QLineEdit()
+        self.statusMessage.setReadOnly(True)
+        self.statusMessage.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.historyCompletion.statusMessage.connect(self.statusMessage.setText)
+        self.statusMessage.setStyleSheet("""
+        QLineEdit {
+        min-height: 1em;
+        max-height: 1em;
+        border: 0;
+        background: transparent;
+        }
+        """)
+        self.statusBarLayout.addWidget(self.statusMessage)
+        self.progressBar = QtGui.QProgressBar()
+        self.progressBar.hide()
         self.webView.loadFinished.connect(self.progressBar.hide)
         self.webView.loadProgress.connect(self.progressBar.setValue)
         self.webView.loadProgress.connect(self.progressBar.show)
+        self.progressBar.setStyleSheet("""
+        min-height: 1em;
+        max-height: 1em;
+        min-width: 200px;
+        max-width: 200px;
+        """)
+        self.statusBarLayout.addWidget(self.progressBar)
+        self.zoomBar = QtGui.QWidget()
+        self.zoomBar.setStyleSheet("""
+        QToolButton, QPushButton {
+        min-width: 16px;
+        min-height: 1em;
+        max-height: 1em;
+        padding-left: 4px;
+        padding-right: 4px;
+        border-radius: 4px;
+        border: 1px solid palette(shadow);
+        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(light), stop:1 palette(button));
+        }
+
+        QToolButton:pressed, QPushButton:pressed {
+        border: 1px solid palette(shadow);
+        background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,     stop:0 palette(shadow), stop:1 palette(button));
+        }
+        """)
+        self.statusBarLayout.addWidget(self.zoomBar)
+        self.zoomBarLayout = QtGui.QHBoxLayout()
+        self.zoomBarLayout.setContentsMargins(0,2,0,0)
+        self.zoomBarLayout.setSpacing(0)
+        self.zoomBar.setLayout(self.zoomBarLayout)
+        
+        self.zoomOutButton = QtGui.QPushButton("-")
+        self.zoomOutButton.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.zoomSlider = QtGui.QSlider()
+        self.zoomSlider.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.zoomSlider.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed))
+        self.zoomSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.zoomSlider.setMinimum(1)
+        self.zoomSlider.setMaximum(12)
+        self.zoomSlider.setTickInterval(1)
+        self.zoomSlider.setTickPosition(QtGui.QSlider.TicksBelow)
+        self.zoomSlider.setMinimumWidth(128)
+        self.zoomInButton = QtGui.QPushButton("+")
+        self.zoomInButton.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.zoomLabel = QtGui.QLabel("1.00x")
+        self.zoomLabel.setStyleSheet("margin-left: 2px;")
+        self.zoomBarLayout.addWidget(self.zoomOutButton)
+        self.zoomBarLayout.addWidget(self.zoomSlider)
+        self.zoomBarLayout.addWidget(self.zoomInButton)
+        self.zoomBarLayout.addWidget(self.zoomLabel)
+
+        self.webView.statusBarMessage.connect(self.statusMessage.setText)
+
         if not url == False and not url == "":
             self.urlBar.setText(qstring(url))
             self.updateWeb()
