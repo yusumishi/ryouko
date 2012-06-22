@@ -1928,9 +1928,9 @@ class Browser(QtGui.QMainWindow):
         self.addBookmarkButton.clicked.connect(self.bookmarkPage)
         self.addBookmarkButton.setText("")
         self.addBookmarkButton.setToolTip(tr("addBookmarkTT"))
-        self.addBookmarkButton.setIconSize(QtCore.QSize(16, 16))
         self.addBookmarkButton.setShortcut("Ctrl+D")
         self.addBookmarkButton.setIcon(QtGui.QIcon().fromTheme("emblem-favorite", QtGui.QIcon(os.path.join(app_icons, 'heart.png'))))
+        self.addBookmarkButton.setIconSize(QtCore.QSize(16, 16))
         self.mainToolBar.addWidget(self.addBookmarkButton)
 
         self.goButton = QtGui.QToolButton(self)
@@ -1938,8 +1938,8 @@ class Browser(QtGui.QMainWindow):
         self.goButton.clicked.connect(self.updateWeb)
         self.goButton.setText("")
         self.goButton.setToolTip(tr("go"))
-        self.goButton.setIconSize(QtCore.QSize(16, 16))
         self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(os.path.join(app_icons, 'go.png'))))
+        self.goButton.setIconSize(QtCore.QSize(16, 16))
         self.mainToolBar.addWidget(self.goButton)
 
         self.searchButton = QtGui.QPushButton(self)
