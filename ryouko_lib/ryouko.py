@@ -2645,6 +2645,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.cornerWidgetsToolBar.addWidget(self.newTabButton)
 
         self.cornerWidgetsToolBar.addAction(self.mainMenuButton)
+        self.cornerWidgetsToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
 
         # New window button
         newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_icons, 'newwindow.png'))), tr("newWindowBtn"), self)
