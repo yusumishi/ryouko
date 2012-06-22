@@ -292,6 +292,34 @@ class RTabWidget(QtGui.QTabWidget):
         self.nuTabBar = RTabBar(self.parent)
         self.setTabBar(self.nuTabBar)
         self.setDocumentMode(True)
+        if sys.platform.startswith("win") or forcea == True:
+            a = ""
+        else:
+            a = """QTabBar {
+border-top: 1px solid palette(shadow);
+border-right: 1px solid palette(shadow);
+border-top-right-radius:4px;
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(midlight), stop:1 palette(window));
+}"""
+        self.setStyleSheet(a + """\n
+QTabBar::tab {
+padding: 4px;
+border: 1px solid palette(shadow);
+}
+
+QTabBar::tab:top {
+border-top-left-radius: 4px;
+border-top-right-radius:4px;
+border-bottom: 1px solid palette(shadow);
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(window), stop:1 palette(midlight));
+}
+
+QTabBar::tab:top:selected {
+border-bottom: 0;
+padding-bottom: 5px;
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(light), stop:1 palette(window));
+}
+""")
         self.mouseX = False
         self.mouseY = False
 
