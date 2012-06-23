@@ -2037,6 +2037,7 @@ class Browser(QtGui.QMainWindow):
         self.zoomOutButton = QtGui.QPushButton("-")
         self.zoomOutButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.zoomSlider = QtGui.QSlider()
+        self.zoomSlider.setStyleSheet("max-height: 1em;")
         self.zoomSlider.setFocusPolicy(QtCore.Qt.TabFocus)
         self.zoomSlider.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed))
         self.zoomSlider.setOrientation(QtCore.Qt.Horizontal)
