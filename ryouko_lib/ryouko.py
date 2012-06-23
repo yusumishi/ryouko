@@ -2042,6 +2042,7 @@ class Browser(QtGui.QMainWindow):
         self.zoomSlider.setOrientation(QtCore.Qt.Horizontal)
         self.zoomSlider.setMinimum(1)
         self.zoomSlider.setMaximum(12)
+        self.zoomSlider.setSliderPosition(4)
         self.zoomSlider.setTickInterval(1)
         self.zoomSlider.setTickPosition(QtGui.QSlider.TicksBelow)
         self.zoomSlider.setMinimumWidth(128)
