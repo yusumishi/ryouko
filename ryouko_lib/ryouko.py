@@ -1014,7 +1014,7 @@ class Library(QtGui.QMainWindow):
         self.bookmarksManagerGUI = BookmarksManagerGUI(self)
         self.tabs.addTab(self.bookmarksManagerGUI, tr('bookmarks'))
         self.advancedHistoryViewGUI = AdvancedHistoryViewGUI(self)
-        self.tabs.addTab(self.advancedHistoryViewGUI, tr('history'))
+        self.tabs.addTab(self.advancedHistoryViewGUI, tr('historyHKey'))
     def display(self):
         self.show()
         self.resize(640, 480)
@@ -2460,7 +2460,28 @@ class TabBrowser(QtGui.QMainWindow):
 
         self.rebuildLock()
 
+        self.mouseX = False
+        self.mouseY = False
+
         self.initUI()
+
+    def mousePressEvent(self, ev):
+        if ev.button() == QtCore.Qt.RightButton:
+            self.showTabsContextMenu()
+        else:
+            self.mouseX = ev.globalX()
+            self.origX = self.x()
+            self.mouseY = ev.globalY()
+            self.origY = self.y()
+
+    def mouseMoveEvent(self, ev):
+        if self.mouseX and self.mouseY and not self.isMaximized():
+            self.move(self.origX + ev.globalX() - self.mouseX,
+self.origY + ev.globalY() - self.mouseY)
+
+    def mouseReleaseEvent(self, ev):
+        self.mouseX = False
+        self.mouseY = False
 
     def checkForURLs(self):
         if os.path.exists(app_instance2) and not self.closed:
