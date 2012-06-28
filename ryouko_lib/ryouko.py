@@ -2684,7 +2684,7 @@ self.origY + ev.globalY() - self.mouseY)
         # Save page action
         savePageAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-save-as", QtGui.QIcon(os.path.join(app_icons, 'saveas.png'))), tr('savePageAs'), self)
         savePageAction.setShortcut('Ctrl+S')
-        savePageAction.triggered.connect(self.tabs.widget(self.tabs.currentIndex()).webView.savePage())
+        savePageAction.triggered.connect(self.savePage)
         self.mainMenu.addAddAction(savePageAction)
         self.mainMenu.addSeparator()
 
@@ -2806,6 +2806,9 @@ self.origY + ev.globalY() - self.mouseY)
             if self.tabs.count() == 0:
                 self.newTab()
                 self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
+
+    def savePage(self):
+        self.tabs.widget(self.tabs.currentIndex()).webView.savePage()
 
     def hideInspectors(self):
         for tab in range(self.tabs.count()):
