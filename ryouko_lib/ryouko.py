@@ -1568,6 +1568,9 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         self.back()
         self.autoBack.stop()
 
+    def savePage(self):
+        self.downloadFile(QtNetwork.QNetworkRequest(self.url()))
+
     def downloadFile(self, request, fname = ""):
         if not os.path.isdir(os.path.dirname(fname)):
             fname = saveDialog(os.path.split(unicode(request.url().toString()))[1])
@@ -2676,6 +2679,13 @@ self.origY + ev.globalY() - self.mouseY)
         newWindowAction.triggered.connect(self.newWindow)
         self.addAction(newWindowAction)
         self.mainMenu.addAction(newWindowAction)
+        self.mainMenu.addSeparator()
+
+        # Save page action
+        savePageAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-save-as", QtGui.QIcon(os.path.join(app_icons, 'saveas.png'))), tr('savePageAs'), self)
+        savePageAction.setShortcut('Ctrl+S')
+        savePageAction.triggered.connect(self.tabs.widget(self.tabs.currentIndex()).webView.savePage())
+        self.mainMenu.addAddAction(savePageAction)
         self.mainMenu.addSeparator()
 
         # Undo closed tab button
