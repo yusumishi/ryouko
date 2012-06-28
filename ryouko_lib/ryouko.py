@@ -3034,7 +3034,7 @@ self.origY + ev.globalY() - self.mouseY)
             del self.closedTabList[len(self.closedTabList) - 1]
             self.updateTitles()
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
-            if unicode(self.tabs.widget(self.tabs.currentIndex()).webView.url()) == "about:blank":
+            if self.tabs.widget(self.tabs.currentIndex()).webView.url().toString() == "about:blank":
                 self.tabs.widget(self.tabs.currentIndex()).webView.back()
     def updateIcons(self):
         for tab in range(self.tabs.count()):
