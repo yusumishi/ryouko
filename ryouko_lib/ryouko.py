@@ -1280,6 +1280,58 @@ class RAboutDialog(QtWebKit.QWebView):
 
 aboutDialog = None
 
+class DownloadProgressBar(QtGui.QProgressBar):
+    def __init__(self, reply=None, parent=None):
+        super(DownloadProgressBar, self).__init__()
+        self.reply = reply
+        if self.reply:
+            self.reply.downloadProgress.connect(self.updateProgress)
+    def updateProgress(self, received, total):
+        self.setMaximum(total)
+        self.setValue(received)
+        self.show()
+
+class DownloadProgressDialog(QtGui.QProgressBar):
+    def __init__(self, reply=None, destination=os.path.expanduser("~"), parent=None):
+        super(DownloadProgressDialog, self).__init__()
+        self.reply = reply
+        self.destination = destination
+        if self.reply:
+            self.reply.downloadProgress.connect(self.updateProgress)
+            self.reply.finished.connect(self.finishDownload)
+        self.setWindowTitle(os.path.split(unicode(destination))[1])
+    def finishDownload(self):
+        if self.reply.isFinished():
+            data = self.reply.readAll()
+            f = QtCore.QFile(self.destination)
+            f.open(QtCore.QIODevice.WriteOnly)
+            f.writeData(data)
+            f.flush()
+            f.close()
+            self.hide()
+    def updateProgress(self, received, total):
+        self.setMaximum(total)
+        self.setValue(received)
+        self.show()
+
+class DownloadManagerGUI(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        super(DownloadManagerGUI, self).__init__()
+        self.downloads = []
+    def newReply(self, reply, destination = os.path.expanduser("~")):
+        i = DownloadProgressDialog(reply, destination)
+        self.downloads.append(i)
+        reply.finished.connect(self.checkForFinishedDownloads)
+    def checkForFinishedDownloads(self):
+        for i in range(len(self.downloads)):
+            if self.downloads[i].reply.isFinished():
+                self.downloads[i].deleteLater()
+                del self.downloads[i]
+                notificationMessage(tr('downloadFinished'))
+                break
+
+downloadManagerGUI = None
+
 class NotificationWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(NotificationWindow, self).__init__()
@@ -1547,23 +1599,6 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
     def downloadUnsupportedContent(self, reply):
         self.downloadFile(reply.request())
 
-    def checkForFinishedDownloads(self):
-        for i in range(len(self.replies)):
-            if self.replies[i].isFinished():
-                data = self.replies[i].readAll()
-                f = QtCore.QFile(self.destinations[i])
-                f.open(QtCore.QIODevice.WriteOnly)
-                f.writeData(data)
-                f.flush()
-                f.close()
-                del self.replies[i]
-                del self.destinations[i]
-                if type(self.parent) == Browser:
-                    notificationMessage(tr('downloadFinished'))
-                else:
-                    self.evaluateJavaScript("alert(\"" + tr('downloadFinished') + "\");")
-                break
-
     def autoGoBack(self):
         self.back()
         self.autoBack.stop()
@@ -1576,14 +1611,12 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             fname = saveDialog(os.path.split(unicode(request.url().toString()))[1])
         if fname:
             if settingsManager.settings['backend'] == "qt":
-                self.destinations.append(fname)
                 nm = self.page().networkAccessManager()
                 if type(request) == QtNetwork.QNetworkReply:
                     reply = nm.get(request.request())
                 else:
                     reply = nm.get(request)
-                self.replies.append(reply)
-                reply.finished.connect(self.checkForFinishedDownloads)
+                downloadManagerGUI.newReply(reply, fname)
                 notificationMessage(tr('downloadStarted'))
             else:
                 downloaderThread.setUrl(unicode(request.url().toString()))
@@ -2547,8 +2580,14 @@ self.origY + ev.globalY() - self.mouseY)
                 doNothing()
 
     def quit(self):
-        self.close()
-        QtCore.QCoreApplication.instance().quit()
+        q = QtGui.QMessageBox.Yes
+        if len(downloadManagerGUI.downloads) > 0:
+            q = QtGui.QMessageBox.question(None, tr("warning"),
+        tr("downloadsInProgress"), QtGui.QMessageBox.Yes | 
+        QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        if q == QtGui.QMessageBox.Yes:
+            self.close()
+            QtCore.QCoreApplication.instance().quit()
 
     def closeEvent(self, ev):
         if os.path.exists(app_lock) and not os.path.isdir(app_lock):
@@ -3041,6 +3080,8 @@ class Ryouko(QtGui.QWidget):
         global aboutDialog
         global notificationWindow
         global clearHistoryDialog
+        global downloadManagerGUI
+        downloadManagerGUI = DownloadManagerGUI()
         aboutDialog = RAboutDialog()
         notificationWindow = NotificationWindow()
         clearHistoryDialog = ClearHistoryDialog()

@@ -107,6 +107,8 @@
 "editSearchTT": "<b>Editar los buscadores...</b><br>Ctrl+Shift+K",
 "newWindowBtn": "&Ventana nuevo",
 "newWindowBtnTT": "<b>Ventana nuevo</b><br>Ctrl+N",
+"savePageAs": "&Guardar este página...",
+"downloadsInProgress": "Tienes descargas en progreso. ¿Estás seguro de cerrar el programma?",
 "closeTab": "&Cerrar pestaña",
 "closeLeftTabs": "Cerrar las pestañas en la &izquierda",
 "closeRighttTabs": "Cerrar las pestañas en el &derecho",

@@ -108,6 +108,8 @@
 "editSearchTT": "<b>Edit Search Engines...</b><br>Ctrl+Shift+K",
 "newWindowBtn": "New &Window",
 "newWindowBtnTT": "<b>New Window</b><br>Ctrl+N",
+"savePageAs": "Save Page &As",
+"downloadsInProgress": "You have unfinished downloads in progress. Are you sure you want to quit?",
 "closeTab": "&Close Tab",
 "closeLeftTabs": "Close tabs on the &left",
 "closeRighttTabs": "Close tabs on the &right",
