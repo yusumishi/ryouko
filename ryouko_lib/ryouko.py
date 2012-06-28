@@ -2685,7 +2685,7 @@ self.origY + ev.globalY() - self.mouseY)
         savePageAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-save-as", QtGui.QIcon(os.path.join(app_icons, 'saveas.png'))), tr('savePageAs'), self)
         savePageAction.setShortcut('Ctrl+S')
         savePageAction.triggered.connect(self.savePage)
-        self.mainMenu.addAddAction(savePageAction)
+        self.mainMenu.addAction(savePageAction)
         self.mainMenu.addSeparator()
 
         # Undo closed tab button
