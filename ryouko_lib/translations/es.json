@@ -34,7 +34,7 @@
 "search": "Buscar",
 "go": "Ir",
 "rCTabs": "Pestaña cerradas recientemente",
-"newTabShortcuts": "<td style='padding-left: 4px;' valign='top'><b>Atajos de teclado</b><br/>F1: Abrir esta página en esta pestaña<br>Ctrl+N: Ventana nueva<br>Ctrl+W: Cerrar pestaña/ventana<br>Alt+Izquierda: Regresar una página<br>Alt+Derecho: Avanzar una página<br>Ctrl+R; F5: Recargar este página<br>Esc: Detener la descarga de esta página<br>Ctrl+L; Alt+D: Abrir un URL<br>Ctrl+F: Buscar<br>Ctrl+G; F3: Buscar siguiente<br>Ctrl+=; Ctrl++: Aumentar el tamaño<br>Ctrl+-: Reducir el tamaño<br>Ctrl+0: Restablecer el tamaño<br><br>Los tooltips contenemos más atajos de teclado.</center></td>",
+"newTabShortcuts": "<td style='padding-left: 4px;' valign='top'><b>Atajos de teclado</b><br/>F1: Abrir esta página en esta pestaña<br>Ctrl+N: Ventana nueva<br>Ctrl+W: Cerrar pestaña/ventana<br>Alt+Izquierda: Regresar una página<br>Alt+Derecho: Avanzar una página<br>Ctrl+R; F5: Recargar este página<br>Esc: Detener la descarga de esta página<br>Ctrl+L; Alt+D: Abrir un URL<br>Ctrl+S: Guardar este página...<br>Ctrl+F: Buscar<br>Ctrl+G; F3: Buscar siguiente<br>Ctrl+=; Ctrl++: Aumentar el tamaño<br>Ctrl+-: Reducir el tamaño<br>Ctrl+0: Restablecer el tamaño<br><br>Los tooltips contenemos más atajos de teclado.</center></td>",
 "open": "Abrir",
 "openLocation": "Abrir un ubucación",
 "enterURL": "Entre un ubucación aquí:",

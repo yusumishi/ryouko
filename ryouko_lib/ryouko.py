@@ -1416,6 +1416,10 @@ class RWebView(QtWebKit.QWebView):
         self.backAction.triggered.connect(self.back)
         self.addAction(self.backAction)
 
+        self.savePageAction = QtGui.QAction(self)
+        self.savePageAction.triggered.connect(self.savePage)
+        self.addAction(savePageAction)
+
         self.nextAction = QtGui.QAction(self)
         self.nextAction.setShortcut("Alt+Right")
         self.nextAction.triggered.connect(self.forward)
@@ -1725,6 +1729,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         self.closeWindowAction.setShortcut('Ctrl+W')
         self.newWindowAction.setShortcut('Ctrl+N')
         self.stopAction.setShortcut('Esc')
+        self.savePageAction.setShortcut('Ctrl+S')
         self.locationEditAction.setShortcuts(['Ctrl+L', 'Alt+D'])
         self.zoomInAction.setShortcuts(['Ctrl+Shift+=', 'Ctrl+='])
         self.zoomOutAction.setShortcut('Ctrl+-')
@@ -2725,6 +2730,7 @@ self.origY + ev.globalY() - self.mouseY)
         savePageAction.setShortcut('Ctrl+S')
         savePageAction.triggered.connect(self.savePage)
         self.mainMenu.addAction(savePageAction)
+        self.addAction(savePageAction)
         self.mainMenu.addSeparator()
 
         # Undo closed tab button
