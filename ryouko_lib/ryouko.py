@@ -1418,7 +1418,7 @@ class RWebView(QtWebKit.QWebView):
 
         self.savePageAction = QtGui.QAction(self)
         self.savePageAction.triggered.connect(self.savePage)
-        self.addAction(savePageAction)
+        self.addAction(self.savePageAction)
 
         self.nextAction = QtGui.QAction(self)
         self.nextAction.setShortcut("Alt+Right")
