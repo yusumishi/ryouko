@@ -3005,7 +3005,7 @@ self.origY + ev.globalY() - self.mouseY)
         if self.tabs.count() > 0:
             if not self.tabs.widget(index).webView.pb and not unicode(self.tabs.widget(index).webView.url().toString()) == "" and not unicode(self.tabs.widget(index).webView.url().toString()) == "about:blank":
                 self.closedTabList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
-            self.tabs.widget(index).webView.stop()
+            self.tabs.widget(index).webView.load(QtCore.QUrl("about:blank"))
             self.tabs.removeTab(index)
             if self.tabs.count() == 0:
                 self.close()
@@ -3034,7 +3034,8 @@ self.origY + ev.globalY() - self.mouseY)
             del self.closedTabList[len(self.closedTabList) - 1]
             self.updateTitles()
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
-            self.tabs.widget(self.tabs.currentIndex()).webView.reload()
+            if unicode(self.tabs.widget(self.tabs.currentIndex()).webView.url()) == "about:blank":
+                self.tabs.widget(self.tabs.currentIndex()).webView.back()
     def updateIcons(self):
         for tab in range(self.tabs.count()):
             self.tabs.setTabIcon(tab, self.tabs.widget(tab).webView.icon())
