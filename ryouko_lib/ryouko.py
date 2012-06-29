@@ -2869,6 +2869,9 @@ self.origY + ev.globalY() - self.mouseY)
     def savePage(self):
         self.tabs.widget(self.tabs.currentIndex()).webView.savePage()
 
+    def printPage(self):
+        message(tr("error"), "Sorry, this function does not work yet.", "warn")
+
     def hideInspectors(self):
         for tab in range(self.tabs.count()):
             try:
