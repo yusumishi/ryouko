@@ -2253,7 +2253,7 @@ class Browser(QtGui.QMainWindow):
             urlBar = QtCore.QUrl(search['expression'].replace("%s", urlBar))
             self.webView.load(urlBar)
         else:
-            if " " in unicode(urlBar):
+            if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and " " in unicode(urlBar):
                 self.searchWeb()
             else:
                 if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and not "javascript:" in unicode(urlBar):
