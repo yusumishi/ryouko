@@ -1044,26 +1044,6 @@ class Library(QtGui.QMainWindow):
 
 library = ""
 
-class RPrintPreviewDialog(QtGui.QMainWindow):
-    def __init__(self, printer=None, parent=None):
-        super(RPrintPreviewDialog, self).__init__()
-        self.setParent(parent)
-        self.toolBar = QtGui.QToolBar("")
-        self.addToolBar(self.toolBar)
-        self.printAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-print", QtGui.QIcon(os.path.join(app_icons, 'print.png'))), tr('print'), self)
-        self.printAction.setShortcut("Ctrl+P")
-        self.printAction.triggered.connect(self.print_)
-        self.toolBar.addAction(self.printAction)
-        self.addAction(self.printAction)
-        self.printer = printer
-        self.ppw = QtGui.QPrintPreviewWidget(self.printer)
-        self.setCentralWidget(self.ppw)
-        self.show()
-    def print_(self):
-        p = QtGui.QPrintDialog(self.printer)
-        p.exec_()
-        self.deleteLater()
-
 class BrowserHistory(QtCore.QObject):
     historyChanged = QtCore.pyqtSignal()
     def __init__(self, parent=None):
@@ -1463,6 +1443,10 @@ class RWebView(QtWebKit.QWebView):
         self.savePageAction.triggered.connect(self.savePage)
         self.addAction(self.savePageAction)
 
+        self.printPageAction = QtGui.QAction(self)
+        self.printPageAction.triggered.connect(self.printPage)
+        self.addAction(self.printPageAction)
+
         self.nextAction = QtGui.QAction(self)
         self.nextAction.setShortcut("Alt+Right")
         self.nextAction.triggered.connect(self.forward)
@@ -1783,6 +1767,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
     def applyShortcuts(self):
         self.closeWindowAction.setShortcut('Ctrl+W')
         self.newWindowAction.setShortcut('Ctrl+N')
+        self.printPageAction.setShortcut('Ctrl+P')
         self.stopAction.setShortcut('Esc')
         self.savePageAction.setShortcut('Ctrl+S')
         self.locationEditAction.setShortcuts(['Ctrl+L', 'Alt+D'])
