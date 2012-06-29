@@ -30,7 +30,6 @@ SOFTWARE.
 from __future__ import print_function
 
 import os, sys, json, time, datetime, string, shutil
-from subprocess import Popen, PIPE
 try: from urllib.request import urlretrieve
 except ImportError:
     try: from urllib import urlretrieve
@@ -48,15 +47,15 @@ except:
 app_lib = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(app_lib)
 
-import translate
 from ryouko_common import *
-
-trManager = translate.TranslationManager()
-trManager.setDirectory(os.path.join(app_lib, "translations"))
-trManager.loadTranslation()
-
-def tr(key):
-    return trManager.tr(key)
+from QStringFunctions import *
+from SystemTerminal import *
+from SettingsManager import *
+from DownloaderThread import *
+from DialogFunctions import *
+from RTabWidget import *
+from NotificationManager import *
+from TranslationManager import *
 
 app_windows = []
 app_closed_windows = []
@@ -161,29 +160,10 @@ def changeProfile(name, init = False):
 changeProfile("default", True)
 
 reset = False
-terminals=[ ["terminator",      "-x "],
-            ["sakura",          "--execute="],
-            ["roxterm",         "--execute "],
-            ["xfce4-terminal",  "--command="],
-            ["Terminal",  "--command="],
-            ["gnome-terminal",  "--command="],
-            ["idle3",           "-r "],
-            ["xterm",           ""],
-            ["konsole",         "-e="] ]
 
 blanktoolbarsheet = "QToolBar { border: 0; }"
 
 # From http://stackoverflow.com/questions/448207/python-downloading-a-file-over-http-with-progress-bar-and-basic-authentication
-def urlretrieve_adv(url, filename=None, reporthook=None, data=None, username="", password=""):
-    if sys.version_info[0] < 3:
-        class OpenerWithAuth(urllib.FancyURLopener):
-            def prompt_user_passwd(self, host, realm):
-                return username, password
-    else:
-        class OpenerWithAuth(urllib.request.FancyURLopener):
-            def prompt_user_passwd(self, host, realm):
-                return username, password
-    return OpenerWithAuth().retrieve(url, filename, reporthook, data)
 
 def doNothing():
     return
@@ -206,132 +186,27 @@ def reload_user_links():
         for link in links:
             user_links = "%s<a href=\"%s\">%s</a> \n" % (user_links, link[0], link[1])
 
-def read_terminal_output(command):
-    stdout_handle = os.popen(command)
-    value = stdout_handle.read().rstrip("\n")
-    return value
-
-def system_terminal(command):
-
-    location = False
-    for app in terminals:
-        location=Popen(["which", app[0]], stdout=PIPE).communicate()[0]
-        if location:
-            os.system(app[0]+' '+app[1]+"\""+command+"\"")
-            break
-    if not location:
-        os.system(command)
-
 def qstring(string):
-    if sys.version_info[0] <= 2:
-        return(QtCore.QString(string))
-    else:
-        return(string)
+    return QString(string)
 
 def qstringlist(li):
-    if sys.version_info[0] <= 2:
-        t = QtCore.QStringList()
-        for i in li:
-            t.append(qstring(i))
-        return t
-    else:
-        return li
-        
+    return QStringList(li)
 
 if sys.version_info[0] >= 3:
     def unicode(data):
         return str(data)
 
 def hiddenNotificationMessage(message="This is a message."):
-    notificationWindow.history.addItem(str(notificationWindow.history.count() + 1) + ": " + message)
-    notificationWindow.history.setCurrentRow(notificationWindow.history.count() - 1)
+    notificationManager.newNotification(message)
 
 def notificationMessage(message="This is a message."):
-    notificationWindow.show()
-    notificationWindow.history.addItem(str(notificationWindow.history.count() + 1) + ": " + message)
-    notificationWindow.history.setCurrentRow(notificationWindow.history.count() - 1)
-
-def message(title="Alert", content="This is a message.", icon="info"):
-    message = QtGui.QMessageBox()
-    message.setWindowTitle(title)
-    message.setText(qstring(str(content)))
-    message.addButton(QtGui.QMessageBox.Ok)
-    if str(icon).lower() == "info" or str(icon).lower() == "information":
-        message.setIcon(QtGui.QMessageBox.Information)
-    elif str(icon).lower() == "warn" or str(icon).lower() == "warning":
-        message.setIcon(QtGui.QMessageBox.Warning)
-    elif str(icon).lower() == "critical":
-        message.setIcon(QtGui.QMessageBox.Question)
-    elif str(icon).lower() == "query" or str(icon).lower() == "question":
-        message.setIcon(QtGui.QMessageBox.Question)
-    elif str(icon).lower() == "query" or str(icon).lower() == "question":
-        message.setIcon(QtGui.QMessageBox.Question)
-    elif str(icon).lower() == "none" or str(icon).lower() == "noicon":
-        message.setIcon(QtGui.QMessageBox.NoIcon)
-    else:
-        message.setIcon(QtGui.QMessageBox.Information)
-    message.exec_()
-
-def inputDialog(title=tr('query'), content=tr('enterValue'), value=""):
-    text = QtGui.QInputDialog.getText(None, title, content, QtGui.QLineEdit.Normal, value)
-    if text[1]:
-        if unicode(text[0]) != "":
-            return text[0]
-        else:
-            return ""
-    else:
-        return ""
-
-def saveDialog(fname="", filters = "All files (*)"):
-    saveDialog = QtGui.QFileDialog.getSaveFileName(None, "Save As", os.path.join(os.getcwd(), fname), filters)
-    return saveDialog
+    notificationManager.show()
+    notificationManager.newNotification(message)
 
 def prepareQuit():
     if os.path.exists(app_lock) and not os.path.isdir(app_lock):
         os.remove(app_lock)
     saveCookies()
-
-class RTabBar(QtGui.QTabBar):
-    def __init__(self, parent=None):
-        super(RTabBar, self).__init__(parent)
-        self.parent = parent
-    def mouseDoubleClickEvent(self, e):
-        e.accept()
-        self.parent.newTab()
-        self.parent.tabs.widget(self.parent.tabs.currentIndex()).webView.buildNewTabPage()
-
-class RTabWidget(QtGui.QTabWidget):
-    def __init__(self, parent=None, forcea=False):
-        super(RTabWidget, self).__init__(parent)
-        self.parent = parent
-        self.nuTabBar = RTabBar(self.parent)
-        self.setTabBar(self.nuTabBar)
-        self.setDocumentMode(True)
-#        self.setStyleSheet("QTabBar::tab { padding: 4px; border: 1px solid palette(shadow); } QTabBar::tab:top { border-top-left-radius: 4px; border-top-right-radius:4px; border-bottom: 1px solid palette(shadow); background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(window), stop:1 palette(midlight)); } QTabBar::tab:top:selected { border-bottom: 0; padding-bottom: 5px; background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(light), stop:1 palette(window)); }")
-        self.mouseX = False
-        self.mouseY = False
-
-    def mouseDoubleClickEvent(self, e):
-        e.accept()
-        self.parent.newTab()
-
-    def mousePressEvent(self, ev):
-        if ev.button() == QtCore.Qt.RightButton:
-            self.parent.showTabsContextMenu()
-        else:
-            self.mouseX = ev.globalX()
-            self.origX = self.parent.x()
-            self.mouseY = ev.globalY()
-            self.origY = self.parent.y()
-
-    def mouseMoveEvent(self, ev):
-        if self.mouseX and self.mouseY and not self.isMaximized():
-            self.parent.move(self.origX + ev.globalX() - self.mouseX,
-self.origY + ev.globalY() - self.mouseY)
-
-    def mouseReleaseEvent(self, ev):
-        self.mouseX = False
-        self.mouseY = False
 
 class SearchManager(QtCore.QObject):
     def __init__(self, parent=None):
@@ -1336,45 +1211,7 @@ class DownloadManagerGUI(QtGui.QMainWindow):
 
 downloadManagerGUI = None
 
-class NotificationWindow(QtGui.QMainWindow):
-    def __init__(self, parent=None):
-        super(NotificationWindow, self).__init__()
-        if os.path.exists(app_logo):
-            self.setWindowIcon(QtGui.QIcon(app_logo))
-        self.setWindowTitle(tr('notifications'))
-        closeWindowAction = QtGui.QAction(self)
-        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+N", "Esc"])
-        closeWindowAction.triggered.connect(self.hide)
-        self.addAction(closeWindowAction)
-        self.parent = parent
-        self.toolBar = QtGui.QToolBar()
-        self.toolBar.setStyleSheet(blanktoolbarsheet)
-        self.toolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.toolBar.setMovable(False)
-        self.clearButton = QtGui.QPushButton(tr('clear'))
-        self.toolBar.addWidget(self.clearButton)
-        self.closeButton = QtGui.QPushButton(tr('close'))
-        self.closeButton.clicked.connect(self.hide)
-        self.toolBar.addWidget(self.closeButton)
-        self.history = QtGui.QListWidget()
-        self.history.setWordWrap(True)
-        self.clearButton.clicked.connect(self.history.clear)
-        self.setCentralWidget(self.history)
-        self.addToolBar(self.toolBar)
-        self.hide()
-
-    def center(self):
-        fg = self.frameGeometry()
-        cp = QtGui.QDesktopWidget().availableGeometry().center()
-        fg.moveCenter(cp)
-        self.move(fg.topLeft())
-
-    def show(self):
-        self.setVisible(True)
-        self.center()
-        self.activateWindow()
-
-notificationWindow = None
+notificationManager = None
 
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
@@ -2280,45 +2117,6 @@ class CheckForURLs(QtCore.QThread):
     def run(self):
         win.newTab
 
-class DownloaderThread(QtCore.QThread):
-    fileDownloaded = QtCore.pyqtSignal()
-    def __init__(self, parent=None):
-        QtCore.QThread.__init__(self, parent)
-        self.url = ""
-        self.destination = ""
-        self.username = False
-        self.password = False
-    def setUrl(self, url):
-        self.url = url
-    def setDestination(self, destination):
-        self.destination = destination
-#    def exec_(self):
-#        urlretrieve(self.url, self.destination)
-    def run(self):
-        command = ""
-        if settingsManager.settings['backend'] == "aria2":
-            command = "aria2c --dir='%s'" % (os.path.dirname(unicode(self.destination)))
-            if self.username and self.username != "":
-                command = "%s --http-user='%s'" % (command, unicode(self.username))
-                if self.password and self.password != "":
-                    command = "%s --http-passwd='%s'" % (command, unicode(self.password))
-            command = "%s '%s'" % (command, self.url)
-            system_terminal(command)
-        elif settingsManager.settings['backend'] == "axel":
-            os.chdir(os.path.dirname(unicode(self.destination)))
-            command = "axel"
-            command = "%s '%s'" % (command, self.url)
-            system_terminal(command)
-        else:
-            if self.username and self.password:
-                urlretrieve_adv(self.url, self.destination, None, None, self.username, self.password)
-            else:
-                urlretrieve(self.url, self.destination)
-        print(command)
-        self.username = False
-        self.password = False
-        self.fileDownloaded.emit()
-
 downloaderThread = DownloaderThread()
 
 class CDialog(QtGui.QMainWindow):
@@ -2459,6 +2257,7 @@ class CDialog(QtGui.QMainWindow):
         except:
             doNothing()
         else:
+            downloaderThread.backend = self.settings['backend']
             for index in range(0, self.selectBackend.count()):
                 try: self.selectBackend.itemText(index)
                 except:
@@ -2662,7 +2461,7 @@ self.origY + ev.globalY() - self.mouseY)
         # Bookmarks manager! FINALLY! Yay!
         viewNotificationsAction = QtGui.QAction(tr('viewNotifications'), self)
         viewNotificationsAction.setShortcut("Ctrl+Alt+N")
-        viewNotificationsAction.triggered.connect(notificationWindow.show)
+        viewNotificationsAction.triggered.connect(notificationManager.show)
         self.addAction(viewNotificationsAction)
 
         # Tabs
@@ -3103,12 +2902,12 @@ class Ryouko(QtGui.QWidget):
         global cDialog
         global win
         global aboutDialog
-        global notificationWindow
+        global notificationManager
         global clearHistoryDialog
         global downloadManagerGUI
         downloadManagerGUI = DownloadManagerGUI()
         aboutDialog = RAboutDialog()
-        notificationWindow = NotificationWindow()
+        notificationManager = NotificationManager()
         clearHistoryDialog = ClearHistoryDialog()
         library = Library()
         searchEditor = SearchEditor()
