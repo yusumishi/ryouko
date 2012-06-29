@@ -2111,12 +2111,6 @@ class Browser(QtGui.QMainWindow):
         texturl = url.toString()
         self.urlBar2.setText(texturl)
 
-class CheckForURLs(QtCore.QThread):
-    def __init__(self, parent=None):
-        QtCore.QThread.__init__(self, parent)
-    def run(self):
-        win.newTab
-
 downloaderThread = DownloaderThread()
 
 class CDialog(QtGui.QMainWindow):
