@@ -2734,6 +2734,13 @@ self.origY + ev.globalY() - self.mouseY)
         savePageAction.triggered.connect(self.savePage)
         self.mainMenu.addAction(savePageAction)
         self.addAction(savePageAction)
+
+        printAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-print", QtGui.QIcon(os.path.join(app_icons, 'print.png'))), tr('print'), self)
+        printAction.setShortcut('Ctrl+P')
+        printAction.triggered.connect(self.printPage)
+        self.mainMenu.addAction(savePageAction)
+        self.addAction(savePageAction)
+
         self.mainMenu.addSeparator()
 
         # Undo closed tab button
@@ -2816,7 +2823,11 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addAction(configAction)
         self.mainMenu.addSeparator()
 
-        # About Action
+        # About Actions
+        aboutQtAction = QtGui.QAction(tr('aboutQtHKey'), self)
+        aboutQtAction.triggered.connect(QtGui.QApplication.aboutQt)
+        self.mainMenu.addAction(aboutQtAction)
+
         aboutAction = QtGui.QAction(tr('aboutRyoukoHKey'), self)
         aboutAction.triggered.connect(self.aboutRyoukoHKey)
         self.mainMenu.addAction(aboutAction)
