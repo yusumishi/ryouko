@@ -1044,6 +1044,26 @@ class Library(QtGui.QMainWindow):
 
 library = ""
 
+class RPrintPreviewDialog(QtGui.QMainWindow):
+    def __init__(self, printer=None, parent=None):
+        super(RPrintPreviewDialog, self).__init__()
+        self.setParent(parent)
+        self.toolBar = QtGui.QToolBar("")
+        self.addToolBar(self.toolBar)
+        self.printAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-print", QtGui.QIcon(os.path.join(app_icons, 'print.png'))), tr('print'), self)
+        self.printAction.setShortcut("Ctrl+P")
+        self.printAction.triggered.connect(self.print_)
+        self.toolBar.addAction(self.printAction)
+        self.addAction(self.printAction)
+        self.printer = printer
+        self.ppw = QtGui.QPrintPreviewWidget(self.printer)
+        self.setCentralWidget(self.ppw)
+        self.show()
+    def print_(self):
+        p = QtGui.QPrintDialog(self.printer)
+        p.exec_()
+        self.deleteLater()
+
 class BrowserHistory(QtCore.QObject):
     historyChanged = QtCore.pyqtSignal()
     def __init__(self, parent=None):
@@ -1402,6 +1422,7 @@ class RWebView(QtWebKit.QWebView):
         self.autoBack = QtCore.QTimer()
         self.autoBack.timeout.connect(self.autoGoBack)
         self.destinations = []
+        self.printer = None
         self.replies = []
         self.newWindows = [0]
         self.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
@@ -1628,6 +1649,18 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
     def autoGoBack(self):
         self.back()
         self.autoBack.stop()
+
+    def printPage(self):
+        self.printer = QtGui.QPrinter()
+        self.page().mainFrame().render(self.printer.paintEngine().painter())
+        q = QtGui.QPrintDialog(self.printer)
+        q.open()
+        q.accepted.connect(self.finishPrintPage)
+        q.exec_()
+
+    def finishPrintPage(self):
+        self.print(self.printer)
+        self.printer = None
 
     def savePage(self):
         self.downloadFile(QtNetwork.QNetworkRequest(self.url()))
@@ -2870,7 +2903,8 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabs.widget(self.tabs.currentIndex()).webView.savePage()
 
     def printPage(self):
-        message(tr("error"), "Sorry, this function does not work yet.", "warn")
+        self.tabs.widget(self.tabs.currentIndex()).webView.printPage()
+#        message(tr("error"), "Sorry, this function does not work yet.", "warn")
 
     def hideInspectors(self):
         for tab in range(self.tabs.count()):
