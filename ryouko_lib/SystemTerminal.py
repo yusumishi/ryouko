@@ -14,7 +14,7 @@ terminals=[ ["terminator",      "-x "],
             ["konsole",         "-e="] ]
 
 def readTerminalOutput(command):
-    return read_termianl_output(command)
+    return read_terminal_output(command)
 
 def read_terminal_output(command):
     stdout_handle = os.popen(command)
