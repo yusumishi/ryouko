@@ -1,6 +1,6 @@
 #! /usr/bin/env/python
 
-import os
+import os, sys
 from PyQt4 import QtCore, QtGui
 
 def qstring(string):

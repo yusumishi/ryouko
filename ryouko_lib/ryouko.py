@@ -365,7 +365,7 @@ class SearchEditor(RMenuPopupWindow):
                 searchManager.add(name, self.expEntry.text(), keyword)
             self.reload()
         else:
-            notificationMessage(tr('newSearchError'))
+            message(tr('error'), tr('newSearchError'), "warn")
 
     def applySearch(self, item=False, old=False):
         if item:
