@@ -87,6 +87,21 @@ else:
     app_logo = os.path.join(app_icons, "logo.svg")
 user_links = ""
 
+def saveCookies():
+    if app_kill_cookies == False:
+        cookieFile = open(app_cookies, "wb")
+        cookies = []
+        for c in app_cookiejar.allCookies():
+            cookies.append(unicode(qstring(c.toRawForm())))
+        json.dump(cookies, cookieFile)
+        cookieFile.close()
+    else:
+        if sys.platform.startswith("linux"):
+            os.system("shred -v \"%s\"" % (app_cookies))
+        try: os.remove(app_cookies)
+        except:
+            doNothing()
+
 try:
     from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 except:
@@ -99,6 +114,8 @@ except:
     button.pack()
     root.mainloop()
     sys.exit()
+
+app_cookiejar = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
 
 class RSettingsManager(SettingsManager):
     def errorMessage(self, backend):
@@ -268,6 +285,11 @@ def inputDialog(title=tr('query'), content=tr('enterValue'), value=""):
 def saveDialog(fname="", filters = "All files (*)"):
     saveDialog = QtGui.QFileDialog.getSaveFileName(None, "Save As", os.path.join(os.getcwd(), fname), filters)
     return saveDialog
+
+def prepareQuit():
+    if os.path.exists(app_lock) and not os.path.isdir(app_lock):
+        os.remove(app_lock)
+    saveCookies()
 
 class RTabBar(QtGui.QTabBar):
     def __init__(self, parent=None):
@@ -2485,7 +2507,7 @@ class TabBrowser(QtGui.QMainWindow):
             else:
                 if os.path.exists(os.path.join(app_icons, 'about-logo.png')):
                     self.setWindowIcon(QtGui.QIcon(os.path.join(app_icons, 'about-logo.png')))
-        self.cookieJar = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
+        self.cookieJar = app_cookiejar
         self.loadCookies()
         self.tabCount = 0
         self.closed = False
@@ -2569,21 +2591,6 @@ self.origY + ev.globalY() - self.mouseY)
             cookies.append(QtNetwork.QNetworkCookie().parseCookies(cookie)[0])
         self.cookieJar.setAllCookies(cookies)
 
-    def saveCookies(self):
-        if app_kill_cookies == False:
-            cookieFile = open(app_cookies, "wb")
-            cookies = []
-            for c in self.cookieJar.allCookies():
-                cookies.append(unicode(qstring(c.toRawForm())))
-            json.dump(cookies, cookieFile)
-            cookieFile.close()
-        else:
-            if sys.platform.startswith("linux"):
-                os.system("shred -v \"%s\"" % (app_cookies))
-            try: os.remove(app_cookies)
-            except:
-                doNothing()
-
     def quit(self):
         q = QtGui.QMessageBox.Yes
         if len(downloadManagerGUI.downloads) > 0:
@@ -2595,8 +2602,6 @@ self.origY + ev.globalY() - self.mouseY)
             QtCore.QCoreApplication.instance().quit()
 
     def closeEvent(self, ev):
-        if os.path.exists(app_lock) and not os.path.isdir(app_lock):
-            os.remove(app_lock)
         global app_windows
         if self in app_windows:
             del app_windows[app_windows.index(self)]
@@ -2604,9 +2609,7 @@ self.origY + ev.globalY() - self.mouseY)
             if len(app_closed_windows) >= 10:
                 del app_closed_windows[0]
             app_closed_windows.append(self)
-        self.saveCookies()
         self.closed = True
-        self.checkTempFiles()
         return QtGui.QMainWindow.closeEvent(self, ev)
 
     def aboutRyoukoHKey(self):
@@ -3150,6 +3153,7 @@ def main():
             if not os.path.isdir(os.path.join(app_profile, "adblock")):
                 os.mkdir(os.path.join(app_profile, "adblock"))
             app = QtGui.QApplication(sys.argv)
+            app.aboutToQuit.connect(prepareQuit)
             if reset == True:
                 browserHistory.reset()
                 reset = False
