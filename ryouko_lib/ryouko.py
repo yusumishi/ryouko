@@ -2738,8 +2738,8 @@ self.origY + ev.globalY() - self.mouseY)
         printAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-print", QtGui.QIcon(os.path.join(app_icons, 'print.png'))), tr('print'), self)
         printAction.setShortcut('Ctrl+P')
         printAction.triggered.connect(self.printPage)
-        self.mainMenu.addAction(savePageAction)
-        self.addAction(savePageAction)
+        self.mainMenu.addAction(printAction)
+        self.addAction(printAction)
 
         self.mainMenu.addSeparator()
 
