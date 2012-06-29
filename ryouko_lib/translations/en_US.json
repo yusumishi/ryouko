@@ -110,7 +110,7 @@
 "newWindowBtn": "New &Window",
 "newWindowBtnTT": "<b>New Window</b><br>Ctrl+N",
 "savePageAs": "&Save Page As",
-"print": "&Print (does not work yet)",
+"print": "&Print",
 "downloadsInProgress": "You have unfinished downloads in progress. Are you sure you want to quit?",
 "closeTab": "&Close Tab",
 "closeLeftTabs": "Close tabs on the &left",
