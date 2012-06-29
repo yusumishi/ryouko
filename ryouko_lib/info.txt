@@ -1,4 +1,4 @@
-0.8.0pre
+0.8.0
 Haruhi
 
 Kanji: 悠妃
