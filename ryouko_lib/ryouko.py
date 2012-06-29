@@ -1838,6 +1838,7 @@ class Browser(QtGui.QMainWindow):
         self.webView.settings().setIconDatabasePath(qstring(app_profile))
         self.webView.page().linkHovered.connect(self.updateStatusMessage)
 
+        # Status bar
         self.statusBarBorder = QtGui.QWidget()
         self.statusBarBorder.setStyleSheet("""
         background: palette(shadow);
@@ -2475,9 +2476,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.newTabButton.setDefaultAction(newTabAction)
         self.cornerWidgetsToolBar.addWidget(self.newTabButton)
 
-        self.cornerWidgetsToolBar.addAction(self.mainMenuButton)
-        self.cornerWidgetsToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
-
         # New window button
         newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_icons, 'newwindow.png'))), tr("newWindowBtn"), self)
         newWindowAction.setShortcut('Ctrl+N')
@@ -2546,10 +2544,14 @@ self.origY + ev.globalY() - self.mouseY)
         closeTabAction.setShortcut("Ctrl+W")
         closeTabAction.triggered.connect(self.closeTab)
         self.addAction(closeTabAction)
-        closeLeftTabsAction = QtGui.QAction(tr('closeLeftTabs'), self)
+        closeLeftTabsAction = QtGui.QAction(QtGui.QIcon(os.path.join(app_icons, 'close-left.png')), tr('closeLeftTabs'), self)
+        closeLeftTabsAction.setShortcut("Ctrl+Alt+L")
         closeLeftTabsAction.triggered.connect(self.closeLeftTabs)
-        closeRightTabsAction = QtGui.QAction(tr('closeRighttTabs'), self)
+        self.addAction(closeLeftTabsAction)
+        closeRightTabsAction = QtGui.QAction(QtGui.QIcon(os.path.join(app_icons, 'close-right.png')), tr('closeRighttTabs'), self)
+        closeRightTabsAction.setShortcut("Ctrl+Alt+R")
         closeRightTabsAction.triggered.connect(self.closeRightTabs)
+        self.addAction(closeRightTabsAction)
         closeTabForeverAction = QtGui.QAction(tr('closeTabForever'), self)
         closeTabForeverAction.setShortcut("Ctrl+Shift+W")
         self.addAction(closeTabForeverAction)
@@ -2569,6 +2571,30 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenu.addAction(undoCloseWindowAction)
 
         self.tabs.customContextMenuRequested.connect(self.tabsContextMenu.show)
+
+        self.cornerWidgetsToolBar.addSeparator()
+        self.cornerWidgetsToolBar.addAction(closeLeftTabsAction)
+        self.cornerWidgetsToolBar.addAction(closeRightTabsAction)
+        self.cornerWidgetsToolBar.addSeparator()
+
+        self.cornerWidgetsToolBar.addAction(self.mainMenuButton)
+        self.cornerWidgetsToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        # Activate tab actions
+        activateTab1Action = QtGui.QAction(self)
+        activateTab2Action = QtGui.QAction(self)
+        activateTab3Action = QtGui.QAction(self)
+        activateTab4Action = QtGui.QAction(self)
+        activateTab5Action = QtGui.QAction(self)
+        activateTab6Action = QtGui.QAction(self)
+        activateTab7Action = QtGui.QAction(self)
+        activateTab8Action = QtGui.QAction(self)
+        activateTab9Action = QtGui.QAction(self)
+        numActions = [activateTab1Action, activateTab2Action, activateTab3Action, activateTab4Action, activateTab5Action, activateTab6Action, activateTab7Action, activateTab8Action, activateTab9Action]
+        for action in range(len(numActions)):
+            numActions[action].setShortcuts(["Ctrl+" + str(action + 1), "Alt+" + str(action + 1)])
+            exec("numActions[action].triggered.connect(self.activateTab" + str(action + 1) + ")")
+            self.addAction(numActions[action])
 
         # Config button
         configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_icons, 'settings.png'))), tr('preferencesButton'), self)
@@ -2623,6 +2649,33 @@ self.origY + ev.globalY() - self.mouseY)
             if self.tabs.count() == 0:
                 self.newTab()
                 self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
+
+    def activateTab1(self):
+        self.tabs.setCurrentIndex(0)
+
+    def activateTab2(self):
+        self.tabs.setCurrentIndex(1)
+
+    def activateTab3(self):
+        self.tabs.setCurrentIndex(2)
+
+    def activateTab4(self):
+        self.tabs.setCurrentIndex(3)
+
+    def activateTab5(self):
+        self.tabs.setCurrentIndex(4)
+
+    def activateTab6(self):
+        self.tabs.setCurrentIndex(5)
+
+    def activateTab7(self):
+        self.tabs.setCurrentIndex(6)
+
+    def activateTab8(self):
+        self.tabs.setCurrentIndex(7)
+
+    def activateTab9(self):
+        self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def savePage(self):
         self.tabs.widget(self.tabs.currentIndex()).webView.savePage()

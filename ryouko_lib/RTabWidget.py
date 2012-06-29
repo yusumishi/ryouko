@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import os.path, sys
-from PyQt4 import QtGui
+from PyQt4 import QtCore, QtGui
 try:
     filename = __file__
 except:
