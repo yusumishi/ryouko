@@ -54,6 +54,7 @@ from SettingsManager import *
 from DownloaderThread import *
 from DialogFunctions import *
 from RTabWidget import *
+from RHBoxLayout import *
 from NotificationManager import *
 from TranslationManager import *
 from DownloadManager import *
@@ -1406,7 +1407,11 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         else:
             pr = settingsManager.settings['proxy']
 #            try:
-            exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy, qstring(\"" + pr['hostname'] + "\"), int(\"" + str(pr['port']) + "\"), qstring(\"" + pr['user'] + "\"), qstring(\"" + pr['password'] + "\")))")
+            up = ""
+            if pr['user'] != "" and pr['password'] != "":
+                up = ", qstring(\"" + pr['user'] + "\"), qstring(\"" + pr['password'] + "\")"
+            print("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy, qstring(\"" + pr['hostname'] + "\"), int(\"" + str(pr['port']) + "\")" + up + "))")
+            exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy, qstring(\"" + pr['hostname'] + "\"), int(\"" + str(pr['port']) + "\")" + up + "))")
 #            except:
 #                message(tr("error"), tr("proxyError"))
         for child in range(1, len(self.newWindows)):
@@ -2170,14 +2175,38 @@ class CDialog(QtGui.QMainWindow):
         self.proxySel.addItem('Socks5')
         self.proxySel.addItem('Http')
         self.pLayout.addWidget(self.proxySel)
+        hLabel = QtGui.QLabel(tr('hostname') + ":")
         self.hostnameBox = QtGui.QLineEdit()
-        self.pLayout.addWidget(self.hostnameBox)
+        l1 = RHBoxLayout()
+        l1.addWidget(hLabel)
+        l1.addWidget(self.hostnameBox)
+        l1l = QtGui.QWidget()
+        l1l.setLayout(l1)
+        self.pLayout.addWidget(l1l)
+        p1Label = QtGui.QLabel(tr('port') + ":")
         self.portBox = QtGui.QLineEdit()
-        self.pLayout.addWidget(self.portBox)
+        l2 = RHBoxLayout()
+        l2.addWidget(p1Label)
+        l2.addWidget(self.portBox)
+        l2l = QtGui.QWidget()
+        l2l.setLayout(l2)
+        self.pLayout.addWidget(l2l)
+        uLabel = QtGui.QLabel(tr('user') + ":")
         self.userBox = QtGui.QLineEdit()
-        self.pLayout.addWidget(self.userBox)
+        l3 = RHBoxLayout()
+        l3.addWidget(uLabel)
+        l3.addWidget(self.userBox)
+        l3l = QtGui.QWidget()
+        l3l.setLayout(l3)
+        self.pLayout.addWidget(l3l)
+        p2Label = QtGui.QLabel(tr('password') + ":")
         self.passwordBox = QtGui.QLineEdit()
-        self.pLayout.addWidget(self.passwordBox)
+        l4 = RHBoxLayout()
+        l4.addWidget(p2Label)
+        l4.addWidget(self.passwordBox)
+        l4l = QtGui.QWidget()
+        l4l.setLayout(l4)
+        self.pLayout.addWidget(l4l)
 
         self.cToolBar = QtGui.QToolBar()
         self.cToolBar.setStyleSheet(blanktoolbarsheet)
