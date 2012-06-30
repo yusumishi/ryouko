@@ -2150,7 +2150,6 @@ class CDialog(QtGui.QMainWindow):
 
         self.pbBox = QtGui.QCheckBox(tr('enablePB'))
         self.pLayout.addWidget(self.pbBox)
-        self.pLayout.addWidget(RExpander())
 
         self.aBBox = QtGui.QCheckBox(tr('enableAB'))
         self.aBBox.stateChanged.connect(self.tryDownload)
@@ -2215,6 +2214,8 @@ class CDialog(QtGui.QMainWindow):
         l4l = QtGui.QWidget()
         l4l.setLayout(l4)
         self.pLayout.addWidget(l4l)
+
+        self.pLayout.addWidget(RExpander())
 
         self.cToolBar = QtGui.QToolBar()
         self.cToolBar.setStyleSheet(blanktoolbarsheet)
