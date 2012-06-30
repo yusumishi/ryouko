@@ -147,9 +147,9 @@ def changeProfile(name, init = False):
     else:
         migrate = True
     if not os.path.isdir(app_profile_folder):
-        os.mkdir(app_profile_folder)
+        os.makedirs(app_profile_folder)
     if not os.path.isdir(app_profile):
-        os.mkdir(app_profile)
+        os.makedirs(app_profile)
     else:
         if init == False:
             app_profile_exists = True
@@ -217,7 +217,7 @@ def prepareQuit():
     try: settingsManager.settings['cloudService']
     except: doNothing()
     else:
-        if settingsManager.settings['cloudService'] != "None":
+        if settingsManager.settings['cloudService'] != tr('noThanks'):
             local_app_profile = os.path.join(app_profile_folder, app_profile_name)
             if os.path.exists(os.path.join(local_app_profile, "settings.json")):
                 os.remove(os.path.join(local_app_profile, "settings.json"))
@@ -941,7 +941,7 @@ class BrowserHistory(QtCore.QObject):
             history.close()
     def save(self):
         if not os.path.isdir(app_profile):
-            os.mkdir(app_profile)
+            os.makedirs(app_profile)
         history = open(os.path.join(app_profile, "history.json"), "w")
         json.dump(self.history, history)
         history.close()
@@ -2125,7 +2125,7 @@ class CDialog(QtGui.QMainWindow):
         self.setings = {}
         self.initUI()
         self.filterListCount = 0
-        self.resize(320, 480)
+        self.resize(400, 400)
     def initUI(self):
         closeWindowAction = QtGui.QAction(self)
         closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+P", "Esc"])
@@ -2216,7 +2216,7 @@ class CDialog(QtGui.QMainWindow):
         self.pLayout.addWidget(proxyBox)
         self.proxySel = QtGui.QComboBox()
         self.proxySel.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
-        self.proxySel.addItem('None')
+        self.proxySel.addItem("None")
         self.proxySel.addItem('Socks5')
         self.proxySel.addItem('Http')
         sLabel = QtGui.QLabel(tr('type') + ":")
@@ -2269,7 +2269,7 @@ class CDialog(QtGui.QMainWindow):
         cloudLabel = QtGui.QLabel(tr("cloudService"))
         cloudLabel.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         self.cloudBox = QtGui.QComboBox()
-        self.cloudBox.addItem("None")
+        self.cloudBox.addItem(tr('noThanks'))
         self.cloudBox.addItem("Dropbox")
         self.cloudBox.addItem("Ubuntu One")
         self.aLayout.addWidget(cloudLabel)
@@ -2313,6 +2313,8 @@ class CDialog(QtGui.QMainWindow):
                 downloaderThread.setDestination(os.path.join(app_profile, "adblock", "easylist.txt"))
                 downloaderThread.start()
     def loadSettings(self):
+        if not os.path.exists(app_profile):
+            os.makedirs(app_profile)
         settingsManager.loadSettings()
         self.settings = settingsManager.settings
         try: self.settings['openInTabs']
@@ -3089,7 +3091,7 @@ class Ryouko(QtGui.QWidget):
         except:
             doNothing()
         else:
-            if settingsManager.settings['cloudService'] != "None":
+            if settingsManager.settings['cloudService'] != tr('noThanks'):
                 bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name)
                 global app_profile
                 app_profile = bck
@@ -3159,7 +3161,7 @@ def main():
             reload_user_links()
             global reset
             if not os.path.isdir(app_profile):
-                os.mkdir(app_profile)
+                os.makedirs(app_profile)
             if not os.path.isdir(os.path.join(app_profile, "temp")):
                 os.mkdir(os.path.join(app_profile, "temp"))
             if not os.path.isdir(os.path.join(app_profile, "adblock")):
