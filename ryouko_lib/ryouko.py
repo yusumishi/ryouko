@@ -76,6 +76,8 @@ if os.path.exists(app_info):
             app_codename = metadata[1].rstrip("\n")
 app_gui = os.path.join(app_lib, "mainwindow.ui")
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
+app_profile_name = "default"
+app_default_profile_file = os.path.join(app_home, "profiles.txt")
 app_profile_folder = os.path.join(app_home, "profiles")
 app_commandline = ""
 app_profile_exists = False
@@ -160,7 +162,15 @@ def changeProfile(name, init = False):
                     shutil.move(fpath, app_profile)
     settingsManager.changeProfile(app_profile)
 
-changeProfile("default", True)
+app_default_profile_name = "default"
+if os.path.exists(app_default_profile_file):
+    f = open(app_default_profile_file)
+    app_default_profile_name = f.read()
+    f.close()
+    app_default_profile_name = app_default_profile_name.replace("\n", "")
+if not os.path.exists(os.path.join(app_profile_folder, app_default_profile_name)):
+    app_default_profile_name = "default"
+changeProfile(app_default_profile_name, True)
 
 reset = False
 
@@ -204,6 +214,19 @@ def prepareQuit():
     if os.path.exists(app_lock) and not os.path.isdir(app_lock):
         os.remove(app_lock)
     saveCookies()
+    try: settingsManager.settings['cloudService']
+    except:
+        doNothing()
+    else:
+        if settingsManager.settings['cloudService'] != "None":
+            bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'])
+            if os.path.exists(bck):
+                try: shutil.rmtree(bck)
+                except:
+                    try: os.remove(bck)
+                    except:
+                        doNothing()
+            shutil.copytree(app_profile, bck)
 
 class SearchManager(QtCore.QObject):
     def __init__(self, parent=None):
@@ -2125,7 +2148,13 @@ class CDialog(QtGui.QMainWindow):
         self.cWidget.setLayout(self.cLayout)
         self.tabs.addTab(self.cWidget, tr('content'))
 
-        # Privacy settings page
+        # Data settings page
+        self.aWidget = QtGui.QWidget()
+        self.aLayout = QtGui.QVBoxLayout()
+        self.aWidget.setLayout(self.aLayout)
+        self.tabs.addTab(self.aWidget, tr('data'))
+
+        # Browsing settings page
         self.pWidget = QtGui.QWidget()
         self.pLayout = QtGui.QVBoxLayout()
         self.pWidget.setLayout(self.pLayout)
@@ -2181,6 +2210,7 @@ class CDialog(QtGui.QMainWindow):
         self.gLayout.addWidget(self.editSearchButton)
         self.gLayout.addWidget(RExpander())
 
+        # Proxy configuration stuff
         proxyBox = QtGui.QLabel(tr('proxyConfig'))
         self.pLayout.addWidget(proxyBox)
         self.proxySel = QtGui.QComboBox()
@@ -2229,6 +2259,13 @@ class CDialog(QtGui.QMainWindow):
         self.pLayout.addWidget(l4l)
 
         self.pLayout.addWidget(RExpander())
+
+        # Data Management
+        cloudLabel = QtGui.QLabel("cloudService")
+        self.cloudBox = QtGui.QComboBox()
+        self.cloudBox.addItem("None")
+        self.cloudBox.addItem("Dropbox")
+        self.cloudBox.addItem("Ubuntu One")
 
         self.cToolBar = QtGui.QToolBar()
         self.cToolBar.setStyleSheet(blanktoolbarsheet)
@@ -2349,6 +2386,15 @@ class CDialog(QtGui.QMainWindow):
                 self.userBox.setText(pr['user'])
             if pr['password']:
                 self.portBox.setText(pr['password'])
+        try: self.settings['cloudService']
+        except:
+            doNothing()
+        else:
+            for i in range(self.cloudBox.count()):
+                u = self.cloudBox.itemText(i)
+                if self.settings['cloudService'] == u:
+                    self.cloudBox.setCurrentIndex(i)
+                    break
         try:
             global app_windows
             for window in app_windows:
@@ -2359,7 +2405,7 @@ class CDialog(QtGui.QMainWindow):
         except:
             doNothing()
     def saveSettings(self):
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}}
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText())}
         settingsManager.settings = self.settings
         settingsManager.setBackend(unicode(self.selectBackend.currentText()).lower())
         settingsManager.saveSettings()
@@ -3025,6 +3071,16 @@ win = None
 
 class Ryouko(QtGui.QWidget):
     def __init__(self):
+        settingsManager.loadSettings()
+        try: settingsManager.settings['cloudService']
+        except:
+            doNothing()
+        else:
+            if settingsManager.settings['cloudService'] != "None":
+                bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], app_profile_name)
+                if os.path.isdir(app_profile_folder) and os.path.isdir(bck):
+                    shutil.rmtree(app_profile_folder)
+                shutil.copytree(bck, app_profile_folder)
         global library
         global searchEditor
         global cDialog
