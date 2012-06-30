@@ -2137,6 +2137,8 @@ class CDialog(QtGui.QMainWindow):
         self.pWidget.setLayout(self.pLayout)
         self.tabs.addTab(self.pWidget, tr('privacy'))
 
+        newWindowBox = QtGui.QLabel(tr('newWindowOption0'))
+        self.gLayout.addWidget(newWindowBox)
         self.openTabsBox = QtGui.QCheckBox(tr('newWindowOption'))
         self.openTabsBox.stateChanged.connect(self.checkOSWBox)
         self.gLayout.addWidget(self.openTabsBox)
