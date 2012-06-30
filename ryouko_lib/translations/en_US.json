@@ -4,7 +4,7 @@
 "downloads": "&Downloads",
 "browsing": "&Browsing",
 "data": "Da&ta",
-"cloudService": "Use cloud-based storage for online backup?",
+"cloudService": "Use a cloud-based profile?\nNOTE: Ignores local data.",
 "proxyConfig": "<b>Proxy configuration</b>",
 "type": "Type",
 "hostname": "Hostname",
