@@ -5,7 +5,7 @@
 "browsing": "&Browsing",
 "data": "Da&ta",
 "cloudService": "Store settings and data in the cloud?",
-"cloudService2": "NOTE: This setting ignores local data.",
+"cloudService2": "NOTE: If not \"No\", Ryouko will ignore local settings and data.",
 "noThanks": "No (default)",
 "proxyConfig": "<b>Proxy configuration</b>",
 "type": "Type",
