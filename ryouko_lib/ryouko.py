@@ -3079,10 +3079,10 @@ class Ryouko(QtGui.QWidget):
             doNothing()
         else:
             if settingsManager.settings['cloudService'] != "None":
-                bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], app_profile_name)
-                if os.path.isdir(app_profile_folder) and os.path.isdir(bck):
-                    shutil.rmtree(app_profile_folder)
-                    shutil.copytree(bck, app_profile_folder)
+                bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name)
+                if os.path.isdir(os.path.join(app_profile_folder, app_profile_name)) and os.path.isdir(bck):
+                    shutil.rmtree(os.path.join(app_profile_folder, app_profile_name))
+                    shutil.copytree(bck, os.path.join(app_profile_folder, app_profile_name))
         global library
         global searchEditor
         global cDialog
