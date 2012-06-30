@@ -187,12 +187,6 @@ def reload_user_links():
         for link in links:
             user_links = "%s<a href=\"%s\">%s</a> \n" % (user_links, link[0], link[1])
 
-def qstring(string):
-    return QString(string)
-
-def qstringlist(li):
-    return QStringList(li)
-
 if sys.version_info[0] >= 3:
     def unicode(data):
         return str(data)
@@ -1406,6 +1400,15 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, settingsManager.settings['privateBrowsing'])
             if settingsManager.settings['privateBrowsing'] == True:
                 self.establishPBMode(True)
+        try: settingsManager.settings['proxy']
+        except:
+            doNothing()
+        else:
+            pr = settingsManager.settings['proxy']
+            try:
+                exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy, qstring(" + pr['hostname'] + "), " + str(pr['port']) + ", qstring(" + pr['user'] + "), qstring(" + pr['password'] + "))")
+            except:
+                message(tr("error"), tr("proxyError"))
         for child in range(1, len(self.newWindows)):
             try: self.newWindows[child].updateSettings()
             except:
@@ -2085,6 +2088,7 @@ class CDialog(QtGui.QMainWindow):
         self.parent = parent
         self.setings = {}
         self.initUI()
+        self.filterListCount = 0
     def initUI(self):
         closeWindowAction = QtGui.QAction(self)
         closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+P", "Esc"])
@@ -2093,46 +2097,88 @@ class CDialog(QtGui.QMainWindow):
 
         self.setWindowTitle(tr('preferences'))
         self.setWindowIcon(QtGui.QIcon(app_logo))
-        self.mainWidget = QtGui.QWidget()
-        self.setCentralWidget(self.mainWidget)
-        self.layout = QtGui.QVBoxLayout()
-        self.filterListCount = 0
-        self.mainWidget.setLayout(self.layout)
+        self.tabs = QtGui.QTabWidget()
+        self.setCentralWidget(self.tabs)
+
+        # General settings page
+        self.generalWidget = QtGui.QWidget()
+        self.gLayout = QtGui.QVBoxLayout()
+        self.generalWidget.setLayout(self.gLayout)
+        self.tabs.addTab(self.generalWidget, tr('general'))
+
+        # Content settings page
+        self.cWidget = QtGui.QWidget()
+        self.cLayout = QtGui.QVBoxLayout()
+        self.cWidget.setLayout(self.cLayout)
+        self.tabs.addTab(self.cWidget, tr('content'))
+
+        # Download settings page
+        self.dWidget = QtGui.QWidget()
+        self.dLayout = QtGui.QVBoxLayout()
+        self.dWidget.setLayout(self.dLayout)
+        self.tabs.addTab(self.dWidget, tr('downloads'))
+
+        # Privacy settings page
+        self.pWidget = QtGui.QWidget()
+        self.pLayout = QtGui.QVBoxLayout()
+        self.pWidget.setLayout(self.pLayout)
+        self.tabs.addTab(self.pWidget, tr('privacy'))
+
         self.openTabsBox = QtGui.QCheckBox(tr('newWindowOption'))
         self.openTabsBox.stateChanged.connect(self.checkOSWBox)
-        self.layout.addWidget(self.openTabsBox)
+        self.gLayout.addWidget(self.openTabsBox)
         self.oswBox = QtGui.QCheckBox(tr('newWindowOption2'))
         self.oswBox.stateChanged.connect(self.checkOTabsBox)
-        self.layout.addWidget(self.oswBox)
+        self.gLayout.addWidget(self.oswBox)
         self.imagesBox = QtGui.QCheckBox(tr('autoLoadImages'))
-        self.layout.addWidget(self.imagesBox)
+        self.cLayout.addWidget(self.imagesBox)
         self.jsBox = QtGui.QCheckBox(tr('enableJS'))
-        self.layout.addWidget(self.jsBox)
+        self.cLayout.addWidget(self.jsBox)
         self.storageBox = QtGui.QCheckBox(tr('enableStorage'))
-        self.layout.addWidget(self.storageBox)
+        self.cLayout.addWidget(self.storageBox)
         self.pluginsBox = QtGui.QCheckBox(tr('enablePlugins'))
-        self.layout.addWidget(self.pluginsBox)
+        self.cLayout.addWidget(self.pluginsBox)
+
         self.pbBox = QtGui.QCheckBox(tr('enablePB'))
-        self.layout.addWidget(self.pbBox)
+        self.pLayout.addWidget(self.pbBox)
+
         self.aBBox = QtGui.QCheckBox(tr('enableAB'))
         self.aBBox.stateChanged.connect(self.tryDownload)
         downloaderThread.fileDownloaded.connect(self.applyFilters)
-        self.layout.addWidget(self.aBBox)
+        self.cLayout.addWidget(self.aBBox)
         backendBox = QtGui.QLabel(tr('downloadBackend'))
-        self.layout.addWidget(backendBox)
+        backendBox.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        self.dLayout.addWidget(backendBox)
         self.selectBackend = QtGui.QComboBox()
         self.selectBackend.addItem('qt')
         self.selectBackend.addItem('python')
         self.selectBackend.addItem('aria2')
         self.selectBackend.addItem('axel')
-        self.layout.addWidget(self.selectBackend)
+        self.dLayout.addWidget(self.selectBackend)
         self.lDBox = QtGui.QCheckBox(tr('loginToDownload'))
-        self.layout.addWidget(self.lDBox)
+        self.dLayout.addWidget(self.lDBox)
         self.editSearchButton = QtGui.QPushButton(tr('manageSearchEngines'))
         try: self.editSearchButton.clicked.connect(searchEditor.display)
         except:
             doNothing()
-        self.layout.addWidget(self.editSearchButton)
+        self.gLayout.addWidget(self.editSearchButton)
+
+        proxyBox = QtGui.QLabel(tr('proxyConfig'))
+        self.pLayout.addWidget(proxyBox)
+        self.proxySel = QtGui.QComboBox()
+        self.proxySel.addItem('No')
+        self.proxySel.addItem('Socks5')
+        self.proxySel.addItem('HTTP')
+        self.pLayout.addWidget(self.proxySel)
+        self.hostnameBox = QtGui.QLineEdit()
+        self.pLayout.addWidget(self.hostnameBox)
+        self.portBox = QtGui.QLineEdit()
+        self.pLayout.addWidget(self.portBox)
+        self.userBox = QtGui.QLineEdit()
+        self.pLayout.addWidget(self.userBox)
+        self.passwordBox = QtGui.QLineEdit()
+        self.pLayout.addWidget(self.passwordBox)
+
         self.cToolBar = QtGui.QToolBar()
         self.cToolBar.setStyleSheet(blanktoolbarsheet)
         self.cToolBar.setMovable(False)
@@ -2233,6 +2279,25 @@ class CDialog(QtGui.QMainWindow):
                 f.write("")
                 f.close()
                 self.saveSettings()
+        try: self.settings['proxy']
+        except:
+            doNothing()
+        else:
+            pr = self.settings['proxy']
+            if pr['type']:
+                for i in range(self.proxySel.count()):
+                    u = self.proxySel[i]
+                    if pr['type'] == u:
+                        self.proxySel.setCurrentIndex[i]
+                        break
+            if pr['hostname']:
+                self.hostnameBox.setText(pr['hostname'])
+            if pr['port']:
+                self.portBox.setText(pr['port'])
+            if pr['user']:
+                self.userBox.setText(pr['user'])
+            if pr['password']:
+                self.portBox.setText(pr['password'])
         try:
             global app_windows
             for window in app_windows:
@@ -2243,7 +2308,7 @@ class CDialog(QtGui.QMainWindow):
         except:
             doNothing()
     def saveSettings(self):
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked()}
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}}
         settingsManager.settings = self.settings
         settingsManager.setBackend(unicode(self.selectBackend.currentText()).lower())
         settingsManager.saveSettings()

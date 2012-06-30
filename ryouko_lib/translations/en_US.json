@@ -1,4 +1,9 @@
 {
+"general": "&General",
+"content": "&Content",
+"downloads": "&Downloads",
+"privacy": "&Privacy",
+"proxyConfig": "Proxy configuration",
 "license": "Licensing terms",
 "help": "ryouko [-h|--help] [-P <profile name>] [-pb|--pb] [URLs]\n\n-h or --help: This help screen\n-pb or --pb: Opens [URLs] in private browsing mode\n-P <profile name>: Use a profile named <profile name> instead of the default profile.",
 "noPyQtError": "Ryouko requires PyQt4 to be installed. Please install PyQt4 and try again.",

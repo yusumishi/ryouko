@@ -17,3 +17,9 @@ def QStringList(li):
         return t
     else:
         return li
+
+def qstring(string):
+    return QString(string)
+
+def qstringlist(li):
+    return QStringList(li)
