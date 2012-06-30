@@ -145,7 +145,7 @@ def changeProfile(name, init = False):
     if not os.path.isdir(app_home):
         os.mkdir(app_home)
     else:
-        migrate = True
+        migrate = False
     if not os.path.isdir(app_profile_folder):
         os.makedirs(app_profile_folder)
     if not os.path.isdir(app_profile):
@@ -2266,6 +2266,14 @@ class CDialog(QtGui.QMainWindow):
         self.clearHistoryButton.clicked.connect(self.showHistoryDialog)
         self.aLayout.addWidget(self.clearHistoryButton)
 
+        sProfileLabel = QtGui.QLabel(tr('selectProfile') + ":")
+        self.profileList = QtGui.QListWidget()
+        self.addProfileButton = QtGui.QPushButton(tr("addProfile"))
+        self.addProfileButton.clicked.connect(self.addProfile)
+        self.aLayout.addWidget(sProfileLabel)
+        self.aLayout.addWidget(self.profileList)
+        self.aLayout.addWidget(self.addProfileButton)
+
         cloudLabel = QtGui.QLabel(tr("cloudService"))
         cloudLabel.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         cloudLabel2 = QtGui.QLabel(tr("cloudService2"))
@@ -2277,14 +2285,6 @@ class CDialog(QtGui.QMainWindow):
         self.aLayout.addWidget(cloudLabel)
         self.aLayout.addWidget(self.cloudBox)
         self.aLayout.addWidget(cloudLabel2)
-
-        sProfileLabel = QtGui.QLabel(tr('selectProfile') + ":")
-        self.profileList = QtGui.QListWidget()
-        self.addProfileButton = QtGui.QPushButton(tr("addProfile"))
-        self.addProfileButton.clicked.connect(self.addProfile)
-        self.aLayout.addWidget(sProfileLabel)
-        self.aLayout.addWidget(self.profileList)
-        self.aLayout.addWidget(self.addProfileButton)
 
         self.aLayout.addWidget(RExpander())
 
@@ -2462,7 +2462,8 @@ class CDialog(QtGui.QMainWindow):
         self.profileList.clear()
         l = os.listdir(app_profile_folder)
         for profile in l:
-            self.profileList.addItem(profile)
+            if os.path.isdir(os.path.join(app_profile_folder, profile)):
+                self.profileList.addItem(profile)
     def saveSettings(self):
         self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText())}
         f = open(app_default_profile_file, "w")

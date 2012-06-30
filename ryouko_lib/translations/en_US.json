@@ -4,7 +4,7 @@
 "downloads": "&Downloads",
 "browsing": "&Browsing",
 "data": "Da&ta",
-"cloudService": "Store settings and data in the cloud?",
+"cloudService": "Store a profile of this name in the cloud?",
 "cloudService2": "NOTE: If not \"No\", Ryouko will ignore local settings and data.",
 "selectProfile": "Select a profile to use",
 "addProfile": "Add Profile",
