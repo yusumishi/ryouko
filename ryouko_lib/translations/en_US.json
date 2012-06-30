@@ -100,7 +100,7 @@
 "clearHistoryTT": "<b>Clear History</b><br>Ctrl+Shift+Del",
 "clearHistoryDesc": "Select a range",
 "clearHistoryWarn": "Your selection will be cleared <b>permanently</b>. Are you sure?",
-"viewBookmarks": "View &Bookmarks",
+"viewBookmarks": "Manage &Bookmarks",
 "addBookmark": "Add a bookmark",
 "addBookmarkTT": "<b>Bookmark this page</b><br>Ctrl+D",
 "bookmarks": "&Bookmarks",
