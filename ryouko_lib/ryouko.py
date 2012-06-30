@@ -2449,7 +2449,7 @@ class CDialog(QtGui.QMainWindow):
     def addProfile(self):
         pname = inputDialog(tr('query'), tr('enterProfileName'))
         if pname:
-            os.makedirs(os.path.join(app_profile_folder, unicode(pname)))
+            try: os.makedirs(os.path.join(app_profile_folder, unicode(pname)))
             except:
                 message(tr("error"), tr("profileError2"), "warn")
         self.reloadProfiles()
