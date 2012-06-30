@@ -5,7 +5,7 @@
 "browsing": "&Browsing",
 "data": "Da&ta",
 "cloudService": "Store a profile of this name in the cloud?",
-"cloudService2": "NOTE: If not \"No\", Ryouko will ignore local settings and data.",
+"cloudService2": "NOTE: If not \"No\", Ryouko will ignore the local profile.",
 "selectProfile": "Select a profile to use",
 "addProfile": "Add Profile",
 "enterProfileName": "Enter a profile name here:",
