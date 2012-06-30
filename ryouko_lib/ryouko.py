@@ -1405,10 +1405,10 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             doNothing()
         else:
             pr = settingsManager.settings['proxy']
-            try:
-                exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy, qstring(" + pr['hostname'] + "), " + str(pr['port']) + ", qstring(" + pr['user'] + "), qstring(" + pr['password'] + "))")
-            except:
-                message(tr("error"), tr("proxyError"))
+#            try:
+            exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy, qstring(\"" + pr['hostname'] + "\"), int(\"" + str(pr['port']) + "\"), qstring(\"" + pr['user'] + "\"), qstring(\"" + pr['password'] + "\")))")
+#            except:
+#                message(tr("error"), tr("proxyError"))
         for child in range(1, len(self.newWindows)):
             try: self.newWindows[child].updateSettings()
             except:
@@ -2168,7 +2168,7 @@ class CDialog(QtGui.QMainWindow):
         self.proxySel = QtGui.QComboBox()
         self.proxySel.addItem('No')
         self.proxySel.addItem('Socks5')
-        self.proxySel.addItem('HTTP')
+        self.proxySel.addItem('Http')
         self.pLayout.addWidget(self.proxySel)
         self.hostnameBox = QtGui.QLineEdit()
         self.pLayout.addWidget(self.hostnameBox)
@@ -2286,9 +2286,9 @@ class CDialog(QtGui.QMainWindow):
             pr = self.settings['proxy']
             if pr['type']:
                 for i in range(self.proxySel.count()):
-                    u = self.proxySel[i]
+                    u = self.proxySel.itemText(i)
                     if pr['type'] == u:
-                        self.proxySel.setCurrentIndex[i]
+                        self.proxySel.setCurrentIndex(i)
                         break
             if pr['hostname']:
                 self.hostnameBox.setText(pr['hostname'])

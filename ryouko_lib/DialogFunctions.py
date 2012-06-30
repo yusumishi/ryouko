@@ -2,12 +2,15 @@
 
 import os, sys
 from PyQt4 import QtCore, QtGui
-
-def qstring(string):
-    if sys.version_info[0] <= 2:
-        return(QtCore.QString(string))
-    else:
-        return(string)
+try:
+    filename = __file__
+except:
+    __file__ = sys.executable
+else:
+    del filename
+app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(app_lib)
+from QStringFunctions import *
 
 def message(title="Alert", content="This is a message.", icon="info"):
     message = QtGui.QMessageBox()

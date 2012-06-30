@@ -3,13 +3,13 @@
 import sys
 from PyQt4 import QtCore
 
-def QString(string):
+def QString(string=""):
     if sys.version_info[0] <= 2:
         return(QtCore.QString(string))
     else:
         return(string)
 
-def QStringList(li):
+def QStringList(li=[]):
     if sys.version_info[0] <= 2:
         t = QtCore.QStringList()
         for i in li:
@@ -18,8 +18,8 @@ def QStringList(li):
     else:
         return li
 
-def qstring(string):
+def qstring(string=""):
     return QString(string)
 
-def qstringlist(li):
+def qstringlist(li=[]):
     return QStringList(li)
