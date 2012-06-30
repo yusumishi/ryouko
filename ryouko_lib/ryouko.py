@@ -215,18 +215,18 @@ def prepareQuit():
         os.remove(app_lock)
     saveCookies()
     try: settingsManager.settings['cloudService']
-    except:
-        doNothing()
+    except: doNothing()
     else:
         if settingsManager.settings['cloudService'] != "None":
-            bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name)
-            if os.path.exists(bck):
-                try: shutil.rmtree(bck)
-                except:
-                    try: os.remove(bck)
-                    except:
-                        doNothing()
-            shutil.copytree(app_profile, bck)
+            local_app_profile = os.path.join(app_profile_folder, app_profile_name)
+            if os.path.exists(os.path.join(local_app_profile, "settings.json")):
+                os.remove(os.path.join(local_app_profile, "settings.json"))
+            shutil.copy(os.path.join(app_profile, "settings.json"), local_app_profile)
+
+def touch(fname):
+    f = open(fname, "w")
+    f.write("")
+    f.close()
 
 class SearchManager(QtCore.QObject):
     def __init__(self, parent=None):
@@ -2125,6 +2125,7 @@ class CDialog(QtGui.QMainWindow):
         self.setings = {}
         self.initUI()
         self.filterListCount = 0
+        self.resize(320, 480)
     def initUI(self):
         closeWindowAction = QtGui.QAction(self)
         closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+P", "Esc"])
@@ -2261,6 +2262,10 @@ class CDialog(QtGui.QMainWindow):
         self.pLayout.addWidget(RExpander())
 
         # Data Management
+        self.clearHistoryButton = QtGui.QPushButton(tr('clearHistory'))
+        self.clearHistoryButton.clicked.connect(self.showHistoryDialog)
+        self.aLayout.addWidget(self.clearHistoryButton)
+
         cloudLabel = QtGui.QLabel(tr("cloudService"))
         cloudLabel.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         self.cloudBox = QtGui.QComboBox()
@@ -2270,7 +2275,7 @@ class CDialog(QtGui.QMainWindow):
         self.aLayout.addWidget(cloudLabel)
         self.aLayout.addWidget(self.cloudBox)
 
-        self.pLayout.addWidget(RExpander())
+        self.aLayout.addWidget(RExpander())
 
         self.cToolBar = QtGui.QToolBar()
         self.cToolBar.setStyleSheet(blanktoolbarsheet)
@@ -2286,6 +2291,9 @@ class CDialog(QtGui.QMainWindow):
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.cToolBar)
         self.loadSettings()
         settingsManager.saveSettings()
+    def showHistoryDialog(self):
+        clearHistoryDialog.display()    
+
     def checkOSWBox(self):
         if self.openTabsBox.isChecked():
             self.oswBox.setCheckState(QtCore.Qt.Unchecked)
@@ -3083,9 +3091,9 @@ class Ryouko(QtGui.QWidget):
         else:
             if settingsManager.settings['cloudService'] != "None":
                 bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name)
-                if os.path.isdir(os.path.join(app_profile_folder, app_profile_name)) and os.path.isdir(bck):
-                    shutil.rmtree(os.path.join(app_profile_folder, app_profile_name))
-                    shutil.copytree(bck, os.path.join(app_profile_folder, app_profile_name))
+                global app_profile
+                app_profile = bck
+                settingsManager.changeProfile(bck)
         global library
         global searchEditor
         global cDialog
