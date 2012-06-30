@@ -1,4 +1,13 @@
 {
+"general": "&General",
+"content": "&Contenido",
+"downloads": "&Descargas",
+"privacy": "&Vida Privada",
+"proxyConfig": "<b>Proxy configuration</b>",
+"hostname": "Hostname",
+"port": "Port",
+"user": "User",
+"password": "Password",
 "license": "Términos de la licencia",
 "help": "ryouko [-h|--help] [-P <nombre del configuración>] [-pb|--pb] [URLs]\n\n-h o --help: Este ayuda\n-pb o --pb: Abrir las [URLs] en el modo de navegación privada\n-P <nombre del configuración>: Usar un configuración nuevo se llama <nombre del configuración> en lugar del carpeta defecto. Si el configuración ya existe, Ryouko va a cargar el carpeta que existe previamente.",
 "noPyQtError": "Ryouko necesitas PyQt4 para funcionar. Por favor, instalar PyQt4 y volver a probar.",
