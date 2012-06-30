@@ -4,6 +4,7 @@
 "downloads": "&Downloads",
 "privacy": "&Privacy",
 "proxyConfig": "<b>Proxy configuration</b>",
+"type": "Type",
 "hostname": "Hostname",
 "port": "Port",
 "user": "User",
