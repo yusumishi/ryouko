@@ -2262,12 +2262,15 @@ class CDialog(QtGui.QMainWindow):
 
         # Data Management
         cloudLabel = QtGui.QLabel(tr("cloudService"))
+        cloudLabel.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         self.cloudBox = QtGui.QComboBox()
         self.cloudBox.addItem("None")
         self.cloudBox.addItem("Dropbox")
         self.cloudBox.addItem("Ubuntu One")
         self.aLayout.addWidget(cloudLabel)
         self.aLayout.addWidget(self.cloudBox)
+
+        self.pLayout.addWidget(RExpander())
 
         self.cToolBar = QtGui.QToolBar()
         self.cToolBar.setStyleSheet(blanktoolbarsheet)
