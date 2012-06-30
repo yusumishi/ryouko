@@ -2449,7 +2449,7 @@ class CDialog(QtGui.QMainWindow):
         self.reloadProfiles()
     def reloadProfiles(self):
         self.profileList.clear()
-        l = os.path.listdir(app_profile_folder)
+        l = os.listdir(app_profile_folder)
         for profile in l:
             self.profileList.addItem(profile)
     def saveSettings(self):
