@@ -3086,16 +3086,24 @@ win = None
 
 class Ryouko(QtGui.QWidget):
     def __init__(self):
-        settingsManager.loadSettings()
-        try: settingsManager.settings['cloudService']
+        try:
+            settingsManager.loadSettings()
+            try: settingsManager.settings['cloudService']
+            except:
+                doNothing()
+            else:
+                if settingsManager.settings['cloudService'] != tr('noThanks'):
+                    bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name)
+                    a = ""
+                    for char in settingsManager.settings['cloudService']:
+                        a = a + char
+                    global app_profile
+                    app_profile = bck
+                    settingsManager.changeProfile(bck)
+                    settingsManager.settings['cloudService'] = a
+                    settingsManager.saveSettings()
         except:
             doNothing()
-        else:
-            if settingsManager.settings['cloudService'] != tr('noThanks'):
-                bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name)
-                global app_profile
-                app_profile = bck
-                settingsManager.changeProfile(bck)
         global library
         global searchEditor
         global cDialog
