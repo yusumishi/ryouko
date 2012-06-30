@@ -54,6 +54,7 @@ from SettingsManager import *
 from DownloaderThread import *
 from DialogFunctions import *
 from RTabWidget import *
+from RExpander import *
 from RHBoxLayout import *
 from NotificationManager import *
 from TranslationManager import *
@@ -2149,11 +2150,13 @@ class CDialog(QtGui.QMainWindow):
 
         self.pbBox = QtGui.QCheckBox(tr('enablePB'))
         self.pLayout.addWidget(self.pbBox)
+        self.pLayout.addWidget(RExpander())
 
         self.aBBox = QtGui.QCheckBox(tr('enableAB'))
         self.aBBox.stateChanged.connect(self.tryDownload)
         downloaderThread.fileDownloaded.connect(self.applyFilters)
         self.cLayout.addWidget(self.aBBox)
+        self.cLayout.addWidget(RExpander())
         backendBox = QtGui.QLabel(tr('downloadBackend'))
         backendBox.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         self.dLayout.addWidget(backendBox)
@@ -2165,11 +2168,13 @@ class CDialog(QtGui.QMainWindow):
         self.dLayout.addWidget(self.selectBackend)
         self.lDBox = QtGui.QCheckBox(tr('loginToDownload'))
         self.dLayout.addWidget(self.lDBox)
+        self.dLayout.addWidget(RExpander())
         self.editSearchButton = QtGui.QPushButton(tr('manageSearchEngines'))
         try: self.editSearchButton.clicked.connect(searchEditor.display)
         except:
             doNothing()
         self.gLayout.addWidget(self.editSearchButton)
+        self.gLayout.addWidget(RExpander())
 
         proxyBox = QtGui.QLabel(tr('proxyConfig'))
         self.pLayout.addWidget(proxyBox)
