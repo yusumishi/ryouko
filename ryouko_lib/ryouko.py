@@ -55,6 +55,7 @@ from DownloaderThread import *
 from DialogFunctions import *
 from RTabWidget import *
 from RExpander import *
+from RPrintPreviewDialog import *
 from RHBoxLayout import *
 from NotificationManager import *
 from TranslationManager import *
@@ -1458,12 +1459,20 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         self.autoBack.stop()
 
     def printPage(self):
+        widgetRack = QtGui.QMainWindow(self)
+        widgetRack.setWindowTitle(qstring(tr('printPreview')))
+        widgetRack.resize(640, 480)
+        closeWidgetRackAction = QtGui.QAction(self)
+        closeWidgetRackAction.setShortcut('Ctrl+W')
+        closeWidgetRackAction.triggered.connect(widgetRack.deleteLater)
+        widgetRack.addAction(closeWidgetRackAction)
         self.printer = QtGui.QPrinter()
         self.page().mainFrame().render(self.printer.paintEngine().painter())
-        q = QtGui.QPrintDialog(self.printer)
-        q.open()
+        q = RPrintPreviewDialog(self.printer, widgetRack)
+        q.previewWidget.paintRequested.connect(self.print)
+        q.show()
+        widgetRack.show()
         q.accepted.connect(self.finishPrintPage)
-        q.exec_()
 
     def finishPrintPage(self):
         self.print(self.printer)

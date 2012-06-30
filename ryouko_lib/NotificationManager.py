@@ -9,6 +9,7 @@ except:
 else:
     del filename
 app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(app_lib)
 app_icons = os.path.join(app_lib, 'icons')
 if sys.platform.startswith("win"):
     app_logo = os.path.join(app_icons, 'about-logo.png')

@@ -128,6 +128,7 @@
 "newWindowBtnTT": "<b>Ventana nuevo</b><br>Ctrl+N",
 "savePageAs": "&Guardar este página...",
 "print": "Im&primir",
+"printPreview": "Vista previa de impresión",
 "downloadsInProgress": "Tienes descargas en progreso. ¿Estás seguro de cerrar el programma?",
 "closeTab": "&Cerrar pestaña",
 "closeLeftTabs": "Cerrar las pestañas en la &izquierda",
