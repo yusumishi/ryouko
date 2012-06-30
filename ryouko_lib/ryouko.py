@@ -2284,7 +2284,7 @@ class CDialog(QtGui.QMainWindow):
         self.addProfileButton.clicked.connect(self.addProfile)
         self.aLayout.addWidget(sProfileLabel)
         self.aLayout.addWidget(self.profileList)
-        self.aLayout.addWidget(self.addProfileButon)
+        self.aLayout.addWidget(self.addProfileButton)
 
         self.aLayout.addWidget(RExpander())
 
