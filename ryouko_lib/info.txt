@@ -1,4 +1,4 @@
-0.9.2pre
-Izumi
+0.10.0
+Kyouko
 
-Kanji: 愛
+Kanji: 京子
