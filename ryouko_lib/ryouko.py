@@ -217,7 +217,7 @@ def prepareQuit():
     try: settingsManager.settings['cloudService']
     except: doNothing()
     else:
-        if settingsManager.settings['cloudService'] != tr('noThanks'):
+        if settingsManager.settings['cloudService'] != "No":
             local_app_profile = os.path.join(app_profile_folder, app_profile_name)
             if os.path.exists(os.path.join(local_app_profile, "settings.json")):
                 os.remove(os.path.join(local_app_profile, "settings.json"))
@@ -2269,7 +2269,7 @@ class CDialog(QtGui.QMainWindow):
         cloudLabel = QtGui.QLabel(tr("cloudService"))
         cloudLabel.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         self.cloudBox = QtGui.QComboBox()
-        self.cloudBox.addItem(tr('noThanks'))
+        self.cloudBox.addItem("No")
         self.cloudBox.addItem("Dropbox")
         self.cloudBox.addItem("Ubuntu One")
         self.aLayout.addWidget(cloudLabel)
@@ -3092,7 +3092,7 @@ class Ryouko(QtGui.QWidget):
             except:
                 doNothing()
             else:
-                if settingsManager.settings['cloudService'] != tr('noThanks'):
+                if settingsManager.settings['cloudService'] != "No":
                     bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name)
                     a = ""
                     for char in settingsManager.settings['cloudService']:
