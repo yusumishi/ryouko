@@ -2278,6 +2278,14 @@ class CDialog(QtGui.QMainWindow):
         self.aLayout.addWidget(self.cloudBox)
         self.aLayout.addWidget(cloudLabel2)
 
+        sProfileLabel = QtGui.QLabel(tr('selectProfile') + ":")
+        self.profileList = QtGui.QListWidget()
+        self.addProfileButton = QtGui.QPushButton(tr("reallyAdd"))
+        self.addProfileButton.clicked.connect(self.addProfile)
+        self.aLayout.addWidget(sProfileLabel)
+        self.aLayout.addWidget(self.profileList)
+        self.aLayout.addWidget(self.addProfileButon)
+
         self.aLayout.addWidget(RExpander())
 
         self.cToolBar = QtGui.QToolBar()
@@ -2413,6 +2421,16 @@ class CDialog(QtGui.QMainWindow):
                 if self.settings['cloudService'] == u:
                     self.cloudBox.setCurrentIndex(i)
                     break
+        self.reloadProfiles()
+        if os.path.exists(app_default_profile_file):
+            f = open(app_default_profile_file)
+            d = f.read().replace("\n", "")
+            f.close()
+            for i in range(len(self.profileList.count())):
+                u = self.profileList.item(i).text()
+                if unicode(u) == d:
+                    self.profileList.setCurrentRow(i)
+                    break
         try:
             global app_windows
             for window in app_windows:
@@ -2422,8 +2440,23 @@ class CDialog(QtGui.QMainWindow):
                     doNothing()
         except:
             doNothing()
+    def addProfile(self):
+        pname = inputDialog(tr('query'), tr('enterProfileName'))
+        if pname:
+            try: os.makedirs(os.path.join(app_profile_folder, pname))
+            except:
+                message(tr("error"), tr("profileError"), "warn")
+        self.reloadProfiles()
+    def reloadProfiles(self):
+        self.profileList.clear()
+        l = os.path.listdir(app_profile_folder)
+        for profile in l:
+            self.profileList.addItem(profile)
     def saveSettings(self):
         self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText())}
+        f = open(app_default_profile_file, "w")
+        f.write(unicode(self.profileList.currentItem().text()))
+        f.close()
         settingsManager.settings = self.settings
         settingsManager.setBackend(unicode(self.selectBackend.currentText()).lower())
         settingsManager.saveSettings()
