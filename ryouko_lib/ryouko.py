@@ -1248,7 +1248,7 @@ class RWebView(QtWebKit.QWebView):
         self.addAction(self.savePageAction)
 
         self.printPageAction = QtGui.QAction(self)
-        self.printPageAction.triggered.connect(self.printPage)
+        self.printPageAction.triggered.connect(self.printPreview)
         self.addAction(self.printPageAction)
 
         self.nextAction = QtGui.QAction(self)
@@ -1459,6 +1459,14 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         self.autoBack.stop()
 
     def printPage(self):
+        self.printer = QtGui.QPrinter()
+        self.page().mainFrame().render(self.printer.paintEngine().painter())
+        q = QtGui.QPrintDialog(self.printer)
+        q.open()
+        q.accepted.connect(self.finishPrintPage)
+        q.exec_()
+
+    def printPreview(self):
         widgetRack = QtGui.QMainWindow(self)
         widgetRack.setWindowTitle(qstring(tr('printPreview')))
         widgetRack.resize(640, 480)
@@ -2731,6 +2739,11 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addAction(printAction)
         self.addAction(printAction)
 
+        printPreviewAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-print-preview", QtGui.QIcon(os.path.join(app_icons, 'printpreview.png'))), tr('printPreviewHKey'), self)
+        printPreviewAction.triggered.connect(self.printPreview)
+        self.mainMenu.addAction(printPreviewAction)
+        self.addAction(printPreviewAction)
+
         self.mainMenu.addSeparator()
 
         # Undo closed tab button
@@ -2916,7 +2929,9 @@ self.origY + ev.globalY() - self.mouseY)
 
     def printPage(self):
         self.tabs.widget(self.tabs.currentIndex()).webView.printPage()
-#        message(tr("error"), "Sorry, this function does not work yet.", "warn")
+
+    def printPreview(self):
+        self.tabs.widget(self.tabs.currentIndex()).webView.printPreview()
 
     def hideInspectors(self):
         for tab in range(self.tabs.count()):
