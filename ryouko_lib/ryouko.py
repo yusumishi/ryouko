@@ -1410,8 +1410,11 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             up = ""
             if pr['user'] != "" and pr['password'] != "":
                 up = ", qstring(\"" + pr['user'] + "\"), qstring(\"" + pr['password'] + "\")"
-            print("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy, qstring(\"" + pr['hostname'] + "\"), int(\"" + str(pr['port']) + "\")" + up + "))")
-            exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy, qstring(\"" + pr['hostname'] + "\"), int(\"" + str(pr['port']) + "\")" + up + "))")
+            try: exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy, qstring(\"" + pr['hostname'] + "\"), int(\"" + str(pr['port']) + "\")" + up + "))")
+            except:
+                try: exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy")
+                except:
+                    doNothing()
 #            except:
 #                message(tr("error"), tr("proxyError"))
         for child in range(1, len(self.newWindows)):
