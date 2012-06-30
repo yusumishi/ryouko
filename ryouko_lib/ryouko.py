@@ -2280,7 +2280,7 @@ class CDialog(QtGui.QMainWindow):
 
         sProfileLabel = QtGui.QLabel(tr('selectProfile') + ":")
         self.profileList = QtGui.QListWidget()
-        self.addProfileButton = QtGui.QPushButton(tr("reallyAdd"))
+        self.addProfileButton = QtGui.QPushButton(tr("addProfile"))
         self.addProfileButton.clicked.connect(self.addProfile)
         self.aLayout.addWidget(sProfileLabel)
         self.aLayout.addWidget(self.profileList)
@@ -2426,9 +2426,15 @@ class CDialog(QtGui.QMainWindow):
             f = open(app_default_profile_file)
             d = f.read().replace("\n", "")
             f.close()
-            for i in range(len(self.profileList.count())):
+            for i in range(self.profileList.count()):
                 u = self.profileList.item(i).text()
                 if unicode(u) == d:
+                    self.profileList.setCurrentRow(i)
+                    break
+        else:
+            for i in range(self.profileList.count()):
+                u = self.profileList.item(i).text()
+                if unicode(u) == app_default_profile_name:
                     self.profileList.setCurrentRow(i)
                     break
         try:
@@ -2443,10 +2449,15 @@ class CDialog(QtGui.QMainWindow):
     def addProfile(self):
         pname = inputDialog(tr('query'), tr('enterProfileName'))
         if pname:
-            try: os.makedirs(os.path.join(app_profile_folder, pname))
+            os.makedirs(os.path.join(app_profile_folder, unicode(pname)))
             except:
-                message(tr("error"), tr("profileError"), "warn")
+                message(tr("error"), tr("profileError2"), "warn")
         self.reloadProfiles()
+        for i in range(self.profileList.count()):
+            u = self.profileList.item(i).text()
+            if unicode(u) == app_default_profile_name:
+                self.profileList.setCurrentRow(i)
+                break
     def reloadProfiles(self):
         self.profileList.clear()
         l = os.listdir(app_profile_folder)
