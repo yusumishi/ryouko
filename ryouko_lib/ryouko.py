@@ -2125,17 +2125,17 @@ class CDialog(QtGui.QMainWindow):
         self.cWidget.setLayout(self.cLayout)
         self.tabs.addTab(self.cWidget, tr('content'))
 
+        # Privacy settings page
+        self.pWidget = QtGui.QWidget()
+        self.pLayout = QtGui.QVBoxLayout()
+        self.pWidget.setLayout(self.pLayout)
+        self.tabs.addTab(self.pWidget, tr('browsing'))
+
         # Download settings page
         self.dWidget = QtGui.QWidget()
         self.dLayout = QtGui.QVBoxLayout()
         self.dWidget.setLayout(self.dLayout)
         self.tabs.addTab(self.dWidget, tr('downloads'))
-
-        # Privacy settings page
-        self.pWidget = QtGui.QWidget()
-        self.pLayout = QtGui.QVBoxLayout()
-        self.pWidget.setLayout(self.pLayout)
-        self.tabs.addTab(self.pWidget, tr('privacy'))
 
         newWindowBox = QtGui.QLabel(tr('newWindowOption0'))
         self.gLayout.addWidget(newWindowBox)
