@@ -219,7 +219,7 @@ def prepareQuit():
         doNothing()
     else:
         if settingsManager.settings['cloudService'] != "None":
-            bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'])
+            bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name)
             if os.path.exists(bck):
                 try: shutil.rmtree(bck)
                 except:
