@@ -62,6 +62,7 @@ from TranslationManager import *
 from DownloadManager import *
 
 app_windows = []
+app_webviews = []
 app_closed_windows = []
 app_info = os.path.join(app_lib, "info.txt")
 app_icons = os.path.join(app_lib, 'icons')
@@ -91,6 +92,30 @@ if sys.platform.startswith("win"):
 else:
     app_logo = os.path.join(app_icons, "logo.svg")
 user_links = ""
+
+def loadCookies():
+    global app_cookiejar
+    app_cookiejar = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
+    if os.path.exists(app_cookies):
+        cookieFile = open(app_cookies, "rb")
+        try: c = json.load(cookieFile)
+        except:
+            print("Error! Cookies could not be loaded!")
+            c = []
+        else:
+            doNothing()
+        cookieFile.close()
+        for cookie in c:
+            cookie = QtCore.QByteArray(cookie)
+    else:
+        c = []
+    cookies = []
+    for cookie in c:
+        cookies.append(QtNetwork.QNetworkCookie().parseCookies(cookie)[0])
+    app_cookiejar.setAllCookies(cookies)
+    for i in app_webviews:
+        if i.pb == False:
+            i.page().networkAccessManager().setCookieJar(app_cookiejar)
 
 def saveCookies():
     if app_kill_cookies == False:
@@ -1202,6 +1227,8 @@ class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
     def __init__(self, parent=False, pb=False):
         super(RWebView, self).__init__()
+        global app_webviews
+        app_webviews.append(self)
         self.parent = parent
         self.autoBack = QtCore.QTimer()
         self.autoBack.timeout.connect(self.autoGoBack)
@@ -1305,6 +1332,7 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.checkForAds)
         self.updateSettings()
         self.establishPBMode(pb)
+        loadCookies()
         self.loadFinished.connect(self.loadLinks)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == ""):
             self.buildNewTabPage()
@@ -1467,20 +1495,12 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         q.exec_()
 
     def printPreview(self):
-        widgetRack = QtGui.QMainWindow(self)
-        widgetRack.setWindowTitle(qstring(tr('printPreview')))
-        widgetRack.resize(640, 480)
-        closeWidgetRackAction = QtGui.QAction(self)
-        closeWidgetRackAction.setShortcut('Ctrl+W')
-        closeWidgetRackAction.triggered.connect(widgetRack.deleteLater)
-        widgetRack.addAction(closeWidgetRackAction)
         self.printer = QtGui.QPrinter()
-        self.page().mainFrame().render(self.printer.paintEngine().painter())
-        q = RPrintPreviewDialog(self.printer, widgetRack)
-        q.previewWidget.paintRequested.connect(self.print)
-        q.show()
-        widgetRack.show()
-        q.accepted.connect(self.finishPrintPage)
+        q = QtGui.QPrintPreviewDialog(self.printer, self)
+        q.paintRequested.connect(self.print)
+        q.resize(640, 480)
+        q.exec_()
+        q.deleteLater()
 
     def finishPrintPage(self):
         self.print(self.printer)
@@ -2508,8 +2528,6 @@ class TabBrowser(QtGui.QMainWindow):
             else:
                 if os.path.exists(os.path.join(app_icons, 'about-logo.png')):
                     self.setWindowIcon(QtGui.QIcon(os.path.join(app_icons, 'about-logo.png')))
-        self.cookieJar = app_cookiejar
-        self.loadCookies()
         self.tabCount = 0
         self.closed = False
         self.closedTabList = []
@@ -2572,25 +2590,6 @@ self.origY + ev.globalY() - self.mouseY)
     def checkTempFiles(self):
         if app_kill_temp_files == True:
             shred_directory(os.path.join(app_profile, "temp"))
-
-    def loadCookies(self):
-        if os.path.exists(app_cookies):
-            cookieFile = open(app_cookies, "rb")
-            try: c = json.load(cookieFile)
-            except:
-                print("Error! Cookies could not be loaded!")
-                c = []
-            else:
-                doNothing()
-            cookieFile.close()
-            for cookie in c:
-                cookie = QtCore.QByteArray(cookie)
-        else:
-            c = []
-        cookies = []
-        for cookie in c:
-            cookies.append(QtNetwork.QNetworkCookie().parseCookies(cookie)[0])
-        self.cookieJar.setAllCookies(cookies)
 
     def quit(self):
         q = QtGui.QMessageBox.Yes
@@ -3083,24 +3082,25 @@ self.origY + ev.globalY() - self.mouseY)
         self.searchHistoryField.selectAll()
 
 
-    def closeTab(self, index=False):
+    def closeTab(self, index=False, permanent=False):
         if not index:
             index = self.tabs.currentIndex()
         if self.tabs.count() > 0:
-            if not self.tabs.widget(index).webView.pb and not unicode(self.tabs.widget(index).webView.url().toString()) == "" and not unicode(self.tabs.widget(index).webView.url().toString()) == "about:blank":
+            if (self.tabs.widget(index).webView.pb) or (unicode(self.tabs.widget(index).webView.url().toString()) == "" or unicode(self.tabs.widget(index).webView.url().toString()) == "about:blank") or permanent==True:
+                saveCookies()
+                self.tabs.widget(index).webView.page().deleteLater()
+                self.tabs.widget(index).webView.deleteLater()
+                self.tabs.widget(index).deleteLater()
+                loadCookies()
+            else:
                 self.closedTabList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
-            self.tabs.widget(index).webView.load(QtCore.QUrl("about:blank"))
+                self.tabs.widget(index).webView.load(QtCore.QUrl("about:blank"))
             self.tabs.removeTab(index)
             if self.tabs.count() == 0:
                 self.close()
 
     def permanentCloseTab(self):
-        index = self.tabs.currentIndex()
-        pb = self.tabs.widget(index).pb
-        url = unicode(self.tabs.widget(index).webView.url().toString())
-        self.closeTab()
-        if not pb and not url == "" and not url == "about:blank":
-            del self.closedTabList[len(self.closedTabList) - 1]
+        self.closeTab(self.tabs.currentIndex(), True)
 
     def closeLeftTabs(self):
         t = self.tabs.currentIndex()
