@@ -1234,7 +1234,7 @@ class RWebView(QtWebKit.QWebView):
         self.autoBack.timeout.connect(self.autoGoBack)
         self.destinations = []
         self.autoSaveInterval = 0
-        self.loadFinished.connect(self.autoSave)
+        self.urlChanged.connect(self.autoSave)
         self.printer = None
         self.replies = []
         self.newWindows = [0]
