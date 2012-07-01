@@ -1848,6 +1848,7 @@ class Browser(QtGui.QMainWindow):
         if not self.pb:
             self.urlBar2.textChanged.connect(self.searchHistory)
         self.webView.urlChanged.connect(self.updateText)
+        self.webView.loadFinished.connect(self.enableDisableBF)
         if not self.pb:
             self.webView.urlChanged.connect(browserHistory.reload)
             self.webView.titleChanged.connect(browserHistory.reload)
@@ -2016,6 +2017,16 @@ class Browser(QtGui.QMainWindow):
         self.zoomInButton.clicked.connect(self.zoomIn)
         self.zoomSlider.valueChanged.connect(self.zoom)
         self.webView.show()
+
+    def enableDisableBF(self):
+        if self.webView.page().history().canGoBack():
+            self.mainToolBar.widgetForAction(self.backAction).setEnabled(True)
+        else:
+            self.mainToolBar.widgetForAction(self.backAction).setEnabled(False)
+        if self.webView.page().history().canGoForward():
+            self.mainToolBar.widgetForAction(self.nextAction).setEnabled(True)
+        else:
+            self.mainToolBar.widgetForAction(self.nextAction).setEnabled(False)
 
     def historyUp(self):
         if self.historyCompletion.currentRow() == 0 and self.historyCompletion.hasFocus():
