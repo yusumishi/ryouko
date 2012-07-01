@@ -2757,7 +2757,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addSeparator()
 
         # Save page action
-        savePageAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-save-as", QtGui.QIcon(os.path.join(app_icons, 'saveas.png'))), tr('savePageAs'), self)
+        savePageAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-save-as", QtGui.QIcon(os.path.join(app_icons, 'saveas.png'))), tr('saveAs'), self)
         savePageAction.setShortcut('Ctrl+S')
         savePageAction.triggered.connect(self.savePage)
         self.mainMenu.addAction(savePageAction)
