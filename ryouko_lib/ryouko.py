@@ -95,6 +95,7 @@ user_links = ""
 
 def loadCookies():
     global app_cookiejar
+    del app_cookiejar
     app_cookiejar = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
     if os.path.exists(app_cookies):
         cookieFile = open(app_cookies, "rb")
@@ -113,9 +114,14 @@ def loadCookies():
     for cookie in c:
         cookies.append(QtNetwork.QNetworkCookie().parseCookies(cookie)[0])
     app_cookiejar.setAllCookies(cookies)
+
+def distributeCookies():
     for i in app_webviews:
         if i.pb == False:
-            i.page().networkAccessManager().setCookieJar(app_cookiejar)
+            try: i.page().networkAccessManager().setCookieJar(app_cookiejar)
+            except:
+                loadCookies()
+                i.page().networkAccessManager().setCookieJar(app_cookiejar)
 
 def saveCookies():
     if app_kill_cookies == False:
@@ -1332,7 +1338,7 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.checkForAds)
         self.updateSettings()
         self.establishPBMode(pb)
-        loadCookies()
+        distributeCookies()
         self.loadFinished.connect(self.loadLinks)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == ""):
             self.buildNewTabPage()
@@ -3088,8 +3094,6 @@ self.origY + ev.globalY() - self.mouseY)
         if self.tabs.count() > 0:
             if (self.tabs.widget(index).webView.pb) or (unicode(self.tabs.widget(index).webView.url().toString()) == "" or unicode(self.tabs.widget(index).webView.url().toString()) == "about:blank") or permanent==True:
                 saveCookies()
-                self.tabs.widget(index).webView.page().deleteLater()
-                self.tabs.widget(index).webView.deleteLater()
                 self.tabs.widget(index).deleteLater()
                 loadCookies()
             else:
@@ -3176,6 +3180,7 @@ class Ryouko(QtGui.QWidget):
                     settingsManager.saveSettings()
         except:
             doNothing()
+        loadCookies()
         global library
         global searchEditor
         global cDialog
