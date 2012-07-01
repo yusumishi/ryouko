@@ -1233,6 +1233,8 @@ class RWebView(QtWebKit.QWebView):
         self.autoBack = QtCore.QTimer()
         self.autoBack.timeout.connect(self.autoGoBack)
         self.destinations = []
+        self.autoSaveInterval = 0
+        self.loadFinished.connect(self.autoSave)
         self.printer = None
         self.replies = []
         self.newWindows = [0]
@@ -1344,6 +1346,12 @@ class RWebView(QtWebKit.QWebView):
             app_windows.append(self)
         else:
             self.isWindow = False
+
+    def autoSave(self):
+        self.autoSaveInterval += 1
+        if self.autoSaveInterval == 4:
+            saveCookies()
+            self.autoSaveInterval = 0
 
     def closeEvent(self, ev):
         if self.isWindow == True:
