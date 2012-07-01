@@ -95,8 +95,6 @@ user_links = ""
 
 def loadCookies():
     global app_cookiejar
-    del app_cookiejar
-    app_cookiejar = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
     if os.path.exists(app_cookies):
         cookieFile = open(app_cookies, "rb")
         try: c = json.load(cookieFile)
@@ -114,14 +112,6 @@ def loadCookies():
     for cookie in c:
         cookies.append(QtNetwork.QNetworkCookie().parseCookies(cookie)[0])
     app_cookiejar.setAllCookies(cookies)
-
-def distributeCookies():
-    for i in app_webviews:
-        if i.pb == False:
-            try: i.page().networkAccessManager().setCookieJar(app_cookiejar)
-            except:
-                loadCookies()
-                i.page().networkAccessManager().setCookieJar(app_cookiejar)
 
 def saveCookies():
     if app_kill_cookies == False:
@@ -1338,7 +1328,6 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.checkForAds)
         self.updateSettings()
         self.establishPBMode(pb)
-        distributeCookies()
         self.loadFinished.connect(self.loadLinks)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == ""):
             self.buildNewTabPage()
@@ -1413,10 +1402,8 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, False)
         if not pb:
             try:
-                if type(self.parent) == Browser:
-                    self.page().networkAccessManager().setCookieJar(self.parent.parent.cookieJar)
-                else:
-                    self.page().networkAccessManager().setCookieJar(self.parent.cookieJar)
+                self.page().networkAccessManager().setCookieJar(app_cookiejar)
+                app_cookiejar.setParent(QtCore.QCoreApplication.instance())
             except:
                 doNothing()
         else:
@@ -1504,7 +1491,6 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         self.printer = QtGui.QPrinter()
         q = QtGui.QPrintPreviewDialog(self.printer, self)
         q.paintRequested.connect(self.print)
-        q.resize(640, 480)
         q.exec_()
         q.deleteLater()
 
@@ -3093,9 +3079,10 @@ self.origY + ev.globalY() - self.mouseY)
             index = self.tabs.currentIndex()
         if self.tabs.count() > 0:
             if (self.tabs.widget(index).webView.pb) or (unicode(self.tabs.widget(index).webView.url().toString()) == "" or unicode(self.tabs.widget(index).webView.url().toString()) == "about:blank") or permanent==True:
-                saveCookies()
+                self.tabs.widget(index).webView.page().networkAccessManager().setCookieJar(QtNetwork.QNetworkCookieJar())
+                self.tabs.widget(index).webView.page().deleteLater()
+                self.tabs.widget(index).webView.deleteLater()
                 self.tabs.widget(index).deleteLater()
-                loadCookies()
             else:
                 self.closedTabList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
                 self.tabs.widget(index).webView.load(QtCore.QUrl("about:blank"))
