@@ -54,6 +54,7 @@ from SettingsManager import *
 from DownloaderThread import *
 from DialogFunctions import *
 from RTabWidget import *
+from ViewSourceDialog import *
 from RExpander import *
 from RPrintPreviewDialog import *
 from RHBoxLayout import *
@@ -141,6 +142,7 @@ except:
     sys.exit()
 
 app_cookiejar = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
+
 
 class RSettingsManager(SettingsManager):
     def errorMessage(self, backend):
@@ -1254,6 +1256,11 @@ class RWebView(QtWebKit.QWebView):
 
         self.titleChanged.connect(self.updateTitle)
 
+        self.viewSourceAction = QtGui.QAction(self)
+        self.viewSourceAction.setShortcut("Ctrl+Alt+U")
+        self.viewSourceAction.triggered.connect(self.viewSource)
+        self.addAction(self.viewSourceAction)
+
         self.buildNewTabPageAction = QtGui.QAction(self)
         self.buildNewTabPageAction.setShortcut("F1")
         self.buildNewTabPageAction.triggered.connect(self.buildNewTabPage)
@@ -1512,6 +1519,15 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
 
     def savePage(self):
         self.downloadFile(QtNetwork.QNetworkRequest(self.url()))
+
+    def viewSource(self):
+        nm = self.page().networkAccessManager()
+        reply = nm.get(QtNetwork.QNetworkRequest(self.url()))
+        global s
+        s = ViewSourceDialog(reply, None)
+        s.show()
+        s.resize(640, 480)
+        s.setWindowIcon(self.icon())
 
     def downloadFile(self, request, fname = ""):
         if not os.path.isdir(os.path.dirname(fname)):
@@ -2857,6 +2873,12 @@ self.origY + ev.globalY() - self.mouseY)
             exec("numActions[action].triggered.connect(self.activateTab" + str(action + 1) + ")")
             self.addAction(numActions[action])
 
+        viewSourceAction = QtGui.QAction(tr("viewSource"), self)
+        viewSourceAction.setShortcut("Ctrl+Alt+U")
+        viewSourceAction.triggered.connect(self.viewSource)
+        self.mainMenu.addAction(viewSourceAction)
+        self.mainMenu.addSeparator()
+
         # Config button
         configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_icons, 'settings.png'))), tr('preferencesButton'), self)
         configAction.setToolTip(tr('preferencesButtonTT'))
@@ -2910,6 +2932,9 @@ self.origY + ev.globalY() - self.mouseY)
             if self.tabs.count() == 0:
                 self.newTab()
                 self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
+
+    def viewSource(self):
+        self.tabs.widget(self.tabs.currentIndex()).webView.viewSource()
 
     def activateTab1(self):
         self.tabs.setCurrentIndex(0)

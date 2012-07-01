@@ -3,12 +3,10 @@
 import os.path, sys
 from PyQt4 import QtCore, QtGui
 try:
-    filename = __file__
+    __file__
 except:
     __file__ = sys.executable
-else:
-    del filename
-app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+app_lib = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(app_lib)
 app_icons = os.path.join(app_lib, 'icons')
 if sys.platform.startswith("win"):
