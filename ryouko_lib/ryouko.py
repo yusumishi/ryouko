@@ -62,7 +62,6 @@ from TranslationManager import *
 from DownloadManager import *
 
 app_windows = []
-app_webviews = []
 app_closed_windows = []
 app_info = os.path.join(app_lib, "info.txt")
 app_icons = os.path.join(app_lib, 'icons')
@@ -1223,8 +1222,6 @@ class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
     def __init__(self, parent=False, pb=False):
         super(RWebView, self).__init__()
-        global app_webviews
-        app_webviews.append(self)
         self.parent = parent
         self.autoBack = QtCore.QTimer()
         self.autoBack.timeout.connect(self.autoGoBack)
@@ -3079,9 +3076,6 @@ self.origY + ev.globalY() - self.mouseY)
             index = self.tabs.currentIndex()
         if self.tabs.count() > 0:
             if (self.tabs.widget(index).webView.pb) or (unicode(self.tabs.widget(index).webView.url().toString()) == "" or unicode(self.tabs.widget(index).webView.url().toString()) == "about:blank") or permanent==True:
-                self.tabs.widget(index).webView.page().networkAccessManager().setCookieJar(QtNetwork.QNetworkCookieJar())
-                self.tabs.widget(index).webView.page().deleteLater()
-                self.tabs.widget(index).webView.deleteLater()
                 self.tabs.widget(index).deleteLater()
             else:
                 self.closedTabList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
