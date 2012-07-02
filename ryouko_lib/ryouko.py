@@ -1127,7 +1127,7 @@ def showAboutPage(webView):
         <iframe style='border: 0; width: 100%; height: 640px;' src='file://%" + os.path.join(app_lib, "LICENSE.txt") + "'></iframe></center></div></div></center></body></html>")
 
 class RMenu(QtGui.QMenu):
-    def show(self):
+    def show2(self):
         x = QtCore.QPoint(QtGui.QCursor.pos()).x()
         if x + self.width() > QtGui.QApplication.desktop().size().width():
             x = x - self.width()
@@ -2695,7 +2695,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.showCornerWidgetsMenuAction.setToolTip(tr("cornerWidgetsMenuTT"))
         self.showCornerWidgetsMenuAction.triggered.connect(self.showCornerWidgetsMenu)"""
         self.mainMenuButton = QtGui.QAction(self)
-        self.windowMenuButton = QtGui.QAction(tr("windows"), self)
+        self.windowMenuButton = QtGui.QAction(self)
         self.windowMenuButton.setShortcuts(["Alt+V", "Alt+W"])
         self.windowMenuButton.triggered.connect(self.showWindowMenuAtCornerWidgets)
         self.mainMenuButton.setText(tr("menu"))
@@ -2815,11 +2815,12 @@ self.origY + ev.globalY() - self.mouseY)
         self.windowMenu.addAction(undoCloseTabAction)
         self.windowMenu.addAction(undoCloseWindowAction)
 
-        self.tabs.customContextMenuRequested.connect(self.windowMenu.show)
+        self.tabs.customContextMenuRequested.connect(self.windowMenu.show2)
+        self.cornerWidgetsToolBar.addAction(self.windowMenuButton)
+        self.cornerWidgetsToolBar.widgetForAction(self.windowMenuButton).setArrowType(QtCore.Qt.DownArrow)
 
         self.cornerWidgetsToolBar.addSeparator()
 
-        self.cornerWidgetsToolBar.addAction(self.windowMenuButton)
         self.cornerWidgetsToolBar.addAction(self.mainMenuButton)
         self.cornerWidgetsToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
 
