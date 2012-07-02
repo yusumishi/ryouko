@@ -2696,7 +2696,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.showCornerWidgetsMenuAction.triggered.connect(self.showCornerWidgetsMenu)"""
         self.mainMenuButton = QtGui.QAction(self)
         self.mainMenuButton.setText(tr("menu"))
-        self.mainMenuButton.setShortcut("Alt+M")
+        self.mainMenuButton.setShortcuts(["Alt+M", "Alt+F", "Alt+E"])
         self.mainMenuButton.triggered.connect(self.showCornerWidgetsMenu)
 #        self.mainMenuButton.setArrowType(QtCore.Qt.DownArrow)
         self.mainMenu = QtGui.QMenu(self)
@@ -2843,21 +2843,29 @@ self.origY + ev.globalY() - self.mouseY)
             exec("numActions[action].triggered.connect(self.activateTab" + str(action + 1) + ")")
             self.addAction(numActions[action])
 
-        viewSourceAction = QtGui.QAction(tr("viewSource"), self)
-        viewSourceAction.setShortcut("Ctrl+Alt+U")
-        viewSourceAction.triggered.connect(self.viewSource)
-        self.mainMenu.addAction(viewSourceAction)
-        self.mainMenu.addSeparator()
-
         # Config button
         configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_icons, 'settings.png'))), tr('preferencesButton'), self)
         configAction.setToolTip(tr('preferencesButtonTT'))
         configAction.setShortcuts(['Ctrl+Alt+P'])
         configAction.triggered.connect(self.showSettings)
+
         self.addAction(configAction)
-        self.mainMenu.addAction(viewNotificationsAction)
-        self.mainMenu.addAction(clearHistoryAction)
-        self.mainMenu.addAction(configAction)
+        self.toolsMenu = QtGui.QMenu(tr("toolsHKey"))
+        self.mainMenu.addMenu(self.toolsMenu)
+        viewSourceAction = QtGui.QAction(tr("viewSource"), self)
+        viewSourceAction.setShortcut("Ctrl+Alt+U")
+        viewSourceAction.triggered.connect(self.viewSource)
+        self.toolsMenu.addAction(viewSourceAction)
+
+        inspectAction = QtGui.QAction(tr("webInspectorHKey"), self)
+        inspectAction.setShortcut("F12")
+        inspectAction.triggered.connect(self.inspect)
+        self.toolsMenu.addAction(inspectAction)
+
+        self.toolsMenu.addSeparator()
+        self.toolsMenu.addAction(viewNotificationsAction)
+        self.toolsMenu.addAction(clearHistoryAction)
+        self.toolsMenu.addAction(configAction)
         self.mainMenu.addSeparator()
 
         # About Actions
@@ -2917,6 +2925,9 @@ self.origY + ev.globalY() - self.mouseY)
 
     def viewSource(self):
         self.tabs.widget(self.tabs.currentIndex()).webView.viewSource()
+
+    def inspect(self):
+        self.tabs.widget(self.tabs.currentIndex()).webView.showInspector()
 
     def activateTab1(self):
         self.tabs.setCurrentIndex(0)

@@ -148,6 +148,7 @@
 "title": "Título",
 "today": "Hoy",
 "toggleFullscreen": "Alternar modo de pantalla completa",
+"toolsHKey": "Herramien&tas",
 "type": "Tipo",
 "undoCloseTabBtn": "&Deshacer el cierre de la última pestaña",
 "undoCloseTabBtnTT": "<b>Deshacer el cierre de la última pestaña</b><br>Ctrl+Shift+T",
@@ -165,5 +166,6 @@
 "viewSource": "Ver el código fuente",
 "warning": "Advertencia",
 "webInspector": "Inspector de Web",
+"webInspectorHKey": "&Inspector de Web",
 "weekday": "Día de la semana"
 }

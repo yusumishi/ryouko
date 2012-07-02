@@ -148,6 +148,7 @@
 "title": "Title",
 "today": "Today",
 "toggleFullscreen": "Toggle &Full Screen",
+"toolsHKey": "&Tools",
 "type": "Type",
 "undoCloseTabBtnTT": "<b>Undo Close Tab</b><br>Ctrl+Shift+T",
 "undoCloseTabBtn": "&Undo Close Tab",
@@ -165,5 +166,6 @@
 "viewSource": "View S&ource",
 "warning": "Warning",
 "webInspector": "Web Inspector",
+"webInspectorHKey": "Web &Inspector",
 "weekday": "Weekday"
 }
