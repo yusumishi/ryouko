@@ -144,7 +144,7 @@
 "closeTab": "&Close Tab",
 "closeLeftTabs": "Close tabs on the &left",
 "closeRighttTabs": "Close tabs on the &right",
-"closeTabForever": "Close tab &permanently",
+"closeTabForever": "Close tab permanently",
 "undoCloseTabBtn": "&Undo Close Tab",
 "undoCloseTabBtnTT": "<b>Undo Close Tab</b><br>Ctrl+Shift+T",
 "undoCloseWindow": "&Undo Close Window",
