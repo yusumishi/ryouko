@@ -11,6 +11,7 @@ else:
 app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(app_lib)
 from QStringFunctions import *
+from TranslationManager import *
 
 def message(title="Alert", content="This is a message.", icon="info"):
     message = QtGui.QMessageBox()
@@ -34,7 +35,7 @@ def message(title="Alert", content="This is a message.", icon="info"):
     message.exec_()
 
 def saveDialog(fname="", filters = "All files (*)"):
-    saveDialog = QtGui.QFileDialog.getSaveFileName(None, "Save As", os.path.join(os.getcwd(), fname), filters)
+    saveDialog = QtGui.QFileDialog.getSaveFileName(None, tr("saveAsDialog"), os.path.join(os.getcwd(), fname), filters)
     return saveDialog
 
 def inputDialog(title="Query", content="Enter a value here", value=""):

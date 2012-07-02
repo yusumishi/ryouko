@@ -137,6 +137,7 @@
 "newWindowBtn": "New &Window",
 "newWindowBtnTT": "<b>New Window</b><br>Ctrl+N",
 "saveAs": "&Save As",
+"saveAsDialog": "Save As",
 "print": "&Print",
 "printPreview": "Print Preview",
 "printPreviewHKey": "Print Pre&view",

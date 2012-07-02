@@ -130,6 +130,7 @@
 "newWindowBtn": "&Ventana nuevo",
 "newWindowBtnTT": "<b>Ventana nuevo</b><br>Ctrl+N",
 "saveAs": "&Guardar como...",
+"saveAsDialog": "Guardar como...",
 "print": "Im&primir",
 "printPreview": "Vista previa de impresión",
 "printPreviewHKey": "&Vista previa de impresión",
