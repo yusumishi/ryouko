@@ -71,6 +71,9 @@ except ImportError:
 
 _entity_re = re.compile(r'&(?:(#)(\d+)|([^;]+));')
 
+def doNothing():
+    return
+
 def getMimeType(filename):
     return get_mimetype(filename)
 

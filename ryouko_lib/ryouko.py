@@ -56,6 +56,7 @@ from DialogFunctions import *
 from RTabWidget import *
 from ViewSourceDialog import *
 from RExpander import *
+from SearchManager import *
 from RPrintPreviewDialog import *
 from RHBoxLayout import *
 from NotificationManager import *
@@ -184,6 +185,11 @@ def changeProfile(name, init = False):
                 if not os.path.exists(os.path.join(app_profile, fname)):
                     shutil.move(fpath, app_profile)
     settingsManager.changeProfile(app_profile)
+    try: searchManager
+    except:
+        doNothing()
+    else:
+        searchManager.changeProfile(app_profile)
 
 app_default_profile_name = "default"
 if os.path.exists(app_default_profile_file):
@@ -200,9 +206,6 @@ reset = False
 blanktoolbarsheet = "QToolBar { border: 0; }"
 
 # From http://stackoverflow.com/questions/448207/python-downloading-a-file-over-http-with-progress-bar-and-basic-authentication
-
-def doNothing():
-    return
 
 def reload_user_links():
     links = []
@@ -251,56 +254,7 @@ def touch(fname):
     f.write("")
     f.close()
 
-class SearchManager(QtCore.QObject):
-    def __init__(self, parent=None):
-        super(SearchManager, self).__init__(parent)
-        self.parent = parent
-        self.searchEngines = {"DuckDuckGo": {"expression" : "http://duckduckgo.com/?q=%s", "keyword" : "d"}, "Wikipedia": {"expression" : "http://wikipedia.org/w/index.php?title=Special:Search&search=%s", "keyword" : "w"}, "YouTube" : {"expression" : "http://www.youtube.com/results?search_query=%s", "keyword" : "y"}, "Google" : {"expression" : "http://www.google.com/?q=%s", "keyword" : "g"}, "deviantART" : {"expression" : "http://browse.deviantart.com/?qh=&section=&q=%s", "keyword" : "da"}}
-        self.currentSearch = "http://duckduckgo.com/?q=%s"
-        self.searchEnginesFile = os.path.join(app_profile, "search-engines.json")
-        self.load()
-    def load(self):
-        if os.path.exists(self.searchEnginesFile):
-            f = open(self.searchEnginesFile, "r")
-            try: read = json.load(f)
-            except:
-                doNothing()
-            f.close()
-            try: read['searchEngines']
-            except:
-                doNothing()
-            else:
-                self.searchEngines = read['searchEngines'] 
-            try: read['currentSearch']
-            except:
-                doNothing()
-            else:
-                self.currentSearch = read['currentSearch']
-    def save(self):
-        f = open(self.searchEnginesFile, "w")
-        json.dump({"searchEngines" : self.searchEngines, "currentSearch" : self.currentSearch}, f)
-        f.close()
-    def add(self, name=False, expression=False, keyword=""):
-        if name and expression:
-            self.searchEngines[unicode(name)] = {"expression" : unicode(expression), "keyword" : unicode(keyword)}
-            self.save()
-    def remove(self, name=False):
-        if name:
-            try: self.searchEngines[unicode(name)]
-            except:
-                notificationMessage(tr('searchError'))
-            else:
-                del self.searchEngines[unicode(name)]
-                self.save()
-    def change(self, name=""):
-        try: self.searchEngines[unicode(name)]["expression"]
-        except:
-            notificationMessage(tr('searchError'))
-        else:
-            self.currentSearch = self.searchEngines[unicode(name)]["expression"]
-            self.save()
-
-searchManager = SearchManager()
+searchManager = SearchManager(app_profile)
 
 class RMenuPopupWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -3241,6 +3195,7 @@ class Ryouko(QtGui.QWidget):
                         a = a + char
                     global app_profile
                     app_profile = bck
+                    searchManager.changeProfile(app_profile)
                     settingsManager.changeProfile(bck)
                     settingsManager.settings['cloudService'] = a
                     settingsManager.saveSettings()
