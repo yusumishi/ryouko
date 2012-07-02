@@ -1995,6 +1995,7 @@ class Browser(QtGui.QMainWindow):
         self.zoomInButton.clicked.connect(self.zoomIn)
         self.zoomSlider.valueChanged.connect(self.zoom)
         self.webView.show()
+        self.enableDisableBF()
 
     def enableDisableBF(self):
         if self.webView.page().history().canGoBack():
