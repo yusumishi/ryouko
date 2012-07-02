@@ -58,7 +58,7 @@ class ViewSourceDialog(QtGui.QMainWindow):
         self.sourceView.setReadOnly(True)
         self.setCentralWidget(self.sourceView)
         closeWindowAction = QtGui.QAction(self)
-        closeWindowAction.setShortcuts(["Ctrl+W"])
+        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+U"])
         closeWindowAction.triggered.connect(self.hide)
         self.addAction(closeWindowAction)
         self.reply = reply
