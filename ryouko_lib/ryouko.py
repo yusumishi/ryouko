@@ -3222,6 +3222,12 @@ win = None
 
 class Ryouko(QtGui.QWidget):
     def __init__(self):
+        if not os.path.isdir(app_profile):
+            os.makedirs(app_profile)
+        if not os.path.isdir(os.path.join(app_profile, "temp")):
+            os.mkdir(os.path.join(app_profile, "temp"))
+        if not os.path.isdir(os.path.join(app_profile, "adblock")):
+            os.mkdir(os.path.join(app_profile, "adblock"))
         try:
             settingsManager.loadSettings()
             try: settingsManager.settings['cloudService']
@@ -3240,6 +3246,12 @@ class Ryouko(QtGui.QWidget):
                     settingsManager.saveSettings()
         except:
             doNothing()
+        if not os.path.isdir(app_profile):
+            os.makedirs(app_profile)
+        if not os.path.isdir(os.path.join(app_profile, "temp")):
+            os.mkdir(os.path.join(app_profile, "temp"))
+        if not os.path.isdir(os.path.join(app_profile, "adblock")):
+            os.mkdir(os.path.join(app_profile, "adblock"))
         loadCookies()
         global library
         global searchEditor
@@ -3305,12 +3317,6 @@ def main():
         else:
             reload_user_links()
             global reset
-            if not os.path.isdir(app_profile):
-                os.makedirs(app_profile)
-            if not os.path.isdir(os.path.join(app_profile, "temp")):
-                os.mkdir(os.path.join(app_profile, "temp"))
-            if not os.path.isdir(os.path.join(app_profile, "adblock")):
-                os.mkdir(os.path.join(app_profile, "adblock"))
             app = QtGui.QApplication(sys.argv)
             app.aboutToQuit.connect(prepareQuit)
             if reset == True:
