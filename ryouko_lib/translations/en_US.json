@@ -120,7 +120,7 @@
 "add": "Add/Change",
 "remove": "Remove",
 "back": "Back",
-"backBtnTT": "<b>Go Back A Page</b><br>Alt+Left",
+"backBtnTT": "<b>Previous Page</b><br>Alt+Left",
 "next": "Next",
 "nextBtnTT": "<b>Next Page</b><br>Alt+Right",
 "stopBtnTT": "<b>Stop/Reset Location Bar</b><br>Esc",
