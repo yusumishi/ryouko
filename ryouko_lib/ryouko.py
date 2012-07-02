@@ -1872,7 +1872,7 @@ class Browser(QtGui.QMainWindow):
         if not self.pb:
             self.urlBar2.textChanged.connect(self.searchHistory)
         self.webView.urlChanged.connect(self.updateText)
-        self.webView.loadFinished.connect(self.enableDisableBF)
+        self.webView.urlChanged.connect(self.enableDisableBF)
         if not self.pb:
             self.webView.urlChanged.connect(browserHistory.reload)
             self.webView.titleChanged.connect(browserHistory.reload)
