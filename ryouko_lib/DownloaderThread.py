@@ -1,6 +1,16 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
 import os, sys
+try: from urllib.request import urlretrieve
+except ImportError:
+    try: from urllib import urlretrieve
+    except:
+        print("", end="")
+    else:
+        import urllib
+else:
+    import urllib.request
 from PyQt4 import QtCore
 app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(app_lib)
