@@ -2718,6 +2718,11 @@ self.origY + ev.globalY() - self.mouseY)
         self.fullScreenAction.triggered.connect(self.toggleFullScreen)
         self.addAction(self.fullScreenAction)
 
+        self.rMaxAction = QtGui.QAction(self)
+        self.rMaxAction.setShortcut("Alt+F10")
+        self.rMaxAction.triggered.connect(self.rMax)
+        self.addAction(self.rMaxAction)
+
         # "Toolbar" for top right corner
         self.cornerWidgets = QtGui.QWidget()
         self.cornerWidgets.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
@@ -2947,6 +2952,12 @@ self.origY + ev.globalY() - self.mouseY)
             self.setWindowState(QtCore.Qt.WindowNoState)
         else:
             self.setWindowState(QtCore.Qt.WindowFullScreen)
+
+    def rMax(self):
+        if self.windowState() == QtCore.Qt.WindowMaximized:
+            self.setWindowState(QtCore.Qt.WindowNoState)
+        else:
+            self.setWindowState(QtCore.Qt.WindowMaximized)
 
     def viewSource(self):
         self.tabs.widget(self.tabs.currentIndex()).webView.viewSource()
