@@ -1,5 +1,10 @@
 {
 "toggleFullscreen": "Alternar modo de pantalla completa",
+"viewSource": "Ver el código fuente",
+"sourceOf1": "Código fuente de ",
+"sourceOf2": "",
+"fileHKey": "&Archivar",
+"viewHKey": "&Ver",
 "general": "&General",
 "content": "&Contenido",
 "downloads": "&Descargas",
@@ -61,6 +66,7 @@
 "find": "Buscar",
 "findHKey": "&Buscar",
 "findNextHKey": "Buscar si&guiente",
+"findReverse": "Buscar en sentido inverso",
 "searchFor": "Buscar para:",
 "preferences": "Preferencias",
 "newWindowOption0": "Hiperenlaces que se abren en ventanas nuevas deben...",
