@@ -2785,7 +2785,7 @@ self.origY + ev.globalY() - self.mouseY)
         newpbTabAction.triggered.connect(self.newpbTab)
         self.addAction(newpbTabAction)
         self.mainMenu.addAction(newpbTabAction)
-        self.mainMenu.addAction(closeTabForeverAction)
+#        self.mainMenu.addAction(closeTabForeverAction)
         self.mainMenu.addSeparator()
 
         self.mainMenu.addAction(manageBookmarksAction)
