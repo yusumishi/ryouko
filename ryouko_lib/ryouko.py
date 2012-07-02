@@ -2713,6 +2713,11 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabs.currentChanged.connect(self.updateTitles)
         self.tabs.tabCloseRequested.connect(self.closeTab)
 
+        self.fullScreenAction = QtGui.QAction(tr("toggleFullscreen"), self)
+        self.fullScreenAction.setShortcut("F11")
+        self.fullScreenAction.triggered.connect(self.toggleFullScreen)
+        self.addAction(self.fullScreenAction)
+
         # "Toolbar" for top right corner
         self.cornerWidgets = QtGui.QWidget()
         self.cornerWidgets.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
@@ -2773,6 +2778,10 @@ self.origY + ev.globalY() - self.mouseY)
         printPreviewAction.triggered.connect(self.printPreview)
         self.mainMenu.addAction(printPreviewAction)
         self.addAction(printPreviewAction)
+
+        self.mainMenu.addSeparator()
+
+        self.mainMenu.addAction(self.fullScreenAction)
 
         self.mainMenu.addSeparator()
 
@@ -2932,6 +2941,12 @@ self.origY + ev.globalY() - self.mouseY)
             if self.tabs.count() == 0:
                 self.newTab()
                 self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
+
+    def toggleFullScreen(self):
+        if self.windowState() == QtCore.Qt.WindowFullScreen:
+            self.setWindowState(QtCore.Qt.WindowNoState)
+        else:
+            self.setWindowState(QtCore.Qt.WindowFullScreen)
 
     def viewSource(self):
         self.tabs.widget(self.tabs.currentIndex()).webView.viewSource()
