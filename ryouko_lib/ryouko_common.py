@@ -71,6 +71,9 @@ except ImportError:
 
 _entity_re = re.compile(r'&(?:(#)(\d+)|([^;]+));')
 
+def getMimeType(filename):
+    return get_mimetype(filename)
+
 def get_mimetype(filename):
     try: f = urlopen("file://" + metaunquote(filename).replace("file://",""))
     except:
