@@ -2199,8 +2199,10 @@ class CDialog(QtGui.QMainWindow):
         uCloseLabel = QtGui.QLabel(tr('maxUndoCloseTab') + ":")
         self.gLayout.addWidget(uCloseLabel)
         self.undoCloseTabCount = QtGui.QLineEdit()
-        self.undoCloseTabCount.setInputMask(qstring("900"))
+        self.undoCloseTabCount.setInputMask(qstring("#90"))
         self.gLayout.addWidget(self.undoCloseTabCount)
+        uCloseNoteLabel = QtGui.QLabel(tr('maxUndoCloseTabNote'))
+        self.gLayout.addWidget(uCloseNoteLabel)
         self.imagesBox = QtGui.QCheckBox(tr('autoLoadImages'))
         self.cLayout.addWidget(self.imagesBox)
         self.jsBox = QtGui.QCheckBox(tr('enableJS'))
@@ -3135,7 +3137,7 @@ self.origY + ev.globalY() - self.mouseY)
             except:
                 doNothing()
             else:
-                if settingsManager.settings['maxUndoCloseTab'] != 0:
+                if settingsManager.settings['maxUndoCloseTab'] >= 0:
                     if len(self.closedTabList) >= int(settingsManager.settings['maxUndoCloseTab'] + 1):
                         self.closedTabList[0]["widget"].deleteLater()
                         del self.closedTabList[0]

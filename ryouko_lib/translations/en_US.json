@@ -90,6 +90,7 @@
 "loginToDownload": "&Login to download? [does not work in axel]",
 "manageSearchEngines": "Manage search engines...",
 "maxUndoCloseTab": "Maximum number of undo close tab operations",
+"maxUndoCloseTabNote": "NOTE: For an unlimited number, use -1.",
 "menu": "&Menu",
 "name": "Name",
 "newExpression": "New expression: ",
