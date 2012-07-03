@@ -54,7 +54,7 @@ background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(light), s
     def mousePressEvent(self, ev):
         if ev.button() == QtCore.Qt.RightButton:
             try:
-                self.parent.showWindowMenu()
+                self.parent.showTabsContextMenu()
             except:
                 print("RTabWidget could not display its parent's context menu!")
         else:

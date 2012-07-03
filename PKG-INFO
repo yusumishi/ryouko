@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: ryouko
+Version: 0.10.1
+Summary: PyQt4 Web browser
+Home-page: http://sourceforge.net/projects/ryouko/
+Author: Daniel Sim
+Author-email: foxhead128@gmail.com
+License: MIT
+Description: Ryouko is a basic PyQt4 Web browser. It was coded for fun and is not intended for serious usage, but it should be capable of fulfilling very basic browsing needs.
+Platform: UNKNOWN

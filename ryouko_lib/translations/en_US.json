@@ -96,12 +96,12 @@
 "newPBTabBtnTT": "<b>New Private Browsing Tab</b><br>Ctrl+Shift+N",
 "newPBTab": "New Tab (PB)",
 "newSearchError": "Search expression must contain <b>%s</b> to indicate where the search terms go!",
-"newTabBtn": "New &Tab",
+"newTabBtn": "&New Tab",
 "newTabBtnTT": "<b>New Tab</b><br>Ctrl+T",
 "newTab": "New Tab",
 "newTabShortcuts": "<td style='padding-left: 4px;' valign='top'><b>Keyboard shortcuts</b><br/>F1: Show this new tab page<br>Ctrl+N: New window<br>Ctrl+W: Close window<br>Alt+Left: Go back<br>Alt+Right: Go forward<br>Ctrl+R; F5: Reload<br>Esc: Stop<br>Ctrl+L; Alt+D: Open URL<br>Ctrl+S: Save Page As<br>Ctrl+F: Find text<br>Ctrl+G; F3: Find next<br>Ctrl+=; Ctrl++: Zoom in<br>Ctrl+-: Zoom out<br>Ctrl+0: Reset zoom<br><br>Mouse over the different buttons for more keyboard shortcuts.</center></td>",
-"newTabTitle": "New &Tab",
-"newWindowBtn": "&New Window",
+"newTabTitle": "New Tab",
+"newWindowBtn": "New &Window",
 "newWindowBtnTT": "<b>New Window</b><br>Ctrl+N",
 "newWindow": "New Window",
 "newWindowOption0": "Links opened in new windows should...",
@@ -153,7 +153,7 @@
 "undoCloseTabBtnTT": "<b>Undo Close Tab</b><br>Ctrl+Shift+T",
 "undoCloseTabBtn": "&Undo Close Tab",
 "undoCloseTab": "Undo Close Tab",
-"undoCloseWindow": "Undo Close &Window",
+"undoCloseWindow": "&Undo Close Window",
 "url": "URL",
 "userAgent": "User Agent",
 "user": "User",
@@ -167,7 +167,5 @@
 "warning": "Warning",
 "webInspector": "Web Inspector",
 "webInspectorHKey": "Web &Inspector",
-"weekday": "Weekday",
-"windowManagement": "&Window Management",
-"windows": "&Windows"
+"weekday": "Weekday"
 }

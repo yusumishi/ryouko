@@ -1127,7 +1127,7 @@ def showAboutPage(webView):
         <iframe style='border: 0; width: 100%; height: 640px;' src='file://%" + os.path.join(app_lib, "LICENSE.txt") + "'></iframe></center></div></div></center></body></html>")
 
 class RMenu(QtGui.QMenu):
-    def show2(self):
+    def show(self):
         x = QtCore.QPoint(QtGui.QCursor.pos()).x()
         if x + self.width() > QtGui.QApplication.desktop().size().width():
             x = x - self.width()
@@ -1477,7 +1477,6 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
     def viewSource(self):
         nm = self.page().networkAccessManager()
         reply = nm.get(QtNetwork.QNetworkRequest(self.url()))
-        global s
         s = ViewSourceDialog(reply, None)
         s.show()
         s.resize(640, 480)
@@ -1995,7 +1994,6 @@ class Browser(QtGui.QMainWindow):
         self.zoomInButton.clicked.connect(self.zoomIn)
         self.zoomSlider.valueChanged.connect(self.zoom)
         self.webView.show()
-        self.enableDisableBF()
 
     def enableDisableBF(self):
         if self.webView.page().history().canGoBack():
@@ -2536,7 +2534,7 @@ class TabBrowser(QtGui.QMainWindow):
 
     def mousePressEvent(self, ev):
         if ev.button() == QtCore.Qt.RightButton:
-            self.showWindowMenu()
+            self.showTabsContextMenu()
         else:
             self.mouseX = ev.globalX()
             self.origX = self.x()
@@ -2696,17 +2694,13 @@ self.origY + ev.globalY() - self.mouseY)
         self.showCornerWidgetsMenuAction.setToolTip(tr("cornerWidgetsMenuTT"))
         self.showCornerWidgetsMenuAction.triggered.connect(self.showCornerWidgetsMenu)"""
         self.mainMenuButton = QtGui.QAction(self)
-        self.windowMenuButton = QtGui.QAction(self)
-        self.windowMenuButton.setShortcuts(["Alt+V", "Alt+W"])
-        self.windowMenuButton.triggered.connect(self.showWindowMenuAtCornerWidgets)
         self.mainMenuButton.setText(tr("menu"))
         self.mainMenuButton.setShortcuts(["Alt+M", "Alt+F", "Alt+E"])
         self.mainMenuButton.triggered.connect(self.showCornerWidgetsMenu)
 #        self.mainMenuButton.setArrowType(QtCore.Qt.DownArrow)
         self.mainMenu = QtGui.QMenu(self)
-        self.windowMenu = RMenu(tr('windowManagement'))
 
-        closeTabForeverAction = QtGui.QAction(QtGui.QIcon(os.path.join(app_icons, 'pclose.png')), tr('closeTabForever'), self)
+        closeTabForeverAction = QtGui.QAction(tr('closeTabForever'), self)
         closeTabForeverAction.setShortcut("Ctrl+Shift+W")
         self.addAction(closeTabForeverAction)
         closeTabForeverAction.triggered.connect(self.permanentCloseTab)
@@ -2727,6 +2721,8 @@ self.origY + ev.globalY() - self.mouseY)
         newWindowAction.setShortcut('Ctrl+N')
         newWindowAction.triggered.connect(self.newWindow)
         self.addAction(newWindowAction)
+        self.mainMenu.addAction(newWindowAction)
+        self.mainMenu.addSeparator()
 
         # Save page action
         savePageAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-save-as", QtGui.QIcon(os.path.join(app_icons, 'saveas.png'))), tr('saveAs'), self)
@@ -2758,11 +2754,13 @@ self.origY + ev.globalY() - self.mouseY)
         undoCloseTabAction.setShortcuts(['Ctrl+Shift+T'])
         undoCloseTabAction.triggered.connect(self.undoCloseTab)
         self.addAction(undoCloseTabAction)
+        self.mainMenu.addAction(undoCloseTabAction)
 
         undoCloseWindowAction = QtGui.QAction(tr('undoCloseWindow'), self)
         undoCloseWindowAction.setShortcut("Ctrl+Shift+N")
         undoCloseWindowAction.triggered.connect(undoCloseWindow)
         self.addAction(undoCloseWindowAction)
+        self.mainMenu.addAction(undoCloseWindowAction)
 
         # History sidebar button
         historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(app_icons, "history.png"))), tr('viewHistoryBtn'), self)
@@ -2785,6 +2783,7 @@ self.origY + ev.globalY() - self.mouseY)
         newpbTabAction.setShortcuts(['Ctrl+Shift+P'])
         newpbTabAction.triggered.connect(self.newpbTab)
         self.addAction(newpbTabAction)
+        self.mainMenu.addAction(newpbTabAction)
 #        self.mainMenu.addAction(closeTabForeverAction)
         self.mainMenu.addSeparator()
 
@@ -2804,22 +2803,24 @@ self.origY + ev.globalY() - self.mouseY)
         closeRightTabsAction.triggered.connect(self.closeRightTabs)
         self.addAction(closeRightTabsAction)
 
-        self.windowMenu.addAction(newTabAction)
-        self.windowMenu.addAction(newWindowAction)
-        self.windowMenu.addAction(newpbTabAction)
-        self.windowMenu.addSeparator()
-        self.windowMenu.addAction(closeTabAction)
-        self.windowMenu.addAction(closeLeftTabsAction)
-        self.windowMenu.addAction(closeRightTabsAction)
-        self.windowMenu.addAction(closeTabForeverAction)
-        self.windowMenu.addSeparator()
-        self.windowMenu.addAction(undoCloseTabAction)
-        self.windowMenu.addAction(undoCloseWindowAction)
+        self.tabsContextMenu = RMenu()
+        self.tabsContextMenu.addAction(newTabAction)
+        self.tabsContextMenu.addAction(newWindowAction)
+        self.tabsContextMenu.addAction(newpbTabAction)
+        self.tabsContextMenu.addSeparator()
+        self.tabsContextMenu.addAction(closeTabAction)
+        self.tabsContextMenu.addAction(closeLeftTabsAction)
+        self.tabsContextMenu.addAction(closeRightTabsAction)
+        self.tabsContextMenu.addAction(closeTabForeverAction)
+        self.tabsContextMenu.addSeparator()
+        self.tabsContextMenu.addAction(undoCloseTabAction)
+        self.tabsContextMenu.addAction(undoCloseWindowAction)
 
-        self.tabs.customContextMenuRequested.connect(self.windowMenu.show2)
-        self.cornerWidgetsToolBar.addAction(self.windowMenuButton)
-        self.cornerWidgetsToolBar.widgetForAction(self.windowMenuButton).setArrowType(QtCore.Qt.DownArrow)
+        self.tabs.customContextMenuRequested.connect(self.tabsContextMenu.show)
 
+        self.cornerWidgetsToolBar.addSeparator()
+        self.cornerWidgetsToolBar.addAction(closeLeftTabsAction)
+        self.cornerWidgetsToolBar.addAction(closeRightTabsAction)
         self.cornerWidgetsToolBar.addSeparator()
 
         self.cornerWidgetsToolBar.addAction(self.mainMenuButton)
@@ -2970,31 +2971,15 @@ self.origY + ev.globalY() - self.mouseY)
             except:
                 doNothing()
 
-    def showWindowMenu(self):
+    def showTabsContextMenu(self):
         x = QtCore.QPoint(QtGui.QCursor.pos()).x()
-        if x + self.windowMenu.width() > QtGui.QApplication.desktop().size().width():
-            x = x - self.windowMenu.width()
+        if x + self.tabsContextMenu.width() > QtGui.QApplication.desktop().size().width():
+            x = x - self.tabsContextMenu.width()
         y = QtCore.QPoint(QtGui.QCursor.pos()).y()
-        if y + self.windowMenu.height() > QtGui.QApplication.desktop().size().height():
-            y = y - self.windowMenu.height()
-        self.windowMenu.move(x, y)
-        self.windowMenu.show()
-
-    def showWindowMenuAtCornerWidgets(self):
-        x = self.cornerWidgetsToolBar.widgetForAction(self.windowMenuButton).mapToGlobal(QtCore.QPoint(0,0)).x()
-        y = self.cornerWidgetsToolBar.widgetForAction(self.windowMenuButton).mapToGlobal(QtCore.QPoint(0,0)).y()
-        width = self.cornerWidgetsToolBar.widgetForAction(self.windowMenuButton).width()
-        height = self.cornerWidgetsToolBar.widgetForAction(self.windowMenuButton).height()
-        self.windowMenu.show()
-        if x - self.windowMenu.width() + width < 0:
-            x = 0
-        else:
-            x = x - self.windowMenu.width() + width
-        if y + height + self.windowMenu.height() >= QtGui.QApplication.desktop().size().height():
-            y = y - self.windowMenu.height()
-        else:
-            y = y + height
-        self.windowMenu.move(x, y)
+        if y + self.tabsContextMenu.height() > QtGui.QApplication.desktop().size().height():
+            y = y - self.tabsContextMenu.height()
+        self.tabsContextMenu.move(x, y)
+        self.tabsContextMenu.show()
 
     def showCornerWidgetsMenu(self):
         x = self.cornerWidgetsToolBar.widgetForAction(self.mainMenuButton).mapToGlobal(QtCore.QPoint(0,0)).x()
