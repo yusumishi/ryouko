@@ -12,6 +12,9 @@ app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(app_lib)
 from RTabBar import *
 
+def doNothing():
+    return
+
 class RTabWidget(QtGui.QTabWidget):
     def __init__(self, parent=None, forcea=False):
         super(RTabWidget, self).__init__(parent)
@@ -54,7 +57,7 @@ background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(light), s
     def mousePressEvent(self, ev):
         if ev.button() == QtCore.Qt.RightButton:
             try:
-                self.parent.showTabsContextMenu()
+                doNothing()
             except:
                 print("RTabWidget could not display its parent's context menu!")
         else:

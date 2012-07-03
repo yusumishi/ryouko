@@ -1127,7 +1127,7 @@ def showAboutPage(webView):
         <iframe style='border: 0; width: 100%; height: 640px;' src='file://%" + os.path.join(app_lib, "LICENSE.txt") + "'></iframe></center></div></div></center></body></html>")
 
 class RMenu(QtGui.QMenu):
-    def show(self):
+    def show2(self):
         x = QtCore.QPoint(QtGui.QCursor.pos()).x()
         if x + self.width() > QtGui.QApplication.desktop().size().width():
             x = x - self.width()
@@ -2728,6 +2728,12 @@ self.origY + ev.globalY() - self.mouseY)
         self.newTabButton.setDefaultAction(newTabAction)
         self.cornerWidgetsToolBar.addWidget(self.newTabButton)
 
+        self.tabsContextMenuButton = QtGui.QAction(self)
+        self.tabsContextMenuButton.setShortcuts(["Alt+V", "Alt+W", "Alt+T"])
+        self.tabsContextMenuButton.triggered.connect(self.showTabsContextMenuAtCornerWidgets)
+        self.cornerWidgetsToolBar.addAction(self.tabsContextMenuButton)
+        self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setArrowType(QtCore.Qt.DownArrow)
+
         # New window button
         newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_icons, 'newwindow.png'))), tr("newWindowBtn"), self)
         newWindowAction.setShortcut('Ctrl+N')
@@ -2828,7 +2834,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenu.addAction(undoCloseTabAction)
         self.tabsContextMenu.addAction(undoCloseWindowAction)
 
-        self.tabs.customContextMenuRequested.connect(self.tabsContextMenu.show)
+        self.tabs.customContextMenuRequested.connect(self.tabsContextMenu.show2)
 
         self.cornerWidgetsToolBar.addSeparator()
 
@@ -2988,7 +2994,23 @@ self.origY + ev.globalY() - self.mouseY)
         if y + self.tabsContextMenu.height() > QtGui.QApplication.desktop().size().height():
             y = y - self.tabsContextMenu.height()
         self.tabsContextMenu.move(x, y)
+        self.tabsContextMenu.show2()
+
+    def showTabsContextMenuAtCornerWidgets(self):
+        x = self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).mapToGlobal(QtCore.QPoint(0,0)).x()
+        y = self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).mapToGlobal(QtCore.QPoint(0,0)).y()
+        width = self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).width()
+        height = self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).height()
         self.tabsContextMenu.show()
+        if x - self.tabsContextMenu.width() + width < 0:
+            x = 0
+        else:
+            x = x - self.tabsContextMenu.width() + width
+        if y + height + self.tabsContextMenu.height() >= QtGui.QApplication.desktop().size().height():
+            y = y - self.tabsContextMenu.height()
+        else:
+            y = y + height
+        self.tabsContextMenu.move(x, y)
 
     def showCornerWidgetsMenu(self):
         x = self.cornerWidgetsToolBar.widgetForAction(self.mainMenuButton).mapToGlobal(QtCore.QPoint(0,0)).x()
