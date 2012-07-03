@@ -1,7 +1,15 @@
 #! /usr/bin/env python
 
-import os.path, json
+import os.path, sys, json
 from PyQt4 import QtCore
+try:
+    __file__
+except:
+    __file__ = sys.executable
+app_lib = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(app_lib)
+from TranslationManager import *
+from DialogFunctions import message
 
 def doNothing():
     return
@@ -44,6 +52,8 @@ class SearchManager(QtCore.QObject):
         if name and expression:
             self.searchEngines[unicode(name)] = {"expression" : unicode(expression), "keyword" : unicode(keyword)}
             self.save()
+    def notificationMessage(self, message):
+        message(tr('error'), message, "warn")
     def remove(self, name=False):
         if name:
             try: self.searchEngines[unicode(name)]

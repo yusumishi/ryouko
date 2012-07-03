@@ -1,7 +1,16 @@
 #! /usr/bin/env python
 
-import sys
+import os.path, sys
 from PyQt4 import QtCore, QtGui
+
+try:
+    __file__
+except:
+    __file__ = sys.executable
+app_lib = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(app_lib)
+
+from QStringFunctions import *
 
 class HistoryCompletionList(QtGui.QListWidget):
     if sys.version_info[0] <= 2:
