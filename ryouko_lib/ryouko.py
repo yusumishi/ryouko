@@ -3120,6 +3120,9 @@ self.origY + ev.globalY() - self.mouseY)
             else:
                 self.closedTabList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
                 self.tabs.widget(index).webView.load(QtCore.QUrl("about:blank"))
+            if len(self.closedTabList) >= 11:
+                self.closedTabList[0]["widget"].deleteLater()
+                del self.closedTabList[0]
             self.tabs.removeTab(index)
             if self.tabs.count() == 0:
                 self.close()
