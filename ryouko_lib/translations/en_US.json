@@ -89,6 +89,7 @@
 "locationBarTT": "<b>Location/Search Bar</b><br>Ctrl+L; Alt+D",
 "loginToDownload": "&Login to download? [does not work in axel]",
 "manageSearchEngines": "Manage search engines...",
+"maxUndoCloseTab": "Maximum number of undo close tab operations",
 "menu": "&Menu",
 "name": "Name",
 "newExpression": "New expression: ",

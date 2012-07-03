@@ -2196,6 +2196,11 @@ class CDialog(QtGui.QMainWindow):
         self.oswBox = QtGui.QCheckBox(tr('newWindowOption2'))
         self.oswBox.stateChanged.connect(self.checkOTabsBox)
         self.gLayout.addWidget(self.oswBox)
+        uCloseLabel = QtGui.QLabel(tr('maxUndoCloseTab') + ":")
+        self.gLayout.addWidget(uCloseLabel)
+        self.undoCloseTabCount = QtGui.QLineEdit()
+        self.undoCloseTabCount.setInputMask(qstring("900"))
+        self.gLayout.addWidget(self.undoCloseTabCount)
         self.imagesBox = QtGui.QCheckBox(tr('autoLoadImages'))
         self.cLayout.addWidget(self.imagesBox)
         self.jsBox = QtGui.QCheckBox(tr('enableJS'))
@@ -2414,6 +2419,11 @@ class CDialog(QtGui.QMainWindow):
                 f.write("")
                 f.close()
                 self.saveSettings()
+        try: self.settings['maxUndoCloseTab']
+        except:
+            self.undoCloseTabCount.setText("0")
+        else:
+            self.undoCloseTabCount.setText(str(self.settings['maxUndoCloseTab']))
         try: self.settings['proxy']
         except:
             doNothing()
@@ -2486,7 +2496,7 @@ class CDialog(QtGui.QMainWindow):
             if os.path.isdir(os.path.join(app_profile_folder, profile)):
                 self.profileList.addItem(profile)
     def saveSettings(self):
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText())}
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text()))}
         f = open(app_default_profile_file, "w")
         f.write(unicode(self.profileList.currentItem().text()))
         f.close()
@@ -3120,10 +3130,15 @@ self.origY + ev.globalY() - self.mouseY)
             else:
                 self.closedTabList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
                 self.tabs.widget(index).webView.load(QtCore.QUrl("about:blank"))
-            if len(self.closedTabList) >= 11:
-                self.closedTabList[0]["widget"].deleteLater()
-                del self.closedTabList[0]
             self.tabs.removeTab(index)
+            try: settingsManager.settings['maxUndoCloseTab']
+            except:
+                doNothing()
+            else:
+                if settingsManager.settings['maxUndoCloseTab'] != 0:
+                    if len(self.closedTabList) >= int(settingsManager.settings['maxUndoCloseTab'] + 1):
+                        self.closedTabList[0]["widget"].deleteLater()
+                        del self.closedTabList[0]
             if self.tabs.count() == 0:
                 self.close()
 
