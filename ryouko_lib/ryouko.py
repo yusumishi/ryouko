@@ -53,7 +53,7 @@ from SystemTerminal import *
 from SettingsManager import *
 from DownloaderThread import *
 from DialogFunctions import *
-from RTabWidget import *
+from MovableTabWidget import *
 from MenuPopupWindow import *
 from ViewSourceDialog import *
 from RExpander import *
@@ -852,7 +852,7 @@ class Library(QtGui.QMainWindow):
             self.setWindowIcon(QtGui.QIcon(app_logo))
 
         self.setWindowTitle(tr('library'))
-        self.tabs = RTabWidget(self, True)
+        self.tabs = MovableTabWidget(self, True)
         self.setCentralWidget(self.tabs)
         self.bookmarksManagerGUI = BookmarksManagerGUI(self)
         self.tabs.addTab(self.bookmarksManagerGUI, tr('bookmarks'))
@@ -2384,7 +2384,7 @@ class CDialog(QtGui.QMainWindow):
                 self.saveSettings()
         try: self.settings['maxUndoCloseTab']
         except:
-            self.undoCloseTabCount.setText("0")
+            self.undoCloseTabCount.setText("-1")
         else:
             self.undoCloseTabCount.setText(str(self.settings['maxUndoCloseTab']))
         try: self.settings['proxy']
@@ -2623,7 +2623,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(viewNotificationsAction)
 
         # Tabs
-        self.tabs = RTabWidget(self)
+        self.tabs = MovableTabWidget(self)
         self.tabs.currentChanged.connect(self.hideInspectors)
         self.tabs.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.tabs.setMovable(True)

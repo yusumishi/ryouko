@@ -10,16 +10,16 @@ else:
     del filename
 app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(app_lib)
-from RTabBar import *
+from MovableTabBar import *
 
 def doNothing():
     return
 
-class RTabWidget(QtGui.QTabWidget):
+class MovableTabWidget(QtGui.QTabWidget):
     def __init__(self, parent=None, forcea=False):
-        super(RTabWidget, self).__init__(parent)
+        super(MovableTabWidget, self).__init__(parent)
         self.parent = parent
-        self.nuTabBar = RTabBar(self.parent)
+        self.nuTabBar = MovableTabBar(self.parent)
         self.setTabBar(self.nuTabBar)
         self.setDocumentMode(True)
 
@@ -52,14 +52,14 @@ background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(light), s
         try:
             self.parent.newTab()
         except:
-            print("RTabWidget could not add new tab to self.parent!")
+            print("MovableTabWidget could not add new tab to self.parent!")
 
     def mousePressEvent(self, ev):
         if ev.button() == QtCore.Qt.RightButton:
             try:
                 doNothing()
             except:
-                print("RTabWidget could not display its parent's context menu!")
+                print("MovableTabWidget could not display its parent's context menu!")
         else:
             self.mouseX = ev.globalX()
             self.origX = self.parent.x()

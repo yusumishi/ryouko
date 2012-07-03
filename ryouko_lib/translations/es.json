@@ -89,6 +89,8 @@
 "locationBarTT": "<b>Ubucación</b><br>Ctrl+L; Alt+D",
 "loginToDownload": "¿Iniciar &sesión para descargar? [no functiona en axel]",
 "manageSearchEngines": "Editar los buscadores...",
+"maxUndoCloseTab": "Nombre máximo de operaciones de \"deshacer el cierre de la última pestaña\"",
+"maxUndoCloseTabNote": "NOTA: Por un nombre ilimitado, entre -1.",
 "menu": "&Menú",
 "name": "Nombre",
 "newExpression": "Expresión nuevo: ",

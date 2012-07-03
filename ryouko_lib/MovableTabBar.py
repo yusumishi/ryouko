@@ -4,9 +4,9 @@ from __future__ import print_function
 
 from PyQt4 import QtGui
 
-class RTabBar(QtGui.QTabBar):
+class MovableTabBar(QtGui.QTabBar):
     def __init__(self, parent=None):
-        super(RTabBar, self).__init__(parent)
+        super(MovableTabBar, self).__init__(parent)
         self.parent = parent
     def mouseDoubleClickEvent(self, e):
         e.accept()
