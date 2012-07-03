@@ -2819,9 +2819,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabs.customContextMenuRequested.connect(self.tabsContextMenu.show)
 
         self.cornerWidgetsToolBar.addSeparator()
-        self.cornerWidgetsToolBar.addAction(closeLeftTabsAction)
-        self.cornerWidgetsToolBar.addAction(closeRightTabsAction)
-        self.cornerWidgetsToolBar.addSeparator()
 
         self.cornerWidgetsToolBar.addAction(self.mainMenuButton)
         self.cornerWidgetsToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
