@@ -54,6 +54,7 @@ from SettingsManager import *
 from DownloaderThread import *
 from DialogFunctions import *
 from MovableTabWidget import *
+from BookmarksManager import *
 from ContextMenu import *
 from MenuPopupWindow import *
 from ViewSourceDialog import *
@@ -187,6 +188,9 @@ def changeProfile(name, init = False):
                 if not os.path.exists(os.path.join(app_profile, fname)):
                     shutil.move(fpath, app_profile)
     settingsManager.changeProfile(app_profile)
+    try: bookmarksManager
+    except: doNothing()
+    else: bookmarksManager.setDirectory(app_links)
     try: searchManager
     except:
         doNothing()
@@ -208,24 +212,6 @@ reset = False
 blanktoolbarsheet = "QToolBar { border: 0; }"
 
 # From http://stackoverflow.com/questions/448207/python-downloading-a-file-over-http-with-progress-bar-and-basic-authentication
-
-def reload_user_links():
-    links = []
-    if os.path.isdir(os.path.join(app_profile, "links")):
-        l = os.listdir(os.path.join(app_profile, "links"))
-        links = []
-        for fname in l:
-            f = os.path.join(app_profile, "links", fname)
-            fi = open(f, "r")
-            contents = fi.read()
-            fi.close()
-            contents = contents.rstrip("\n")
-            links.append([contents, fname.rstrip(".txt")])
-        links.sort()
-        global user_links
-        user_links = ""
-        for link in links:
-            user_links = "%s<a href=\"%s\">%s</a> \n" % (user_links, link[0], link[1])
 
 if sys.version_info[0] >= 3:
     def unicode(data):
@@ -345,46 +331,15 @@ class SearchEditor(MenuPopupWindow):
 
 searchEditor = None
 
-class BookmarksManager(QtCore.QObject):
-    bookmarksChanged = QtCore.pyqtSignal()
-    def __init__(self, parent=None):
-        super(BookmarksManager, self).__init__()
-        self.parent = parent
-        self.bookmarks = []
-        self.reload_()
-    def reload_(self):
-        self.bookmarks = []
-        if not os.path.isdir(app_links):
-            os.mkdir(app_links)
-        if os.path.isdir(app_links):
-            links = os.listdir(app_links)
-            for fname in links:
-                path = os.path.join(app_links, fname)
-                f = open(path)
-                link = f.read()
-                f.close()
-                link = link.replace("\n", "")
-                self.bookmarks.append({"name": fname.rstrip(".txt"), "url": link})
-            if sys.version_info[0] < 3:
-                self.bookmarks.sort()
-            reload_user_links()
-            self.bookmarksChanged.emit()
-    def add(self, url, name):
-        f = open(os.path.join(app_links, name + ".txt"), "w")
-        f.write(url)
-        f.close()
-        self.reload_()
-        self.bookmarksChanged.emit()
-    def removeByName(self, path):
-        path = os.path.join(app_links, path)
-        if os.path.exists(path):
-            os.remove(path)
-        if os.path.exists(path + ".txt"):
-            os.remove(path + ".txt")
-        self.reload_()
-        self.bookmarksChanged.emit()
+bookmarksManager = BookmarksManager(app_links)
 
-bookmarksManager = BookmarksManager()
+def rebuild_bookmarks_toolbar():
+    global user_links
+    user_links = reload_user_links(app_links)
+
+bookmarksManager.bookmarksChanged.connect(rebuild_bookmarks_toolbar)
+
+bookmarksManager.setDirectory(app_links)
 
 class BookmarksManagerGUI(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -1283,7 +1238,7 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.loadControls)
 
     def loadLinks(self):
-        if os.path.isdir(os.path.join(app_profile, "links")) and not user_links == "":
+        if os.path.isdir(app_links) and not user_links == "":
             if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
                 self.buildToolBar()
             if self.page().mainFrame().findFirstElement("#ryouko-link-bar").isNull():
@@ -3270,7 +3225,8 @@ def main():
             QtCore.QCoreApplication.instance().quit()
             sys.exit()
         else:
-            reload_user_links()
+            global user_links
+            user_links = reload_user_links(app_links)
             global reset
             app = QtGui.QApplication(sys.argv)
             app.aboutToQuit.connect(prepareQuit)
