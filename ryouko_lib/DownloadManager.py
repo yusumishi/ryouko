@@ -3,6 +3,17 @@
 import os.path
 from PyQt4 import QtCore, QtGui
 
+class DownloadProgressBar(QtGui.QProgressBar):
+    def __init__(self, reply=None, parent=None):
+        super(DownloadProgressBar, self).__init__()
+        self.reply = reply
+        if self.reply:
+            self.reply.downloadProgress.connect(self.updateProgress)
+    def updateProgress(self, received, total):
+        self.setMaximum(total)
+        self.setValue(received)
+        self.show()
+
 class DownloadProgressDialog(QtGui.QProgressBar):
     def __init__(self, reply=None, destination=os.path.expanduser("~"), parent=None):
         super(DownloadProgressDialog, self).__init__()

@@ -1069,17 +1069,6 @@ class RAboutDialog(QtWebKit.QWebView):
 
 aboutDialog = None
 
-class DownloadProgressBar(QtGui.QProgressBar):
-    def __init__(self, reply=None, parent=None):
-        super(DownloadProgressBar, self).__init__()
-        self.reply = reply
-        if self.reply:
-            self.reply.downloadProgress.connect(self.updateProgress)
-    def updateProgress(self, received, total):
-        self.setMaximum(total)
-        self.setValue(received)
-        self.show()
-
 downloadManagerGUI = None
 
 def downloadFinished():
