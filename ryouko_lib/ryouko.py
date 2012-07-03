@@ -54,6 +54,7 @@ from SettingsManager import *
 from DownloaderThread import *
 from DialogFunctions import *
 from MovableTabWidget import *
+from ContextMenu import *
 from MenuPopupWindow import *
 from ViewSourceDialog import *
 from RExpander import *
@@ -734,8 +735,8 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         deleteHistoryItemAction.triggered.connect(self.deleteHistoryItem)
         self.addAction(deleteHistoryItemAction)
 
-        self.historyViewMenu = RMenu()
-        self.historyView.customContextMenuRequested.connect(self.historyViewMenu.show)
+        self.historyViewMenu = ContextMenu()
+        self.historyView.customContextMenuRequested.connect(self.historyViewMenu.show2)
         self.historyViewMenu.addAction(deleteHistoryItemAction)
 
         otherTabAction = QtGui.QAction(self)
@@ -1085,17 +1086,6 @@ def showAboutPage(webView):
         <a name='licensing'></a>\
         <h1>" + tr('license') + "</h1>\
         <iframe style='border: 0; width: 100%; height: 640px;' src='file://%" + os.path.join(app_lib, "LICENSE.txt") + "'></iframe></center></div></div></center></body></html>")
-
-class RMenu(QtGui.QMenu):
-    def show2(self):
-        x = QtCore.QPoint(QtGui.QCursor.pos()).x()
-        if x + self.width() > QtGui.QApplication.desktop().size().width():
-            x = x - self.width()
-        y = QtCore.QPoint(QtGui.QCursor.pos()).y()
-        if y + self.height() > QtGui.QApplication.desktop().size().height():
-            y = y - self.height()
-        self.move(x, y)
-        self.setVisible(True)
 
 class RAboutDialog(QtWebKit.QWebView):
     def __init__(self, parent=None):
@@ -2782,7 +2772,7 @@ self.origY + ev.globalY() - self.mouseY)
         closeRightTabsAction.triggered.connect(self.closeRightTabs)
         self.addAction(closeRightTabsAction)
 
-        self.tabsContextMenu = RMenu()
+        self.tabsContextMenu = ContextMenu()
         self.tabsContextMenu.addAction(newTabAction)
         self.tabsContextMenu.addAction(newWindowAction)
         self.tabsContextMenu.addAction(newpbTabAction)
