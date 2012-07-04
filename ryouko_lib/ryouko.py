@@ -971,8 +971,8 @@ class RAboutDialog(QtWebKit.QWebView):
         fg.moveCenter(cp)
         self.move(fg.topLeft())
     def show(self):
-        self.center()
         self.setVisible(True)
+        self.center()
 
 aboutDialog = None
 
