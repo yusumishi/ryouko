@@ -14,6 +14,7 @@ from DialogFunctions import *
 from TranslationManager import *
 
 class ViewSourceDialog(QtGui.QMainWindow):
+    closed = QtCore.pyqtSignal(QtCore.QObject)
     def __init__(self, reply=None, parent=None):
         super(ViewSourceDialog, self).__init__()
         self.setParent(parent)
@@ -59,7 +60,7 @@ class ViewSourceDialog(QtGui.QMainWindow):
         self.setCentralWidget(self.sourceView)
         closeWindowAction = QtGui.QAction(self)
         closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+U"])
-        closeWindowAction.triggered.connect(self.hide)
+        closeWindowAction.triggered.connect(self.close)
         self.addAction(closeWindowAction)
         self.reply = reply
         if self.reply:
@@ -104,9 +105,12 @@ class ViewSourceDialog(QtGui.QMainWindow):
         self.reply = reply
         if self.reply:
             self.reply.finished.connect(self.finishRender)
+
     def closeEvent(self, ev):
+        self.closed.emit(self)
         self.deleteLater()
         ev.accept()
+
     def finishRender(self):
         if self.reply.isFinished():
             data = self.reply.readAll()

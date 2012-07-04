@@ -991,6 +991,7 @@ class RWebView(QtWebKit.QWebView):
         self.autoBack = QtCore.QTimer()
         self.autoBack.timeout.connect(self.autoGoBack)
         self.destinations = []
+        self.sourceViews = []
         self.autoSaveInterval = 0
         self.urlChanged.connect(self.autoSave)
         self.printer = None
@@ -1277,12 +1278,19 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         self.downloadFile(QtNetwork.QNetworkRequest(self.url()))
 
     def viewSource(self):
+        try: self.sourceViews
+        except: self.sourceViews = []
         nm = self.page().networkAccessManager()
         reply = nm.get(QtNetwork.QNetworkRequest(self.url()))
         s = ViewSourceDialog(reply, None)
+        self.sourceViews.append(s)
+        s.closed.connect(self.removeSourceView)
         s.show()
         s.resize(640, 480)
         s.setWindowIcon(self.icon())
+
+    def removeSourceView(self, o):
+        del self.sourceViews[self.sourceViews.index(o)]
 
     def downloadFile(self, request, fname = ""):
         if not os.path.isdir(os.path.dirname(fname)):
