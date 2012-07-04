@@ -13,6 +13,12 @@ sys.path.append(app_lib)
 from QStringFunctions import *
 from TranslationManager import *
 
+def centerWidget(widget):
+    fg = widget.frameGeometry()
+    cp = QtGui.QDesktopWidget().availableGeometry().center()
+    fg.moveCenter(cp)
+    widget.move(fg.topLeft())
+
 def message(title="Alert", content="This is a message.", icon="info"):
     message = QtGui.QMessageBox()
     message.setWindowTitle(title)

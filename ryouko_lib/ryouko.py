@@ -487,15 +487,9 @@ class ClearHistoryDialog(QtGui.QMainWindow):
         self.setCentralWidget(self.contents)
         self.createClearHistoryToolBar()
 
-    def center(self):
-        fg = self.frameGeometry()
-        cp = QtGui.QDesktopWidget().availableGeometry().center()
-        fg.moveCenter(cp)
-        self.move(fg.topLeft())
-
     def show(self):
         self.setVisible(True)
-        self.center()
+        centerWidget(self)
 
     def display(self):
         self.show()
@@ -965,14 +959,9 @@ class RAboutDialog(QtWebKit.QWebView):
         self.setWindowTitle(tr('aboutRyouko'))
         showAboutPage(self)
 
-    def center(self):        
-        fg = self.frameGeometry()
-        cp = QtGui.QDesktopWidget().availableGeometry().center()
-        fg.moveCenter(cp)
-        self.move(fg.topLeft())
     def show(self):
         self.setVisible(True)
-        self.center()
+        centerWidget(self)
 
 aboutDialog = None
 
@@ -2824,10 +2813,7 @@ self.origY + ev.globalY() - self.mouseY)
 
     def showSettings(self):
         cDialog.show()
-        qr = cDialog.frameGeometry()
-        cp = QtGui.QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        cDialog.move(qr.topLeft())
+        centerWidget(cDialog)
 
     def updateSettings(self):
         for tab in range(self.tabs.count()):
