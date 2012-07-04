@@ -2939,8 +2939,8 @@ self.origY + ev.globalY() - self.mouseY)
         self.searchHistoryField.selectAll()
 
 
-    def closeTab(self, index=False, permanent=False):
-        if not index:
+    def closeTab(self, index=None, permanent=False):
+        if index == None:
             index = self.tabs.currentIndex()
         if self.tabs.count() > 0:
             if (self.tabs.widget(index).webView.pb) or (unicode(self.tabs.widget(index).webView.url().toString()) == "" or unicode(self.tabs.widget(index).webView.url().toString()) == "about:blank") or permanent==True:
