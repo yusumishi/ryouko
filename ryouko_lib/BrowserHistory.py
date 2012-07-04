@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os, json, time, datetime
 from PyQt4 import QtCore
 
@@ -14,6 +15,9 @@ class BrowserHistory(QtCore.QObject):
         self.reload()
     def setAppProfile(self, profile):
         self.app_profile = profile
+        try: self.reload()
+        except:
+            print("", end="")
     def reload(self):
         if os.path.exists(os.path.join(self.app_profile, "history.json")):
             history = open(os.path.join(self.app_profile, "history.json"), "r")

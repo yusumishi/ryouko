@@ -1661,6 +1661,7 @@ class Browser(QtGui.QMainWindow):
         self.searchEditButtonContainerLayout.setContentsMargins(0, 0, 0, 0)
         self.searchEditButtonContainer.setLayout(self.searchEditButtonContainerLayout)
         self.searchEditButton = QtGui.QToolButton(self)
+        self.searchEditButton.setStyleSheet("QToolButton { max-width: 20px; }")
         self.searchEditButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.searchEditButton.setToolTip(tr("searchBtnTT"))
         self.searchEditButton.clicked.connect(self.editSearch)
@@ -2525,6 +2526,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenuButton.triggered.connect(self.showTabsContextMenuAtCornerWidgets)
         self.cornerWidgetsToolBar.addAction(self.tabsContextMenuButton)
         self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setArrowType(QtCore.Qt.DownArrow)
+        self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setStyleSheet("QToolButton { max-width: 20px; }")
 
         # New window button
         newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_icons, 'newwindow.png'))), tr("newWindowBtn"), self)
@@ -3037,7 +3039,9 @@ class Ryouko(QtGui.QWidget):
                     global app_profile
                     app_profile = bck
                     searchManager.changeProfile(app_profile)
-                    settingsManager.changeProfile(bck)
+                    browserHistory.setAppProfile(app_profile)
+                    browserHistory.reload()
+                    settingsManager.changeProfile(app_profile)
                     settingsManager.settings['cloudService'] = a
                     settingsManager.saveSettings()
         except:
