@@ -1,4 +1,4 @@
-0.10.2pre
+0.10.2
 Kyouko
 
 Kanji: 京子
