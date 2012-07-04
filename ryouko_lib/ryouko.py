@@ -2604,7 +2604,7 @@ self.origY + ev.globalY() - self.mouseY)
 
         closeTabAction = QtGui.QAction(tr('closeTab'), self)
         closeTabAction.setShortcut("Ctrl+W")
-        closeTabAction.triggered.connect(self.closeTab)
+        closeTabAction.triggered.connect(self.closeCurrentTab)
         self.addAction(closeTabAction)
         closeLeftTabsAction = QtGui.QAction(QtGui.QIcon(os.path.join(app_icons, 'close-left.png')), tr('closeLeftTabs'), self)
         closeLeftTabsAction.setShortcut("Ctrl+Shift+L")
@@ -2938,6 +2938,8 @@ self.origY + ev.globalY() - self.mouseY)
         self.searchHistoryField.setFocus()
         self.searchHistoryField.selectAll()
 
+    def closeCurrentTab(self):
+        self.closeTab(self.tabs.currentIndex())
 
     def closeTab(self, index=None, permanent=False):
         if index == None:
