@@ -182,6 +182,7 @@ def changeProfile(profile, init = False):
     app_lock = os.path.join(app_profile, ".lockfile")
     app_cookies = os.path.join(app_profile, "cookies.json")
     app_instance2 = os.path.join(app_profile, "instance2-says.txt")
+    loadCookies()
     migrate = False
     if not os.path.isdir(app_home):
         os.mkdir(app_home)
@@ -250,7 +251,9 @@ def prepareQuit():
             local_app_profile = os.path.join(app_profile_folder, app_profile_name)
             if os.path.exists(os.path.join(local_app_profile, "settings.json")):
                 os.remove(os.path.join(local_app_profile, "settings.json"))
-            shutil.copy(os.path.join(app_profile, "settings.json"), local_app_profile)
+            try: shutil.copy(os.path.join(app_profile, "settings.json"), local_app_profile)
+            except:
+                doNothing()
 
 def touch(fname):
     f = open(fname, "w")
@@ -2317,6 +2320,11 @@ class CDialog(QtGui.QMainWindow):
                 window.updateSettings()
             except:
                 doNothing()
+        local_app_profile = os.path.join(app_profile_folder, app_profile_name)
+        if settingsManager.settings['cloudService'] == "No":
+            if os.path.exists(os.path.join(local_app_profile, "settings.json")):
+                os.remove(os.path.join(local_app_profile, "settings.json"))
+            shutil.copy(os.path.join(app_profile, "settings.json"), local_app_profile)
 
 cDialog = None
 
@@ -3049,6 +3057,7 @@ class Ryouko(QtGui.QWidget):
                     for char in settingsManager.settings['cloudService']:
                         a = a + char
                     changeProfile(bck)
+                    loadCookies()
                     searchManager.changeProfile(app_profile)
                     browserHistory.setAppProfile(app_profile)
                     browserHistory.reload()
