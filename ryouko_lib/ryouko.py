@@ -3069,6 +3069,7 @@ class Ryouko(QtGui.QWidget):
         global app_default_useragent
         app_default_useragent = unicode(dA.page().mainFrame().findFirstElement("#userAgent").toPlainText()).replace("Safari", "Ryouko/" + app_version + " Safari")
         dA.deleteLater()
+        del dA
         if not os.path.isdir(app_profile):
             os.makedirs(app_profile)
         if not os.path.isdir(os.path.join(app_profile, "temp")):
