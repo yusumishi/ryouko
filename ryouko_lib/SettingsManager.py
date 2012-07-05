@@ -5,7 +5,7 @@ from subprocess import Popen, PIPE
 
 class SettingsManager():
     def __init__(self, app_profile = os.path.join(os.path.expanduser("~"), ".ryouko-data", "profiles", "default")):
-        self.settings = {'openInTabs' : True, 'oldSchoolWindows' : False, 'loadImages' : True, 'jsEnabled' : True, 'storageEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : False, 'proxy' : {"type" : "No", "hostname" : "", "port" : "8080", "user" : "", "password" : ""}, "cloudService" : "None", "maxUndoCloseTab" : -1}
+        self.settings = {'openInTabs' : True, 'oldSchoolWindows' : False, 'loadImages' : True, 'jsEnabled' : True, 'storageEnabled' : True, 'pluginsEnabled' : False, 'privateBrowsing' : False, 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : False, 'proxy' : {"type" : "No", "hostname" : "", "port" : "8080", "user" : "", "password" : ""}, "cloudService" : "None", "maxUndoCloseTab" : -1, "googleDocsViewerEnabled" : True}
         self.filters = []
         self.app_profile = app_profile
         self.loadSettings()

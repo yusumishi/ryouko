@@ -1238,11 +1238,17 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
 
     def downloadUnsupportedContent(self, reply):
         url = unicode(reply.url().toString())
-        for ext in app_google_docs_extensions:
-            if url.split("?")[0].lower().endswith(ext):
-                self.stop()
-                self.load(QtCore.QUrl("https://docs.google.com/viewer?embedded=true&url=" + url))
-                return
+        try: settingsManager.settings['googleDocsViewerEnabled']
+        except:
+            d = True
+        else:
+            d = settingsManager.settings['googleDocsViewerEnabled']
+        if d == True and not "file://" in url:
+            for ext in app_google_docs_extensions:
+                if url.split("?")[0].lower().endswith(ext):
+                    self.stop()
+                    self.load(QtCore.QUrl("https://docs.google.com/viewer?embedded=true&url=" + url))
+                    return
         self.downloadFile(reply.request())
 
     def printPage(self):
@@ -1995,6 +2001,9 @@ class CDialog(QtGui.QMainWindow):
         self.pluginsBox = QtGui.QCheckBox(tr('enablePlugins'))
         self.cLayout.addWidget(self.pluginsBox)
 
+        self.gDocsBox = QtGui.QCheckBox(tr('enableGDViewer'))
+        self.cLayout.addWidget(self.gDocsBox)
+
         self.pbBox = QtGui.QCheckBox(tr('enablePB'))
         self.pLayout.addWidget(self.pbBox)
 
@@ -2179,6 +2188,11 @@ class CDialog(QtGui.QMainWindow):
             self.lDBox.setChecked(False)
         else:
             self.lDBox.setChecked(self.settings['loginToDownload'])
+        try: self.settings['googleDocsViewerEnabled']
+        except: 
+            self.gDocsBox.setChecked(True)
+        else:
+            self.gDocsBox.setChecked(self.settings['googleDocsViewerEnabled'])
         try: self.settings['adBlock']
         except: 
             self.aBBox.setChecked(False)
@@ -2281,7 +2295,7 @@ class CDialog(QtGui.QMainWindow):
             if os.path.isdir(os.path.join(app_profile_folder, profile)):
                 self.profileList.addItem(profile)
     def saveSettings(self):
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text()))}
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked()}
         f = open(app_default_profile_file, "w")
         f.write(unicode(self.profileList.currentItem().text()))
         f.close()
