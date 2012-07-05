@@ -3055,7 +3055,7 @@ class Ryouko(QtGui.QWidget):
         dA.setHtml("<html><body><span id='userAgent'></span></body></html>")
         dA.page().mainFrame().evaluateJavaScript("document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;")
         global app_default_useragent
-        app_default_useragent = unicode(dA.page().mainFrame().findFirstElement("#userAgent").toPlainText())
+        app_default_useragent = unicode(dA.page().mainFrame().findFirstElement("#userAgent").toPlainText()).replace("Safari", "Ryouko/" + app_version + " Safari")
         print(app_default_useragent)
         dA.deleteLater()
         if not os.path.isdir(app_profile):
