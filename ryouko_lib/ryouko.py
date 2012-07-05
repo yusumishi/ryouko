@@ -110,22 +110,21 @@ def loadCookies():
         c = []
     cookieFile.close()
     cookies = []
-    if sys.version_info[0] <= 2:
-        for cookie in c:
-            cookies.append(QtNetwork.QNetworkCookie().parseCookies(QtCore.QByteArray(cookie))[0])
-    else:
-        for cookie in c:
-            cookies.append(QtNetwork.QNetworkCookie().parseCookies(QtCore.QByteArray(cookie.strip("b'").rstrip("'")))[0])
+    for cookie in c:
+        cookies.append(QtNetwork.QNetworkCookie().parseCookies(QtCore.QByteArray(cookie))[0])
     app_cookiejar.setAllCookies(cookies)
 
 def saveCookies():
     if app_kill_cookies == False:
         cookieFile = open(app_cookies, "w")
         cookies = []
-        for c in app_cookiejar.allCookies():
-            cookies.append(unicode(qstring(c.toRawForm())))
-        if 1:
-            json.dump(cookies, cookieFile)
+        if sys.version_info[0] >= 3:
+            for c in app_cookiejar.allCookies():
+                cookies.append(unicode(qstring(c.toRawForm())).strip("b'").rstrip("'"))
+        else:
+            for c in app_cookiejar.allCookies():
+                cookies.append(unicode(qstring(c.toRawForm())))
+        json.dump(cookies, cookieFile)
         cookieFile.close()
     else:
         if sys.platform.startswith("linux"):
