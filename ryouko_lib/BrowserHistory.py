@@ -1,6 +1,15 @@
+#! /usr/bin/env python
+
 from __future__ import print_function
-import os, json, time, datetime
+import os, sys, json, time, datetime
 from PyQt4 import QtCore
+try:
+    __file__
+except:
+    __file__ = sys.executable
+app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(app_lib)
+from Python23Compat import *
 
 class BrowserHistory(QtCore.QObject):
     historyChanged = QtCore.pyqtSignal()

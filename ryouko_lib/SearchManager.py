@@ -9,6 +9,7 @@ except:
 app_lib = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(app_lib)
 from TranslationManager import *
+from Python23Compat import *
 from DialogFunctions import message
 
 def doNothing():

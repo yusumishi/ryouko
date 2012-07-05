@@ -11,6 +11,7 @@ except:
 app_lib = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(app_lib)
 from DialogFunctions import *
+from Python23Compat import *
 from TranslationManager import *
 
 class ViewSourceDialog(QtGui.QMainWindow):

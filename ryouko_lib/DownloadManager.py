@@ -1,7 +1,14 @@
 #! /usr/bin/env/ python
 
-import os.path
+import os.path, sys
 from PyQt4 import QtCore, QtGui
+try:
+    __file__
+except:
+    __file__ = sys.executable
+app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(app_lib)
+from Python23Compat import *
 
 class DownloadProgressBar(QtGui.QProgressBar):
     def __init__(self, reply=None, parent=None):

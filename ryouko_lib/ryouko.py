@@ -49,6 +49,7 @@ sys.path.append(app_lib)
 app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
 
 from ryouko_common import *
+from Python23Compat import *
 from QStringFunctions import *
 from SystemTerminal import *
 from SettingsManager import *
@@ -103,13 +104,18 @@ user_links = ""
 def loadCookies():
     global app_cookiejar
     if os.path.exists(app_cookies):
-        cookieFile = open(app_cookies, "rb")
-        try: c = json.load(cookieFile)
-        except:
-            print("Error! Cookies could not be loaded!")
-            c = []
+        cookieFile = open(app_cookies, "r")
+        if sys.version_info[0] <= 2:
+            try: c = json.load(cookieFile)
+            except:
+                print("Error! Cookies could not be loaded!")
+                c = []
         else:
-            doNothing()
+            r = cookieFile.read()
+            c = json.loads(r)
+#            except:
+#                print("Error! Cookies could not be loaded!")
+#                c = []
         cookieFile.close()
         for cookie in c:
             cookie = QtCore.QByteArray(cookie)
@@ -122,11 +128,16 @@ def loadCookies():
 
 def saveCookies():
     if app_kill_cookies == False:
-        cookieFile = open(app_cookies, "wb")
+        cookieFile = open(app_cookies, "w")
         cookies = []
         for c in app_cookiejar.allCookies():
             cookies.append(unicode(qstring(c.toRawForm())))
-        json.dump(cookies, cookieFile)
+        if sys.version_info[0] <= 2:
+            json.dump(cookies, cookieFile)
+        else:
+            f = open(app_cookies, "w")
+            f.write(json.dumps(cookies))
+            f.close()
         cookieFile.close()
     else:
         if sys.platform.startswith("linux"):
@@ -157,7 +168,7 @@ class RSettingsManager(SettingsManager):
 
 settingsManager = RSettingsManager()
 
-def changeProfile(name, init = False):
+def changeProfile(profile, init = False):
     global app_profile_name
     global app_profile
     global app_links
@@ -165,8 +176,8 @@ def changeProfile(name, init = False):
     global app_cookies
     global app_instance2
     global app_profile_exists
-    app_profile_name = name
-    app_profile = os.path.join(app_profile_folder, app_profile_name)
+    app_profile_name = os.path.split(profile)[1]
+    app_profile = profile
     app_links = os.path.join(app_profile, "links")
     app_lock = os.path.join(app_profile, ".lockfile")
     app_cookies = os.path.join(app_profile, "cookies.json")
@@ -197,7 +208,9 @@ def changeProfile(name, init = False):
 
     try: browserHistory
     except: doNothing()
-    else: browserHistory.setAppProfile(app_profile)
+    else:
+        browserHistory.setAppProfile(app_profile)
+        browserHistory.reload()
 
     try: searchManager
     except: doNothing()
@@ -211,17 +224,13 @@ if os.path.exists(app_default_profile_file):
     app_default_profile_name = app_default_profile_name.replace("\n", "")
 if not os.path.exists(os.path.join(app_profile_folder, app_default_profile_name)):
     app_default_profile_name = "default"
-changeProfile(app_default_profile_name, True)
+changeProfile(os.path.join(app_profile_folder, app_default_profile_name), True)
 
 reset = False
 
 blanktoolbarsheet = "QToolBar { border: 0; }"
 
 # From http://stackoverflow.com/questions/448207/python-downloading-a-file-over-http-with-progress-bar-and-basic-authentication
-
-if sys.version_info[0] >= 3:
-    def unicode(data):
-        return str(data)
 
 def hiddenNotificationMessage(message="This is a message."):
     notificationManager.newNotification(message)
@@ -1101,7 +1110,7 @@ class RWebView(QtWebKit.QWebView):
 
     def autoSave(self):
         self.autoSaveInterval += 1
-        if self.autoSaveInterval == 4:
+        if self.autoSaveInterval >= 4:
             saveCookies()
             self.autoSaveInterval = 0
 
@@ -3039,8 +3048,7 @@ class Ryouko(QtGui.QWidget):
                     a = ""
                     for char in settingsManager.settings['cloudService']:
                         a = a + char
-                    global app_profile
-                    app_profile = bck
+                    changeProfile(bck)
                     searchManager.changeProfile(app_profile)
                     browserHistory.setAppProfile(app_profile)
                     browserHistory.reload()
@@ -3076,8 +3084,8 @@ class Ryouko(QtGui.QWidget):
     def primeBrowser(self):
         global win
         win.show()
-        if app_profile_exists == True:
-            notificationMessage(tr("profileError"))
+#        if app_profile_exists == True:
+#            notificationMessage(tr("profileError"))
 
 def main():
     if "--help" in sys.argv or "-h" in sys.argv:
@@ -3094,7 +3102,7 @@ def main():
                 except:
                     doNothing()
                 else:
-                    changeProfile(sys.argv[i + 1])
+                    changeProfile(os.path.join(app_profile_folder, sys.argv[i + 1]))
         if os.path.exists(app_lock):
             app = QtGui.QApplication(sys.argv)
             reply = QtGui.QMessageBox.question(None, tr("error"),

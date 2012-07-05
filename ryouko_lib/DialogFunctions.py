@@ -3,13 +3,12 @@
 import os, sys
 from PyQt4 import QtCore, QtGui
 try:
-    filename = __file__
+    __file__
 except:
     __file__ = sys.executable
-else:
-    del filename
 app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(app_lib)
+from Python23Compat import *
 from QStringFunctions import *
 from TranslationManager import *
 

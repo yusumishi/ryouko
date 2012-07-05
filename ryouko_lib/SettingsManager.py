@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import os, json
+import os, sys, json
 from subprocess import Popen, PIPE
 
 class SettingsManager():
@@ -22,7 +22,10 @@ class SettingsManager():
     def saveSettings(self):
         settingsFile = os.path.join(self.app_profile, "settings.json")
         fstream = open(settingsFile, "w")
-        json.dump(self.settings, fstream)
+        if sys.version_info[0] <= 2:
+            json.dump(self.settings, fstream)
+        else:
+            fstream.write(json.dumps(self.settings))
         fstream.close()
     def applyFilters(self):
         if os.path.isdir(os.path.join(self.app_profile, "adblock")):
