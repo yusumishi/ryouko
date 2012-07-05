@@ -54,6 +54,7 @@ from Python23Compat import *
 from QStringFunctions import *
 from SystemTerminal import *
 from SettingsManager import *
+from RWebPage import *
 from DownloaderThread import *
 from DialogFunctions import *
 from MovableTabWidget import *
@@ -979,6 +980,8 @@ class RWebView(QtWebKit.QWebView):
     def __init__(self, parent=False, pb=False):
         super(RWebView, self).__init__()
         self.parent = parent
+        page = RWebPage(self)
+        self.setPage(page)
         self.destinations = []
         self.sourceViews = []
         self.autoSaveInterval = 0
@@ -1190,6 +1193,14 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             print("", end = "")
         else:
             self.settings().setAttribute(QtWebKit.QWebSettings.JavascriptEnabled, settingsManager.settings['jsEnabled'])
+        try: settingsManager.settings['customUserAgent']
+        except:
+            doNothing()
+        else:
+            if settingsManager.settings['customUserAgent'].replace(" ", "") != "":
+                self.page().setUserAgent(settingsManager.settings['customUserAgent'])
+            else:
+                self.page().setUserAgent(app_default_useragent)
         try: settingsManager.settings['storageEnabled']
         except:
             self.settings().enablePersistentStorage(qstring(app_profile))
@@ -1934,7 +1945,7 @@ class CDialog(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(CDialog, self).__init__()
         self.parent = parent
-        self.setings = {}
+        self.settings = {}
         self.initUI()
         self.filterListCount = 0
         self.resize(400, 400)
@@ -2013,6 +2024,12 @@ class CDialog(QtGui.QMainWindow):
         self.aBBox.stateChanged.connect(self.tryDownload)
         downloaderThread.fileDownloaded.connect(self.applyFilters)
         self.cLayout.addWidget(self.aBBox)
+        self.uALabel1 = QtGui.QLabel(tr("userAgent") + ":")
+        self.cLayout.addWidget(self.uALabel1)
+        self.uABox = QtGui.QLineEdit()
+        self.cLayout.addWidget(self.uABox)
+        self.uALabel2 = QtGui.QLabel(tr("customUserAgent"))
+        self.cLayout.addWidget(self.uALabel2)
         self.cLayout.addWidget(RExpander())
         backendBox = QtGui.QLabel(tr('downloadBackend'))
         backendBox.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
@@ -2200,6 +2217,11 @@ class CDialog(QtGui.QMainWindow):
             self.aBBox.setChecked(False)
         else:
             self.aBBox.setChecked(self.settings['adBlock'])
+        try: self.settings['customUserAgent']
+        except:
+            doNothing()
+        else:
+            self.uABox.setText(self.settings['customUserAgent'])
         try: self.settings['backend']
         except:
             doNothing()
@@ -2297,7 +2319,7 @@ class CDialog(QtGui.QMainWindow):
             if os.path.isdir(os.path.join(app_profile_folder, profile)):
                 self.profileList.addItem(profile)
     def saveSettings(self):
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked()}
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
         f = open(app_default_profile_file, "w")
         f.write(unicode(self.profileList.currentItem().text()))
         f.close()
