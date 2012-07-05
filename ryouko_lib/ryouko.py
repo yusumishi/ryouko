@@ -951,6 +951,8 @@ class RAboutDialog(QtWebKit.QWebView):
     def __init__(self, parent=None):
         super(RAboutDialog, self).__init__()
         self.parent = parent
+        page = RWebPage()
+        self.setPage(page)
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
 #        self.setWindowModality(QtCore.Qt.ApplicationModal)
@@ -961,7 +963,16 @@ class RAboutDialog(QtWebKit.QWebView):
         self.addAction(self.closeWindowAction)
         self.setWindowTitle(tr('aboutRyouko'))
         showAboutPage(self)
-
+    def updateUserAgent(self):
+        try: settingsManager.settings['customUserAgent']
+        except:
+            doNothing()
+        else:
+            if settingsManager.settings['customUserAgent'].replace(" ", "") != "":
+                self.page().setUserAgent(settingsManager.settings['customUserAgent'])
+            else:
+                self.page().setUserAgent(app_default_useragent)
+        showAboutPage(self)
     def show(self):
         self.setVisible(True)
         centerWidget(self)
@@ -1244,6 +1255,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                     try: exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy")
                     except:
                         doNothing()
+        aboutDialog.updateUserAgent()
         for child in range(1, len(self.newWindows)):
             try: self.newWindows[child].updateSettings()
             except:
