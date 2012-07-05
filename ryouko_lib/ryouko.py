@@ -111,7 +111,7 @@ def loadCookies():
                 print("Error! Cookies could not be loaded!")
                 c = []
         else:
-            r = cookieFile.read()
+            r = unicode(cookieFile.read())
             c = json.loads(r)
 #            except:
 #                print("Error! Cookies could not be loaded!")
