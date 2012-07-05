@@ -47,6 +47,7 @@ except:
 app_lib = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(app_lib)
 app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
+app_default_useragent = "Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/534.34 (KHTML, like Gecko) Qt/4.8.1 Safari/534.34"
 
 from ryouko_common import *
 from Python23Compat import *
@@ -1157,6 +1158,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                     delete = runThroughFilters(e)
                     if delete:
                         element.removeFromDocument()
+                        break
 
     def establishPBMode(self, pb):
         self.pb = pb
@@ -3027,6 +3029,13 @@ win = None
 
 class Ryouko(QtGui.QWidget):
     def __init__(self):
+        dA = QtWebKit.QWebView()
+        dA.setHtml("<html><body><span id='userAgent'></span></body></html>")
+        dA.page().mainFrame().evaluateJavaScript("document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;")
+        global app_default_useragent
+        app_default_useragent = unicode(dA.page().mainFrame().findFirstElement("#userAgent").toPlainText())
+        print(app_default_useragent)
+        dA.deleteLater()
         if not os.path.isdir(app_profile):
             os.makedirs(app_profile)
         if not os.path.isdir(os.path.join(app_profile, "temp")):
