@@ -46,6 +46,7 @@ except:
     __file__ = sys.executable
 app_lib = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(app_lib)
+app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
 
 from ryouko_common import *
 from QStringFunctions import *
@@ -977,8 +978,6 @@ class RWebView(QtWebKit.QWebView):
     def __init__(self, parent=False, pb=False):
         super(RWebView, self).__init__()
         self.parent = parent
-        self.autoBack = QtCore.QTimer()
-        self.autoBack.timeout.connect(self.autoGoBack)
         self.destinations = []
         self.sourceViews = []
         self.autoSaveInterval = 0
@@ -1238,11 +1237,13 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                 print("Error! %s does not have an updateSettings() method!" % (self.newWindows[child]))
 
     def downloadUnsupportedContent(self, reply):
+        url = unicode(reply.url().toString())
+        for ext in app_google_docs_extensions:
+            if url.split("?")[0].lower().endswith(ext):
+                self.stop()
+                self.load(QtCore.QUrl("https://docs.google.com/viewer?embedded=true&url=" + url))
+                return
         self.downloadFile(reply.request())
-
-    def autoGoBack(self):
-        self.back()
-        self.autoBack.stop()
 
     def printPage(self):
         self.printer = QtGui.QPrinter()
