@@ -244,6 +244,7 @@ def prepareQuit():
             try: shutil.copy(os.path.join(app_profile, "settings.json"), local_app_profile)
             except:
                 doNothing()
+    sys.exit()
 
 def touch(fname):
     f = open(fname, "w")
@@ -3063,11 +3064,11 @@ win = None
 
 class Ryouko(QtGui.QWidget):
     def __init__(self):
-        dA = QtWebKit.QWebView()
-        dA.setHtml("<html><body><span id='userAgent'></span></body></html>")
-        dA.page().mainFrame().evaluateJavaScript("document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;")
+        dA = QtWebKit.QWebPage()
+        dA.mainFrame().setHtml("<html><body><span id='userAgent'></span></body></html>")
+        dA.mainFrame().evaluateJavaScript("document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;")
         global app_default_useragent
-        app_default_useragent = unicode(dA.page().mainFrame().findFirstElement("#userAgent").toPlainText()).replace("Safari", "Ryouko/" + app_version + " Safari")
+        app_default_useragent = unicode(dA.mainFrame().findFirstElement("#userAgent").toPlainText()).replace("Safari", "Ryouko/" + app_version + " Safari")
         dA.deleteLater()
         del dA
         if not os.path.isdir(app_profile):
