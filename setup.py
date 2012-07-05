@@ -2,7 +2,7 @@
 
 files = ["translations/*", "icons/*", "*.*"]
 
-import os
+import os.path
 from distutils.core import setup
 
 app_lib = os.path.dirname(os.path.realpath(__file__))
