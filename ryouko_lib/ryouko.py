@@ -102,17 +102,18 @@ else:
 user_links = ""
 
 def loadCookies():
-    global app_cookiejar
-    cookieFile = open(app_cookies, "r")
-    try: c = json.load(cookieFile)
-    except:
-        print("Error! Cookies could not be loaded!")
-        c = []
-    cookieFile.close()
-    cookies = []
-    for cookie in c:
-        cookies.append(QtNetwork.QNetworkCookie().parseCookies(QtCore.QByteArray(cookie))[0])
-    app_cookiejar.setAllCookies(cookies)
+    if os.path.exists(app_cookies):
+        global app_cookiejar
+        cookieFile = open(app_cookies, "r")
+        try: c = json.load(cookieFile)
+        except:
+            print("Error! Cookies could not be loaded!")
+            c = []
+        cookieFile.close()
+        cookies = []
+        for cookie in c:
+            cookies.append(QtNetwork.QNetworkCookie().parseCookies(QtCore.QByteArray(cookie))[0])
+        app_cookiejar.setAllCookies(cookies)
 
 def saveCookies():
     if app_kill_cookies == False:
