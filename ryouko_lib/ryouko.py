@@ -103,27 +103,19 @@ user_links = ""
 
 def loadCookies():
     global app_cookiejar
-    if os.path.exists(app_cookies):
-        cookieFile = open(app_cookies, "r")
-        if sys.version_info[0] <= 2:
-            try: c = json.load(cookieFile)
-            except:
-                print("Error! Cookies could not be loaded!")
-                c = []
-        else:
-            r = unicode(cookieFile.read())
-            c = json.loads(r)
-#            except:
-#                print("Error! Cookies could not be loaded!")
-#                c = []
-        cookieFile.close()
-        for cookie in c:
-            cookie = QtCore.QByteArray(cookie)
-    else:
+    cookieFile = open(app_cookies, "r")
+    try: c = json.load(cookieFile)
+    except:
+        print("Error! Cookies could not be loaded!")
         c = []
+    cookieFile.close()
     cookies = []
-    for cookie in c:
-        cookies.append(QtNetwork.QNetworkCookie().parseCookies(cookie)[0])
+    if sys.version_info[0] <= 2:
+        for cookie in c:
+            cookies.append(QtNetwork.QNetworkCookie().parseCookies(QtCore.QByteArray(cookie))[0])
+    else:
+        for cookie in c:
+            cookies.append(QtNetwork.QNetworkCookie().parseCookies(QtCore.QByteArray(cookie.strip("b'").rstrip("'")))[0])
     app_cookiejar.setAllCookies(cookies)
 
 def saveCookies():
@@ -132,12 +124,8 @@ def saveCookies():
         cookies = []
         for c in app_cookiejar.allCookies():
             cookies.append(unicode(qstring(c.toRawForm())))
-        if sys.version_info[0] <= 2:
+        if 1:
             json.dump(cookies, cookieFile)
-        else:
-            f = open(app_cookies, "w")
-            f.write(json.dumps(cookies))
-            f.close()
         cookieFile.close()
     else:
         if sys.platform.startswith("linux"):
