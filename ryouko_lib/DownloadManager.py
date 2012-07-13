@@ -1,5 +1,6 @@
 #! /usr/bin/env/ python
 
+from __future__ import division
 import os.path, sys
 from PyQt4 import QtCore, QtGui
 try:
@@ -26,6 +27,7 @@ class DownloadProgressDialog(QtGui.QProgressBar):
         super(DownloadProgressDialog, self).__init__()
         self.reply = reply
         self.destination = destination
+        self.progress = [0, 0]
         if self.reply:
             self.reply.downloadProgress.connect(self.updateProgress)
             self.reply.finished.connect(self.finishDownload)
@@ -38,13 +40,17 @@ class DownloadProgressDialog(QtGui.QProgressBar):
             f.writeData(data)
             f.flush()
             f.close()
+            self.progress = [0, 0]
             self.hide()
     def updateProgress(self, received, total):
         self.setMaximum(total)
         self.setValue(received)
+        self.progress[0] = received
+        self.progress[1] = total
         self.show()
 
 class DownloadManagerGUI(QtGui.QMainWindow):
+    downloadProgress = QtCore.pyqtSignal()
     downloadFinished = QtCore.pyqtSignal()
     def __init__(self, parent=None):
         super(DownloadManagerGUI, self).__init__()
@@ -53,6 +59,16 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         i = DownloadProgressDialog(reply, destination)
         self.downloads.append(i)
         reply.finished.connect(self.checkForFinishedDownloads)
+        reply.downloadProgress.connect(self.checkProgress)
+    def checkProgress(self):
+        pr = 0
+        pt = 0
+        for p in self.downloads:
+            pr = pr + p.progress[0]
+            pt = pt + p.progress[1]
+        pe = pr/pt
+        
+            
     def checkForFinishedDownloads(self):
         for i in range(len(self.downloads)):
             if self.downloads[i].reply.isFinished():
