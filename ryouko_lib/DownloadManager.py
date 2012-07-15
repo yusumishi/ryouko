@@ -113,6 +113,7 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         self.scrollArea.setWidget(self.centralWidget)
 
         self.layout = QtGui.QVBoxLayout()
+        self.layout.setAlignment(QtCore.Qt.AlignTop)
         self.layout.setContentsMargins(0,0,0,0)
         self.centralWidget.setLayout(self.layout)
 
