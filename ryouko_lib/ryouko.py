@@ -2710,8 +2710,8 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenu.addAction(undoCloseWindowAction)
 
         self.menuBar = QtGui.QMenuBar()
-        self.menuBar.addMenu(self.tabsContextMenu)
         self.menuBar.addMenu(self.mainMenu)
+        self.menuBar.addMenu(self.tabsContextMenu)
         self.setMenuBar(self.menuBar)
         self.menuBar.setVisible(False)
 
