@@ -3163,13 +3163,13 @@ class Ryouko(QtGui.QWidget):
                     if not sys.argv[arg].lower() == "--pb" and not sys.argv[arg].lower() == "-pb" and not sys.argv[arg] == "-P":
                         f.write("%s\n" % (sys.argv[arg]))
                 f.close()
-                sys.exit()
             else:
                 os.remove(app_lock)
                 args = ""
                 for arg in sys.argv:
                     args = "%s%s " % (args, arg)
                 os.system("%s && echo \"\"" % (args))
+            sys.exit()
             QtCore.QCoreApplication.instance().quit()
             sys.exit()
         if not os.path.isdir(app_profile):
