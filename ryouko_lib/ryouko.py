@@ -2697,6 +2697,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(closeRightTabsAction)
 
         self.tabsContextMenu = ContextMenu()
+        self.tabsContextMenu.setTitle(tr("windowsHKey"))
         self.tabsContextMenu.addAction(newTabAction)
         self.tabsContextMenu.addAction(newWindowAction)
         self.tabsContextMenu.addAction(newpbTabAction)
