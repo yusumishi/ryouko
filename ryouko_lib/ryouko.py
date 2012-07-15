@@ -49,9 +49,18 @@ use_unity_launcher = False
 try:
     from gi.repository import Unity, Gio, GObject, Dbusmenu
 except:
-    print("Unity integration failed!")
+    do_nothing()
 else:
     use_unity_launcher = True
+
+use_linux_notifications = False
+try:
+    import pynotify
+except:
+    do_nothing()
+else:
+    pynotify.init("Ryouko")
+    use_linux_notifications = True
 
 import os, sys, json, time, datetime, string, shutil
 
@@ -236,11 +245,21 @@ blanktoolbarsheet = "QToolBar { border: 0; }"
 # From http://stackoverflow.com/questions/448207/python-downloading-a-file-over-http-with-progress-bar-and-basic-authentication
 
 def hiddenNotificationMessage(message="This is a message."):
-    notificationManager.newNotification(message)
+    if use_linux_notifications == False:
+        notificationManager.newNotification(message)
+    else:
+        linux_notification(message)
 
 def notificationMessage(message="This is a message."):
-    notificationManager.show()
-    notificationManager.newNotification(message)
+    if use_linux_notifications == False:
+        notificationManager.show()
+        notificationManager.newNotification(message)
+    else:
+        linux_notification(message)
+
+def linux_notification(string="This is a message."):
+    n = pynotify.Notification(tr("ryoukoSays"), string)
+    n.show()
 
 def prepareQuit():
     if os.path.exists(app_lock) and not os.path.isdir(app_lock):
@@ -994,6 +1013,14 @@ aboutDialog = None
 
 downloadManagerGUI = None
 
+def downloadStarted():
+    global downloadStartTimer
+    notificationMessage(tr('downloadStarted'))
+    downloadStartTimer.stop()
+
+downloadStartTimer = QtCore.QTimer()
+downloadStartTimer.timeout.connect(downloadStarted)
+
 def downloadFinished():
     notificationMessage(tr('downloadFinished'))
 
@@ -1337,7 +1364,8 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                 else:
                     reply = nm.get(request)
                 downloadManagerGUI.newReply(reply, fname)
-                notificationMessage(tr('downloadStarted'))
+                global downloadStartTimer
+                downloadStartTimer.start(250)
             else:
                 downloaderThread.setUrl(unicode(request.url().toString()))
                 downloaderThread.setDestination(fname)

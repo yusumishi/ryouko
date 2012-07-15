@@ -8,19 +8,55 @@ try:
 except:
     __file__ = sys.executable
 app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+app_icons = os.path.join(app_lib, "icons")
 sys.path.append(app_lib)
 from Python23Compat import *
 
 class DownloadProgressBar(QtGui.QProgressBar):
-    def __init__(self, reply=None, parent=None):
+    def __init__(self, reply=None, destination=os.path.expanduser("~"), parent=None):
         super(DownloadProgressBar, self).__init__()
         self.reply = reply
+        self.destination = destination
+        self.progress = [0, 0]
         if self.reply:
             self.reply.downloadProgress.connect(self.updateProgress)
+            self.reply.finished.connect(self.finishDownload)
+    def finishDownload(self):
+        if self.reply.isFinished():
+            data = self.reply.readAll()
+            f = QtCore.QFile(self.destination)
+            f.open(QtCore.QIODevice.WriteOnly)
+            f.writeData(data)
+            f.flush()
+            f.close()
+            self.progress = [0, 0]
     def updateProgress(self, received, total):
         self.setMaximum(total)
         self.setValue(received)
+        self.progress[0] = received
+        self.progress[1] = total
         self.show()
+
+class DownloadProgressWidget(QtGui.QWidget):
+    def __init__(self, reply=None, destination=os.path.expanduser("~"), parent=None):
+        super(DownloadProgressWidget, self).__init__()
+        self.layout = QtGui.QHBoxLayout()
+        self.setLayout(self.layout)
+        self.progressBar = DownloadProgressBar(reply, destination, self)
+        self.progressBar.reply.downloadProgress.connect(self.updateProgress)
+        self.layout.addWidget(self.progressBar)
+        self.reply = self.progressBar.reply
+        self.stopButton = QtGui.QToolButton()
+        self.stopButton.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, 'stop.png'))))
+        self.stopButton.clicked.connect(self.abort)
+        self.layout.addWidget(self.stopButton)
+        self.progress = [0, 0]
+    def updateProgress(self, received, total):
+        self.progress[0] = received
+        self.progress[1] = total
+    def abort(self):
+        self.progressBar.reply.abort()
+        self.progressBar.reply.finished.emit()
 
 class DownloadProgressDialog(QtGui.QProgressBar):
     def __init__(self, reply=None, destination=os.path.expanduser("~"), parent=None):
@@ -55,13 +91,20 @@ class DownloadManagerGUI(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(DownloadManagerGUI, self).__init__()
         self.downloads = []
+        self.centralWidget = QtGui.QWidget()
+        self.setCentralWidget(self.centralWidget)
+        self.layout = QtGui.QVBoxLayout()
+        self.centralWidget.setLayout(self.layout)
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.checkProgress)
         self.timer.start(1250)
+
     def newReply(self, reply, destination = os.path.expanduser("~")):
-        i = DownloadProgressDialog(reply, destination)
+        i = DownloadProgressWidget(reply, destination)
         self.downloads.append(i)
         reply.finished.connect(self.checkForFinishedDownloads)
+        self.layout.addWidget(i)
+        self.show()
 
     def checkProgress(self):
         pr = 0.0
