@@ -100,6 +100,8 @@ class DownloadProgressWidget(QtGui.QWidget):
     def openDestination(self):
         if sys.platform.startswith("linux"):
             os.system("xdg-open \"" + os.path.split(unicode(self.destination))[0] + "\"")
+        elif sys.platform.startswith("win"):
+            os.system("start \"" + os.path.split(unicode(self.destination))[0] + "\"")
 
     def setFinished(self, finished=True):
         self.finished = finished
