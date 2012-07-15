@@ -2041,7 +2041,7 @@ class CDialog(QtGui.QMainWindow):
         self.dWidget = QtGui.QWidget()
         self.dLayout = QtGui.QVBoxLayout()
         self.dWidget.setLayout(self.dLayout)
-        self.tabs.addTab(self.dWidget, tr('downloads'))
+        self.tabs.addTab(self.dWidget, tr('downloadsHKey'))
 
         newWindowBox = QtGui.QLabel(tr('newWindowOption0'))
         self.gLayout.addWidget(newWindowBox)
@@ -2758,6 +2758,13 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.toolsMenu.addSeparator()
         self.toolsMenu.addAction(viewNotificationsAction)
+
+        downloadsAction = QtGui.QAction(tr("downloadsHKey"), self)
+        downloadsAction.setShortcuts(["Ctrl+Shift+Y", "Ctrl+J"])
+        downloadsAction.triggered.connect(downloadManagerGUI.show)
+        self.toolsMenu.addAction(downloadsAction)
+        self.addAction(downloadsAction)
+
         self.toolsMenu.addAction(clearHistoryAction)
         self.toolsMenu.addAction(configAction)
         self.mainMenu.addSeparator()

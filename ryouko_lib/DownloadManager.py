@@ -11,6 +11,7 @@ app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 app_icons = os.path.join(app_lib, "icons")
 sys.path.append(app_lib)
 from Python23Compat import *
+from TranslationManager import *
 
 class DownloadProgressBar(QtGui.QProgressBar):
     def __init__(self, reply=None, destination=os.path.expanduser("~"), parent=None):
@@ -41,6 +42,7 @@ class DownloadProgressWidget(QtGui.QWidget):
     def __init__(self, reply=None, destination=os.path.expanduser("~"), parent=None):
         super(DownloadProgressWidget, self).__init__()
         self.layout = QtGui.QHBoxLayout()
+        self.layout.setContentsMargins(0,0,0,0)
         self.setLayout(self.layout)
         self.progressBar = DownloadProgressBar(reply, destination, self)
         self.progressBar.reply.downloadProgress.connect(self.updateProgress)
@@ -50,11 +52,13 @@ class DownloadProgressWidget(QtGui.QWidget):
         self.stopButton.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, 'stop.png'))))
         self.stopButton.clicked.connect(self.abort)
         self.layout.addWidget(self.stopButton)
+        self.yay = True
         self.progress = [0, 0]
     def updateProgress(self, received, total):
         self.progress[0] = received
         self.progress[1] = total
     def abort(self):
+        self.yay = False
         self.progressBar.reply.abort()
         self.progressBar.reply.finished.emit()
 
@@ -91,10 +95,27 @@ class DownloadManagerGUI(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(DownloadManagerGUI, self).__init__()
         self.downloads = []
+
+        self.setWindowTitle(tr('downloads'))
+
+        closeWindowAction = QtGui.QAction(self)
+        closeWindowAction.setShortcuts(["Ctrl+W", "Esc", "Ctrl+Shift+Y", "Ctrl+J"])
+        closeWindowAction.triggered.connect(self.hide)
+        self.addAction(closeWindowAction)
+
+        self.scrollArea = QtGui.QScrollArea()
+        self.scrollArea.setMinimumHeight(256)
+        self.scrollArea.setMinimumWidth(400)
+        self.scrollArea.setWidgetResizable(True)
+        self.setCentralWidget(self.scrollArea)
+
         self.centralWidget = QtGui.QWidget()
-        self.setCentralWidget(self.centralWidget)
+        self.scrollArea.setWidget(self.centralWidget)
+
         self.layout = QtGui.QVBoxLayout()
+        self.layout.setContentsMargins(0,0,0,0)
         self.centralWidget.setLayout(self.layout)
+
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.checkProgress)
         self.timer.start(1250)
@@ -105,6 +126,7 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         reply.finished.connect(self.checkForFinishedDownloads)
         self.layout.addWidget(i)
         self.show()
+        self.activateWindow()
 
     def checkProgress(self):
         pr = 0.0
@@ -116,12 +138,21 @@ class DownloadManagerGUI(QtGui.QMainWindow):
             pe = pr/pt
         else:
             pe = 0.0
+        if pe == 0.0:
+            self.setWindowTitle(tr('downloads'))
+        else:
+            self.setWindowTitle(tr('downloads') + " - " + str(int(pe*100)) + "%")
         self.downloadProgress.emit(pe)
             
     def checkForFinishedDownloads(self):
         for i in range(len(self.downloads)):
             if self.downloads[i].reply.isFinished():
+                if self.downloads[i].yay == False:
+                    aborted = True
+                else:
+                    aborted = False
                 self.downloads[i].deleteLater()
                 del self.downloads[i]
-                self.downloadFinished.emit()
+                if aborted == False:
+                    self.downloadFinished.emit()
                 break
