@@ -1974,7 +1974,9 @@ class Browser(QtGui.QMainWindow):
             if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and " " in unicode(urlBar):
                 self.searchWeb()
             else:
-                if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and not "javascript:" in unicode(urlBar):
+                if os.path.exists(unicode(urlBar)):
+                    header = "file://"
+                elif not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and not "javascript:" in unicode(urlBar):
                     header = "http://"
                 if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
                     showAboutPage(self.webView)
