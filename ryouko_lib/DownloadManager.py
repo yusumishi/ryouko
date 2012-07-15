@@ -46,6 +46,8 @@ class DownloadProgressWidget(QtGui.QWidget):
         self.setLayout(self.layout)
         self.progressBar = DownloadProgressBar(reply, destination, self)
         self.progressBar.reply.downloadProgress.connect(self.updateProgress)
+        self.progressBar.reply.finished.connect(self.setFinished)
+        self.finished = False
         self.layout.addWidget(self.progressBar)
         self.reply = self.progressBar.reply
         self.stopButton = QtGui.QToolButton()
@@ -54,6 +56,8 @@ class DownloadProgressWidget(QtGui.QWidget):
         self.layout.addWidget(self.stopButton)
         self.yay = True
         self.progress = [0, 0]
+    def setFinished(self, finished=True):
+        self.finished = finished
     def updateProgress(self, received, total):
         self.progress[0] = received
         self.progress[1] = total
@@ -117,9 +121,25 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         self.layout.setContentsMargins(0,0,0,0)
         self.centralWidget.setLayout(self.layout)
 
+        self.toolBar = QtGui.QToolBar()
+        self.toolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.toolBar.setMovable(False)
+        self.toolBar.setStyleSheet("QToolBar { border: 0; }")
+        self.addToolBar(QtCore.Qt.BottomToolBarArea, self.toolBar)
+
+        self.clearButton = QtGui.QPushButton(tr("clear"))
+        self.clearButton.clicked.connect(self.clear)
+        self.toolBar.addWidget(self.clearButton)
+
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.checkProgress)
         self.timer.start(1250)
+
+    def clear(self):
+        for i in self.downloads:
+            if i.finished == True:
+                i.deleteLater()
+                del i
 
     def newReply(self, reply, destination = os.path.expanduser("~")):
         i = DownloadProgressWidget(reply, destination)
