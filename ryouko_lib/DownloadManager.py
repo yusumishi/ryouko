@@ -69,7 +69,10 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         for p in self.downloads:
             pr = pr + int(p.progress[0])
             pt = pt + int(p.progress[1])
-        pe = pr/pt
+        if pt != 0:
+            pe = pr/pt
+        else:
+            pe = 0
         downloadProgress.emit(pe)
             
     def checkForFinishedDownloads(self):
