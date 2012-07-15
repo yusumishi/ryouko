@@ -50,24 +50,27 @@ class DownloadProgressDialog(QtGui.QProgressBar):
         self.show()
 
 class DownloadManagerGUI(QtGui.QMainWindow):
-    downloadProgress = QtCore.pyqtSignal()
+    downloadProgress = QtCore.pyqtSignal(int)
     downloadFinished = QtCore.pyqtSignal()
     def __init__(self, parent=None):
         super(DownloadManagerGUI, self).__init__()
         self.downloads = []
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.checkProgress)
+        self.timer.start(1250)
     def newReply(self, reply, destination = os.path.expanduser("~")):
         i = DownloadProgressDialog(reply, destination)
         self.downloads.append(i)
         reply.finished.connect(self.checkForFinishedDownloads)
-        reply.downloadProgress.connect(self.checkProgress)
+
     def checkProgress(self):
         pr = 0
         pt = 0
         for p in self.downloads:
-            pr = pr + p.progress[0]
-            pt = pt + p.progress[1]
+            pr = pr + int(p.progress[0])
+            pt = pt + int(p.progress[1])
         pe = pr/pt
-        
+        downloadProgress.emit(pe)
             
     def checkForFinishedDownloads(self):
         for i in range(len(self.downloads)):
