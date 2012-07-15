@@ -12,6 +12,10 @@ app_icons = os.path.join(app_lib, "icons")
 sys.path.append(app_lib)
 from Python23Compat import *
 from TranslationManager import *
+if sys.platform.startswith("win"):
+    app_logo = os.path.join(app_icons, 'about-logo.png')
+else:
+    app_logo = os.path.join(app_icons, "logo.svg")
 
 class DownloadProgressBar(QtGui.QProgressBar):
     def __init__(self, reply=None, destination=os.path.expanduser("~"), parent=None):
@@ -41,9 +45,37 @@ class DownloadProgressBar(QtGui.QProgressBar):
 class DownloadProgressWidget(QtGui.QWidget):
     def __init__(self, reply=None, destination=os.path.expanduser("~"), parent=None):
         super(DownloadProgressWidget, self).__init__()
+
+        self.label = QtGui.QLabel()
+        self.label.setText(os.path.split(unicode(destination))[1])
+
+        self.mainLayout = QtGui.QVBoxLayout()
+        self.mainLayout.setContentsMargins(0,0,0,0)
+        self.setLayout(self.mainLayout)
+
+        self.slWidget = QtGui.QWidget()
+        self.mainLayout.addWidget(self.slWidget)
+
+        self.subLayout = QtGui.QVBoxLayout()
+        self.slWidget.setLayout(self.subLayout)
+
+        self.subLayout.addWidget(self.label)
+        
         self.layout = QtGui.QHBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
-        self.setLayout(self.layout)
+
+        self.layoutWidget = QtGui.QWidget()
+        self.layoutWidget.setLayout(self.layout)
+        self.subLayout.addWidget(self.layoutWidget)
+
+        self.bottomBorder = QtGui.QWidget()
+        self.bottomBorder.setStyleSheet("""
+        background: palette(shadow);
+        """)
+        self.bottomBorder.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed))
+        self.bottomBorder.setMinimumHeight(1)
+        self.mainLayout.addWidget(self.bottomBorder)
+
         self.progressBar = DownloadProgressBar(reply, destination, self)
         self.progressBar.reply.downloadProgress.connect(self.updateProgress)
         self.progressBar.reply.finished.connect(self.setFinished)
@@ -101,6 +133,7 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         self.downloads = []
 
         self.setWindowTitle(tr('downloads'))
+        self.setWindowIcon(QtGui.QIcon(app_logo))
 
         closeWindowAction = QtGui.QAction(self)
         closeWindowAction.setShortcuts(["Ctrl+W", "Esc", "Ctrl+Shift+Y", "Ctrl+J"])
