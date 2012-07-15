@@ -1,7 +1,7 @@
 #! /usr/bin/env/ python
 
 from __future__ import division
-import os.path, sys
+import os, sys
 from PyQt4 import QtCore, QtGui
 try:
     __file__
@@ -77,17 +77,30 @@ class DownloadProgressWidget(QtGui.QWidget):
         self.mainLayout.addWidget(self.bottomBorder)
 
         self.progressBar = DownloadProgressBar(reply, destination, self)
+        self.destination = self.progressBar.destination
         self.progressBar.reply.downloadProgress.connect(self.updateProgress)
         self.progressBar.reply.finished.connect(self.setFinished)
         self.finished = False
         self.layout.addWidget(self.progressBar)
         self.reply = self.progressBar.reply
+
+        self.openFolderButton = QtGui.QToolButton()
+        self.openFolderButton.setIcon(QtGui.QIcon().fromTheme("document-open", QtGui.QIcon(os.path.join(app_icons, 'open.png'))))
+        self.openFolderButton.clicked.connect(self.openDestination)
+        self.layout.addWidget(self.openFolderButton)
+
         self.stopButton = QtGui.QToolButton()
         self.stopButton.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, 'stop.png'))))
         self.stopButton.clicked.connect(self.abort)
         self.layout.addWidget(self.stopButton)
+
         self.yay = True
         self.progress = [0, 0]
+
+    def openDestination(self):
+        if sys.platform.startswith("linux"):
+            os.system("xdg-open \"" + os.path.split(unicode(self.destination))[0] + "\"")
+
     def setFinished(self, finished=True):
         self.finished = finished
     def updateProgress(self, received, total):
@@ -131,6 +144,7 @@ class DownloadManagerGUI(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(DownloadManagerGUI, self).__init__()
         self.downloads = []
+        self.progress = 0.0
 
         self.setWindowTitle(tr('downloads'))
         self.setWindowIcon(QtGui.QIcon(app_logo))
@@ -199,8 +213,9 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         pr = 0.0
         pt = 0.0
         for p in self.downloads:
-            pr = pr + float(p.progress[0])
-            pt = pt + float(p.progress[1])
+            if not p.reply.isFinished() and p.yay == True:
+                pr = pr + float(p.progress[0])
+                pt = pt + float(p.progress[1])
         if pt != 0.0:
             pe = pr/pt
         else:
@@ -209,6 +224,7 @@ class DownloadManagerGUI(QtGui.QMainWindow):
             self.setWindowTitle(tr('downloads'))
         else:
             self.setWindowTitle(tr('downloads') + " - " + str(int(pe*100)) + "%")
+        self.progress = pe
         self.downloadProgress.emit(pe)
             
     def checkForFinishedDownloads(self):

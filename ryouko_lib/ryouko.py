@@ -2468,7 +2468,7 @@ self.origY + ev.globalY() - self.mouseY)
 
     def quit(self):
         q = QtGui.QMessageBox.Yes
-        if len(downloadManagerGUI.downloads) > 0:
+        if downloadManagerGUI.progress > 0.0:
             q = QtGui.QMessageBox.question(None, tr("warning"),
         tr("downloadsInProgress"), QtGui.QMessageBox.Yes | 
         QtGui.QMessageBox.No, QtGui.QMessageBox.No)
