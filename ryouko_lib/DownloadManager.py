@@ -185,6 +185,7 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         if q == QtGui.QMessageBox.Yes:
             for i in self.downloads:
                 i.abort()
+                i.reply.finished.emit()
 
     def newReply(self, reply, destination = os.path.expanduser("~")):
         i = DownloadProgressWidget(reply, destination)
@@ -217,8 +218,9 @@ class DownloadManagerGUI(QtGui.QMainWindow):
                     aborted = True
                 else:
                     aborted = False
-                self.downloads[i].deleteLater()
-                del self.downloads[i]
                 if aborted == False:
                     self.downloadFinished.emit()
+                else:
+                    self.downloads[i].deleteLater()
+                    del self.downloads[i]
                 break
