@@ -164,6 +164,10 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         self.clearButton.clicked.connect(self.clear)
         self.toolBar.addWidget(self.clearButton)
 
+        self.abortButton = QtGui.QPushButton(tr("abortAll"))
+        self.abortButton.clicked.connect(self.abortAll)
+        self.toolBar.addWidget(self.abortButton)
+
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.checkProgress)
         self.timer.start(1250)
@@ -173,6 +177,10 @@ class DownloadManagerGUI(QtGui.QMainWindow):
             if i.finished == True:
                 i.deleteLater()
                 del i
+
+    def abortAll(self):
+        for i in self.downloads:
+            i.abort()
 
     def newReply(self, reply, destination = os.path.expanduser("~")):
         i = DownloadProgressWidget(reply, destination)
