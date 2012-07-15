@@ -29,7 +29,32 @@ SOFTWARE.
 
 from __future__ import print_function
 
+def do_nothing():
+    return
+
+try:
+    from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
+except:
+    from Tkinter import *
+    root = Tk()
+    root.title(tr('error'))
+    w = Label(root, text=tr('noPyQtError'))
+    w.pack()
+    button = Button(root, text="OK", command=sys.exit)
+    button.pack()
+    root.mainloop()
+    sys.exit()
+
+use_unity_launcher = False
+try:
+    from gi.repository import Unity, Gio, GObject, Dbusmenu
+except:
+    print("Unity integration failed!")
+else:
+    use_unity_launcher = True
+
 import os, sys, json, time, datetime, string, shutil
+
 try: from urllib.request import urlretrieve
 except ImportError:
     try: from urllib import urlretrieve
@@ -135,19 +160,6 @@ def saveCookies():
         try: os.remove(app_cookies)
         except:
             doNothing()
-
-try:
-    from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
-except:
-    from Tkinter import *
-    root = Tk()
-    root.title(tr('error'))
-    w = Label(root, text=tr('noPyQtError'))
-    w.pack()
-    button = Button(root, text="OK", command=sys.exit)
-    button.pack()
-    root.mainloop()
-    sys.exit()
 
 app_cookiejar = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
 
@@ -3128,9 +3140,19 @@ class Ryouko(QtGui.QWidget):
 #        if app_profile_exists == True:
 #            notificationMessage(tr("profileError"))
 
+def updateProgress(pr):
+    global app_launcher
+    if pr != 0.0:
+        app_launcher.set_property("progress_visible", True)
+        app_launcher.set_property("progress", pr)
+    else:
+        app_launcher.set_property("progress_visible", False)
+
 def main():
     if "--help" in sys.argv or "-h" in sys.argv:
         print(tr("help"))
+    if "--icons" in sys.argv:
+        print(app_icons)
     else:
         if "-P" in sys.argv:
             try:
@@ -3180,6 +3202,11 @@ def main():
             f = open(app_lock, "w")
             f.write("")
             f.close()
+            if use_unity_launcher == True:
+                loop = GObject.MainLoop()
+                global app_launcher
+                app_launcher = Unity.LauncherEntry.get_for_desktop_id("ryouko.desktop")
+                downloadManagerGUI.downloadProgress.connect(updateProgress)
             app.exec_()
 
 if __name__ == "__main__":

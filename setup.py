@@ -2,7 +2,7 @@
 
 files = ["translations/*", "icons/*", "*.*"]
 
-import os.path
+import os, sys
 from distutils.core import setup
 
 app_lib = os.path.dirname(os.path.realpath(__file__))
@@ -28,3 +28,23 @@ setup(
     url = "http://sourceforge.net/projects/ryouko/",
     license = "MIT"
 )
+
+if sys.platform.startswith("linux"):
+    stdout_handle = os.popen("ryouko --icons")
+    icons = stdout_handle.read().replace("\n", "")
+    f = open(os.path.join("/", "usr", "share", "applications", "ryouko.desktop"), "w")
+    f.write("""[Desktop Entry]
+Name=Ryouko
+GenericName=Web Browser
+Comment=Simple PyQt4 Web Browser
+
+Icon=""" + os.path.join(icons, "logo.svg") + """
+
+Type=Application
+Categories=Network;
+
+Exec=ryouko %F
+StartupNotify=false
+Terminal=false
+MimeType=text/html;text/webviewhtml;text/plain;image/jpeg;image/png;image/bmp;image/x-windows-bmp;image/gif;""")
+    f.close()

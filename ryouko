@@ -11,7 +11,6 @@ except:
 else:
     del filename
 app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-print("Launching Ryouko from " + app_lib)
 sys.path.append(app_lib)
 
 import ryouko_lib.ryouko
