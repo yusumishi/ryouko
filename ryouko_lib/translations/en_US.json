@@ -43,7 +43,7 @@
 "downloadFinished": "File has been successfully downloaded! Yay!",
 "downloads": "Downloads",
 "downloadsHKey": "&Downloads",
-"downloadsInProgress": "You have unfinished downloads in progress. Are you sure you want to quit?",
+"downloadsInProgress": "You have unfinished downloads in progress. Are you sure you want to proceed?",
 "downloadStarted": "Downloading file; will notify you when complete.",
 "editSearchTT": "<b>Edit Search Engines...</b><br>Ctrl+Shift+K",
 "enableAB": "Enable &ad-blocking (warning: experimental!)",
