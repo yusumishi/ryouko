@@ -2590,6 +2590,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenuButton.triggered.connect(self.showCornerWidgetsMenu)
 #        self.mainMenuButton.setArrowType(QtCore.Qt.DownArrow)
         self.mainMenu = QtGui.QMenu(self)
+        self.mainMenu.setTitle(tr('menu'))
 
         closeTabForeverAction = QtGui.QAction(tr('closeTabForever'), self)
         closeTabForeverAction.setShortcut("Ctrl+Shift+W")
