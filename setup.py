@@ -29,7 +29,7 @@ setup(
     license = "MIT"
 )
 
-if sys.platform.startswith("linux"):
+if sys.platform.startswith("linux") and "install" in sys.argv:
     stdout_handle = os.popen("ryouko --icons")
     icons = stdout_handle.read().replace("\n", "")
     f = open(os.path.join("/", "usr", "share", "applications", "ryouko.desktop"), "w")
