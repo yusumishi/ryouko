@@ -2619,8 +2619,6 @@ self.origY + ev.globalY() - self.mouseY)
         newWindowAction.setShortcut('Ctrl+N')
         newWindowAction.triggered.connect(self.newWindow)
         self.addAction(newWindowAction)
-        self.mainMenu.addAction(newWindowAction)
-        self.mainMenu.addSeparator()
 
         # Save page action
         savePageAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-save-as", QtGui.QIcon(os.path.join(app_icons, 'saveas.png'))), tr('saveAs'), self)
@@ -2652,13 +2650,11 @@ self.origY + ev.globalY() - self.mouseY)
         undoCloseTabAction.setShortcuts(['Ctrl+Shift+T'])
         undoCloseTabAction.triggered.connect(self.undoCloseTab)
         self.addAction(undoCloseTabAction)
-        self.mainMenu.addAction(undoCloseTabAction)
 
         undoCloseWindowAction = QtGui.QAction(tr('undoCloseWindow'), self)
         undoCloseWindowAction.setShortcut("Ctrl+Shift+N")
         undoCloseWindowAction.triggered.connect(undoCloseWindow)
         self.addAction(undoCloseWindowAction)
-        self.mainMenu.addAction(undoCloseWindowAction)
 
         # History sidebar button
         historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(app_icons, "history.png"))), tr('viewHistoryBtn'), self)
@@ -2681,7 +2677,6 @@ self.origY + ev.globalY() - self.mouseY)
         newpbTabAction.setShortcuts(['Ctrl+Shift+P'])
         newpbTabAction.triggered.connect(self.newpbTab)
         self.addAction(newpbTabAction)
-        self.mainMenu.addAction(newpbTabAction)
 #        self.mainMenu.addAction(closeTabForeverAction)
         self.mainMenu.addSeparator()
 
@@ -2713,6 +2708,12 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenu.addSeparator()
         self.tabsContextMenu.addAction(undoCloseTabAction)
         self.tabsContextMenu.addAction(undoCloseWindowAction)
+
+        self.menuBar = QtGui.QMenuBar()
+        self.menuBar.addMenu(self.tabsContextMenu)
+        self.menuBar.addMenu(self.mainMenu)
+        self.setMenuBar(self.menuBar)
+        self.menuBar.setVisible(False)
 
         self.tabs.customContextMenuRequested.connect(self.tabsContextMenu.show2)
 
