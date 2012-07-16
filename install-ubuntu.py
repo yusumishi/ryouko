@@ -21,7 +21,7 @@ def main():
             ok = False
             break
     if ok == True:
-        os.system("(gksudo python \"" + os.path.join(app_lib, "setup.py") + "\" install) && sudo rm -rf \"" + os.path.join(app_lib, "build") + "\" && zenity --info --text='Ryouko was successfully installed. For best results, it is recommended that you install python-notify and python-gi as well.'")
+        os.system("(gksudo python \"" + os.path.join(app_lib, "setup.py") + "\" install) && zenity --info --text='Ryouko was successfully installed. For best results, it is recommended that you install python-notify and python-gi as well.'")
     else:
         l = ""
         for package in dependencies:
