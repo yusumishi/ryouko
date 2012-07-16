@@ -3,7 +3,7 @@ include MANIFEST.in
 include compile-windows.bat
 include do-finish-compile-windows.py
 include qt.conf
-recursive-include debian *
+include install-ubuntu.py
 recursive-include ryouko_lib/translations *
 recursive-include ryouko_lib/icons *
 recursive-include ryouko_lib *
