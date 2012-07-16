@@ -45,7 +45,6 @@ class MovableTabWidget(QtGui.QTabWidget):
         self.setDocumentMode(True)
 
         theme = get_key("/desktop/gnome/shell/windows/theme")
-        print(theme)
 
         if theme == "Ambiance":
             self.setStyleSheet(win_stylesheet)
