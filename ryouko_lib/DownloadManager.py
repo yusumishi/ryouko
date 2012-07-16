@@ -248,7 +248,7 @@ class DownloadManagerGUI(QtGui.QMainWindow):
     def downloadFile(self):
         url = inputDialog(tr("query"), tr('enterURL'))
         if url:
-            fname = QtGui.QFileDialog.getSaveFileName()
+            fname = saveDialog(os.path.split(unicode(url))[1])
             if fname:
                 nm = self.networkAccessManager
                 reply = nm.get(QtNetwork.QNetworkRequest(QtCore.QUrl(url)))
