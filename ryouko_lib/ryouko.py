@@ -3188,6 +3188,8 @@ class Ryouko(QtGui.QWidget):
         global clearHistoryDialog
         global downloadManagerGUI
         downloadManagerGUI = DownloadManagerGUI()
+        downloadManagerGUI.networkAccessManager.setCookieJar(app_cookiejar)
+        app_cookiejar.setParent(QtCore.QCoreApplication.instance())
         downloadManagerGUI.downloadFinished.connect(downloadFinished)
         aboutDialog = RAboutDialog()
         notificationManager = NotificationManager()
