@@ -3150,7 +3150,7 @@ class Ryouko(QtGui.QWidget):
                     settingsManager.saveSettings()
         except:
             doNothing()
-        if os.path.exists(app_lock):
+        if os.path.exists(app_lock) and not sys.platform.startswith("win"):
             reply = QtGui.QMessageBox.question(None, tr("error"),
         tr("isRunning"), QtGui.QMessageBox.Yes | 
         QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
@@ -3229,25 +3229,47 @@ def main():
                     doNothing()
                 else:
                     changeProfile(os.path.join(app_profile_folder, sys.argv[i + 1]))
-
-        global user_links
-        user_links = reload_user_links(app_links)
-        global reset
-        app = QtGui.QApplication(sys.argv)
-        app.aboutToQuit.connect(prepareQuit)
-        if reset == True:
-            browserHistory.reset()
-            reset = False
-        ryouko = Ryouko()
-        ryouko.primeBrowser()
-        f = open(app_lock, "w")
-        f.write("")
-        f.close()
-        if use_unity_launcher == True:
-            loop = GObject.MainLoop()
-            global app_launcher
-            app_launcher = Unity.LauncherEntry.get_for_desktop_id("ryouko.desktop")
-            downloadManagerGUI.downloadProgress.connect(updateProgress)
+        if os.path.exists(app_lock) and sys.platform.startswith("win"):
+            app = QtGui.QApplication(sys.argv)
+            reply = QtGui.QMessageBox.question(None, tr("error"),
+        tr("isRunning"), QtGui.QMessageBox.Yes | 
+        QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
+            if reply == QtGui.QMessageBox.Yes:
+                f = open(app_instance2, "w")
+                f.write("")
+                f.close()
+                f = open(app_instance2, "a")
+                for arg in range(1, len(sys.argv)):
+                    if not sys.argv[arg].lower() == "--pb" and not sys.argv[arg].lower() == "-pb" and not sys.argv[arg] == "-P":
+                        f.write("%s\n" % (sys.argv[arg]))
+                f.close()
+            else:
+                os.remove(app_lock)
+                args = ""
+                for arg in sys.argv:
+                    args = "%s%s " % (args, arg)
+                os.system("%s && echo \"\"" % (args))
+            QtCore.QCoreApplication.instance().quit()
+            sys.exit()
+        else:
+            global user_links
+            user_links = reload_user_links(app_links)
+            global reset
+            app = QtGui.QApplication(sys.argv)
+            app.aboutToQuit.connect(prepareQuit)
+            if reset == True:
+                browserHistory.reset()
+                reset = False
+            ryouko = Ryouko()
+            ryouko.primeBrowser()
+            f = open(app_lock, "w")
+            f.write("")
+            f.close()
+            if use_unity_launcher == True:
+                loop = GObject.MainLoop()
+                global app_launcher
+                app_launcher = Unity.LauncherEntry.get_for_desktop_id("ryouko.desktop")
+                downloadManagerGUI.downloadProgress.connect(updateProgress)
             app.exec_()
 
 if __name__ == "__main__":
