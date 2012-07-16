@@ -114,11 +114,15 @@ class DownloadProgressWidget(QtGui.QWidget):
 
     def openFile(self):
         if sys.platform.startswith("linux"):
-            os.system("xdg-open \"" + unicode(self.destination) + "\"")
+            expression = "xdg-open \"" + unicode(self.destination) + "\""
         elif sys.platform.startswith("win"):
-            os.system("start \"" + unicode(self.destination) + "\"")
+            expression = "start \"" + unicode(self.destination) + "\""
         elif "darwin" in sys.platform:
-            os.system("open \"" + unicode(self.destination) + "\"")
+            expression = "open \"" + unicode(self.destination) + "\""
+        else:
+            expression = ""
+        print(expression)
+        os.system(expression)
 
     def openDestination(self):
         if sys.platform.startswith("linux"):
