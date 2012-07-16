@@ -3169,7 +3169,6 @@ class Ryouko(QtGui.QWidget):
                 for arg in sys.argv:
                     args = "%s%s " % (args, arg)
                 os.system("%s && echo \"\"" % (args))
-            sys.exit()
             QtCore.QCoreApplication.instance().quit()
             sys.exit()
         if not os.path.isdir(app_profile):
