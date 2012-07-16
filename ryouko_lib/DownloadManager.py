@@ -188,6 +188,7 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         self.addAction(closeWindowAction)
 
         self.scrollArea = QtGui.QScrollArea()
+        self.scrollArea.setStyleSheet("QScrollArea { border: 0; border-bottom: 1px solid palette(shadow); }")
         self.scrollArea.setMinimumHeight(256)
         self.scrollArea.setMinimumWidth(400)
         self.scrollArea.setWidgetResizable(True)
@@ -202,6 +203,7 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         self.centralWidget.setLayout(self.layout)
 
         self.toolBar = QtGui.QToolBar()
+        self.toolBar.setStyleSheet("QToolBar { border: 0; }")
         self.toolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.toolBar.setMovable(False)
         self.toolBar.setStyleSheet("QToolBar { border: 0; }")
