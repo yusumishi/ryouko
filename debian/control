@@ -1,0 +1,15 @@
+Source: ryouko
+Section: network
+Priority: optional
+Maintainer: Daniel Sim (foxhead128)
+Build-Depends: debhelper (>=7.0.50~), python-support (>= 0.6), cdbs (>= 0.4.49), python-all-dev
+XS-Python-Version: >=2.7
+Standards-Version: 3.9.3.1
+
+Pasckage: ryouko
+Architecture: all
+Homepage: http://sourceforge.net/projects/ryouko/
+XB-Python-Version: ${python:Versions}
+Depends: ${python-qt4:Depends}, ${python:Depends}
+Description: Simple PyQt4 Web browser
+ Ryouko is a simple Web browser coded in Python/PyQt4. It was made purely for fun, and is currently missing a lot of features. Therefore, it is not recommended for people who need a stable, dependable program. However, it should be suitable for basic Web browsing needs.
