@@ -1,4 +1,5 @@
 {
+"abort": "Abort",
 "abortAll": "Abort all",
 "aboutQtHKey": "About &Qt",
 "aboutRyouko": "About Ryouko",
@@ -39,6 +40,7 @@
 "data": "Da&ta",
 "date": "Date",
 "delete": "Delete",
+"downloadFile": "Download File",
 "downloadBackend": "Default backend for downloads (experimental!):",
 "downloadFinished": "File has been successfully downloaded! Yay!",
 "downloads": "Downloads",
@@ -119,6 +121,8 @@
 "notifications": "Notifications",
 "openLocation": "Open location",
 "open": "Open",
+"openFile": "Open file",
+"openFolder": "Open containing folder",
 "password": "Password",
 "port": "Port",
 "preferencesButton": "Prefere&nces",

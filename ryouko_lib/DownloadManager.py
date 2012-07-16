@@ -2,7 +2,7 @@
 
 from __future__ import division
 import os, sys
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore, QtGui, QtNetwork
 try:
     __file__
 except:
@@ -11,11 +11,17 @@ app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 app_icons = os.path.join(app_lib, "icons")
 sys.path.append(app_lib)
 from Python23Compat import *
+from QStringFunctions import *
 from TranslationManager import *
+from RExpander import *
+from DialogFunctions import *
+from DownloaderThread import *
 if sys.platform.startswith("win"):
     app_logo = os.path.join(app_icons, 'about-logo.png')
 else:
     app_logo = os.path.join(app_icons, "logo.svg")
+
+downloaderThread = DownloaderThread()
 
 class DownloadProgressBar(QtGui.QProgressBar):
     def __init__(self, reply=None, destination=os.path.expanduser("~"), parent=None):
@@ -84,18 +90,35 @@ class DownloadProgressWidget(QtGui.QWidget):
         self.layout.addWidget(self.progressBar)
         self.reply = self.progressBar.reply
 
+        self.openButton = QtGui.QToolButton()
+        self.openButton.setToolTip(tr("openFile"))
+        self.openButton.setEnabled(False)
+        self.openButton.setIcon(QtGui.QIcon().fromTheme("media-playback-start", QtGui.QIcon(os.path.join(app_icons, 'play.png'))))
+        self.openButton.clicked.connect(self.openFile)
+        self.layout.addWidget(self.openButton)
+
         self.openFolderButton = QtGui.QToolButton()
+        self.openFolderButton.setToolTip(tr("openFolder"))
         self.openFolderButton.setIcon(QtGui.QIcon().fromTheme("document-open", QtGui.QIcon(os.path.join(app_icons, 'open.png'))))
         self.openFolderButton.clicked.connect(self.openDestination)
         self.layout.addWidget(self.openFolderButton)
 
         self.stopButton = QtGui.QToolButton()
+        self.stopButton.setToolTip(tr("abort"))
         self.stopButton.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, 'stop.png'))))
         self.stopButton.clicked.connect(self.abort)
         self.layout.addWidget(self.stopButton)
 
         self.yay = True
         self.progress = [0, 0]
+
+    def openFile(self):
+        if sys.platform.startswith("linux"):
+            os.system("xdg-open \"" + unicode(self.destination) + "\"")
+        elif sys.platform.startswith("win"):
+            os.system("start \"" + unicode(self.destination) + "\"")
+        elif "darwin" in sys.platform:
+            os.system("open \"" + unicode(self.destination) + "\"")
 
     def openDestination(self):
         if sys.platform.startswith("linux"):
@@ -107,9 +130,13 @@ class DownloadProgressWidget(QtGui.QWidget):
 
     def setFinished(self, finished=True):
         self.finished = finished
+        if self.yay == True:
+            self.openButton.setEnabled(True)
+
     def updateProgress(self, received, total):
         self.progress[0] = received
         self.progress[1] = total
+
     def abort(self):
         self.yay = False
         self.progressBar.reply.abort()
@@ -150,12 +177,14 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         self.downloads = []
         self.progress = 0.0
 
+        self.networkAccessManager = QtNetwork.QNetworkAccessManager(self)
+
         self.setWindowTitle(tr('downloads'))
         self.setWindowIcon(QtGui.QIcon(app_logo))
 
         closeWindowAction = QtGui.QAction(self)
         closeWindowAction.setShortcuts(["Ctrl+W", "Esc", "Ctrl+Shift+Y", "Ctrl+J"])
-        closeWindowAction.triggered.connect(self.hide)
+        closeWindowAction.triggered.connect(self.close)
         self.addAction(closeWindowAction)
 
         self.scrollArea = QtGui.QScrollArea()
@@ -186,9 +215,42 @@ class DownloadManagerGUI(QtGui.QMainWindow):
         self.abortButton.clicked.connect(self.abortAll)
         self.toolBar.addWidget(self.abortButton)
 
+        self.toolBar.addWidget(RExpander())
+
+        self.downloadButton = QtGui.QPushButton(tr("downloadFile"))
+        self.downloadButton.clicked.connect(self.downloadFile)
+        self.toolBar.addWidget(self.downloadButton)
+
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.checkProgress)
         self.timer.start(1250)
+
+    """def close(self):
+        if self.progress > 0.0:
+            q = QtGui.QMessageBox.question(None, tr("warning"),
+        tr("downloadsInProgress"), QtGui.QMessageBox.Yes | 
+        QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            if q == QtGui.QMessageBox.Yes:
+                QtGui.QWidget.close(self)
+        else:
+            QtGui.QWidget.close(self)"""
+
+    def newReply(self, reply, destination = os.path.expanduser("~")):
+        i = DownloadProgressWidget(reply, destination)
+        self.downloads.append(i)
+        reply.finished.connect(self.checkForFinishedDownloads)
+        self.layout.addWidget(i)
+        self.show()
+        self.activateWindow()
+
+    def downloadFile(self):
+        url = inputDialog(tr("query"), tr('enterURL'))
+        if url:
+            fname = QtGui.QFileDialog.getSaveFileName()
+            if fname:
+                nm = self.networkAccessManager
+                reply = nm.get(QtNetwork.QNetworkRequest(QtCore.QUrl(url)))
+                self.newReply(reply, fname)
 
     def clear(self):
         for i in self.downloads:
@@ -204,14 +266,6 @@ class DownloadManagerGUI(QtGui.QMainWindow):
             for i in self.downloads:
                 i.abort()
                 i.reply.finished.emit()
-
-    def newReply(self, reply, destination = os.path.expanduser("~")):
-        i = DownloadProgressWidget(reply, destination)
-        self.downloads.append(i)
-        reply.finished.connect(self.checkForFinishedDownloads)
-        self.layout.addWidget(i)
-        self.show()
-        self.activateWindow()
 
     def checkProgress(self):
         pr = 0.0

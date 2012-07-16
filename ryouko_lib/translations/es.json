@@ -1,4 +1,5 @@
 {
+"abort": "Cancelar",
 "abortAll": "Cancelar todos",
 "aboutQtHKey": "Sobre &Qt",
 "aboutRyoukoHKey": "Sobre &Ryouko",
@@ -39,6 +40,7 @@
 "data": "Da&tos",
 "date": "Fecha",
 "delete": "Borrar",
+"downloadFile": "Descargar un archivo",
 "downloadBackend": "Back-end defecto para descargas (¡experimental!):",
 "downloadFinished": "Ryouko ha descargado la archiva.",
 "downloads": "Descargas",
@@ -119,6 +121,8 @@
 "notifications": "Notificaciones",
 "open": "Abrir",
 "openLocation": "Abrir un ubucación",
+"openFile": "Abrir este archivo",
+"openFolder": "Abrir la carpeta que contiene",
 "password": "Contraseña",
 "port": "Puerto",
 "preferencesButton": "Prefere&ncias",
