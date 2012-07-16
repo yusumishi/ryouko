@@ -92,6 +92,7 @@ from RWebPage import *
 from DownloaderThread import *
 from DialogFunctions import *
 from MovableTabWidget import *
+from GConfFunctions import *
 from BrowserHistory import *
 from HistoryCompletionList import *
 from BookmarksManager import *
@@ -1564,7 +1565,7 @@ class Browser(QtGui.QMainWindow):
         QToolBar {
         border: 0;
         border-bottom: 1px solid palette(shadow);
-        background: transparent;
+        background: palette(window);
         }
         """)
         self.webView = RWebView(self, self.pb)
@@ -1750,7 +1751,13 @@ class Browser(QtGui.QMainWindow):
         self.statusBarBorder.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed))
         self.statusBarBorder.setMinimumHeight(1)
         self.mainLayout.addWidget(self.statusBarBorder, 3, 0)
-        self.statusBar = QtGui.QWidget()
+        self.statusBar = QtGui.QFrame()
+        self.statusBar.setStyleSheet("""
+        QFrame {
+        background: palette(window);
+        border: 0;
+        }
+        """)
         self.mainLayout.addWidget(self.statusBar, 4, 0)
         self.statusBarLayout = QtGui.QHBoxLayout()
         self.statusBarLayout.setContentsMargins(0,0,0,0)        
@@ -2579,7 +2586,17 @@ self.origY + ev.globalY() - self.mouseY)
         self.cornerWidgetsLayout.setSpacing(0)
         self.cornerWidgets.setLayout(self.cornerWidgetsLayout)
         self.cornerWidgetsToolBar = QtGui.QToolBar()
-        self.cornerWidgetsToolBar.setStyleSheet("QToolBar { border: 0; background: transparent; padding: 0; margin: 0; }")
+        themet = ""
+        if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance":
+            themet = """ 
+            QPushButton, QToolButton {
+            color: #dfdbd2;
+            }
+
+            QPushButton:hover, QToolButton:hover {
+            color: palette(button-text);
+            }"""
+        self.cornerWidgetsToolBar.setStyleSheet("QToolBar { border: 0; background: transparent; padding: 0; margin: 0; }" + themet)
         self.cornerWidgetsLayout.addWidget(self.cornerWidgetsToolBar)
 
         """self.showCornerWidgetsMenuAction = QtGui.QAction(self)
