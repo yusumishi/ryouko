@@ -1002,9 +1002,9 @@ class RAboutDialog(QtWebKit.QWebView):
             doNothing()
         else:
             if settingsManager.settings['customUserAgent'].replace(" ", "") != "":
-                self.page().setUserAgent(settingsManager.settings['customUserAgent'])
+                self.page().userAgent = settingsManager.settings['customUserAgent']
             else:
-                self.page().setUserAgent(app_default_useragent)
+                self.page().userAgent = app_default_useragent
         showAboutPage(self)
     def show(self):
         self.setVisible(True)
