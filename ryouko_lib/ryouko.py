@@ -107,6 +107,10 @@ from NotificationManager import *
 from TranslationManager import *
 from DownloadManager import *
 
+app_use_ambiance = False
+if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance" and "gnome-session" in commands.getoutput('ps -A'):
+    app_use_ambiance = True
+
 app_windows = []
 app_closed_windows = []
 app_info = os.path.join(app_lib, "info.txt")
@@ -243,6 +247,7 @@ reset = False
 
 blanktoolbarsheet = "QToolBar { border: 0; }"
 windowtoolbarsheet = "QToolBar { border: 0; background: palette(window); }"
+dw_stylesheet = "QDockWidget { color: #dfdbd2; }"
 
 # From http://stackoverflow.com/questions/448207/python-downloading-a-file-over-http-with-progress-bar-and-basic-authentication
 
@@ -1575,6 +1580,8 @@ class Browser(QtGui.QMainWindow):
         self.webInspector = QtWebKit.QWebInspector(self)
         self.webInspector.setPage(self.webView.page())
         self.webInspectorDock = QtGui.QDockWidget(tr('webInspector'))
+        if app_use_ambiance:
+            self.webInspectorDock.setStyleSheet(dw_stylesheet)
         self.webInspectorDock.setFeatures(QtGui.QDockWidget.DockWidgetClosable)
         self.webInspectorDock.setWidget(self.webInspector)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.webInspectorDock)
@@ -2510,6 +2517,8 @@ self.origY + ev.globalY() - self.mouseY)
 
         # History sidebar
         self.historyDock = QtGui.QDockWidget(tr('history'))
+        if app_use_ambiance:
+            self.historyDock.setStyleSheet(dw_stylesheet)
         self.historyDock.setFeatures(QtGui.QDockWidget.DockWidgetClosable)
         self.historyDockWindow = QtGui.QMainWindow()
         self.historyToolBar = QtGui.QToolBar("History Toolbar")
@@ -2588,7 +2597,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.cornerWidgets.setLayout(self.cornerWidgetsLayout)
         self.cornerWidgetsToolBar = QtGui.QToolBar()
         themet = ""
-        if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance" and "gnome-session" in commands.getoutput('ps -A'):
+        if app_use_ambiance:
             themet = """ 
             QPushButton, QToolButton {
             color: #dfdbd2;
