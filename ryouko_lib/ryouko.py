@@ -242,6 +242,7 @@ changeProfile(os.path.join(app_profile_folder, app_default_profile_name), True)
 reset = False
 
 blanktoolbarsheet = "QToolBar { border: 0; }"
+windowtoolbarsheet = "QToolBar { border: 0; background: palette(window); }"
 
 # From http://stackoverflow.com/questions/448207/python-downloading-a-file-over-http-with-progress-bar-and-basic-authentication
 
@@ -390,7 +391,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
             self.setWindowIcon(QtGui.QIcon(app_logo))
         self.setWindowTitle(tr('bookmarks'))
         self.nameToolBar = QtGui.QToolBar("Add a bookmarky")
-        self.nameToolBar.setStyleSheet(blanktoolbarsheet)
+        self.nameToolBar.setStyleSheet(windowtoolbarsheet)
         self.nameToolBar.setMovable(False)
         self.nameToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         nameLabel = QtGui.QLabel(tr('name') + ": ")
@@ -399,7 +400,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.nameToolBar.addWidget(nameLabel)
         self.nameToolBar.addWidget(self.nameField)
         self.urlToolBar = QtGui.QToolBar("Add a bookmarky")
-        self.urlToolBar.setStyleSheet(blanktoolbarsheet)
+        self.urlToolBar.setStyleSheet(windowtoolbarsheet)
         self.urlToolBar.setMovable(False)
         self.urlToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         uLabel = QtGui.QLabel(tr('url') + ": ")
@@ -408,7 +409,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.urlToolBar.addWidget(uLabel)
         self.urlToolBar.addWidget(self.urlField)
         self.finishToolBar = QtGui.QToolBar()
-        self.finishToolBar.setStyleSheet(blanktoolbarsheet)
+        self.finishToolBar.setStyleSheet(windowtoolbarsheet)
         self.finishToolBar.setMovable(False)
         self.finishToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addButton = QtGui.QPushButton(tr('add'))
@@ -688,7 +689,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         self.parent = parent
 
         self.historyToolBar = QtGui.QToolBar("")
-        self.historyToolBar.setStyleSheet(blanktoolbarsheet)
+        self.historyToolBar.setStyleSheet(windowtoolbarsheet)
         self.historyToolBar.setMovable(False)
         self.historyToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addToolBar(self.historyToolBar)
