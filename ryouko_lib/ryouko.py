@@ -110,8 +110,9 @@ from TranslationManager import *
 from DownloadManager import *
 
 app_use_ambiance = False
-if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance" and "gnome-session" in commands.getoutput('ps -A'):
-    app_use_ambiance = True
+if sys.plaform.startswith("linux"):
+    if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance" and "gnome-session" in commands.getoutput('ps -A'):
+        app_use_ambiance = True
 
 app_windows = []
 app_closed_windows = []
