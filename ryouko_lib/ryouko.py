@@ -2632,6 +2632,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenuButton.triggered.connect(self.showTabsContextMenuAtCornerWidgets)
         self.cornerWidgetsToolBar.addAction(self.tabsContextMenuButton)
         self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setArrowType(QtCore.Qt.DownArrow)
+        self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
         self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setStyleSheet("QToolButton { max-width: 20px; }")
 
         # New window button
