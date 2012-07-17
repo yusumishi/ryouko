@@ -74,4 +74,6 @@ MimeType=text/html;text/webviewhtml;text/plain;image/jpeg;image/png;image/bmp;im
     f.close()
     if os.path.exists(os.path.join(os.path.expanduser("~"), "bin", "ryouko")):
         os.remove(os.path.join(os.path.expanduser("~"), "bin", "ryouko"))
+    elif not os.path.isdir(os.path.join(os.path.expanduser("~"), "bin")):
+        os.makedirs(os.path.join(os.path.expanduser("~"), "bin"))
     os.system("ln -s \"" + os.path.join(os.path.expanduser("~"), "ryouko", "ryouko") + "\" \"" + os.path.join(os.path.expanduser("~"), "bin", "ryouko") + "\"")
