@@ -110,7 +110,7 @@ from TranslationManager import *
 from DownloadManager import *
 
 app_use_ambiance = False
-if sys.plaform.startswith("linux"):
+if sys.platform.startswith("linux"):
     if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance" and "gnome-session" in commands.getoutput('ps -A'):
         app_use_ambiance = True
 
