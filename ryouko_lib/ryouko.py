@@ -62,7 +62,9 @@ else:
     pynotify.init("Ryouko")
     use_linux_notifications = True
 
-import os, sys, json, time, datetime, string, shutil, commands
+import os, sys, json, time, datetime, string, shutil
+if sys.platform.startswith("linux"):
+    import commands
 
 try: from urllib.request import urlretrieve
 except ImportError:

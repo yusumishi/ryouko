@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 
-import os.path, sys, commands
+import os.path, sys
+if sys.platform.startswith("linux"):
+    import commands
 from PyQt4 import QtCore, QtGui
 try:
     filename = __file__
