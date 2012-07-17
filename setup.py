@@ -72,5 +72,6 @@ StartupNotify=false
 Terminal=false
 MimeType=text/html;text/webviewhtml;text/plain;image/jpeg;image/png;image/bmp;image/x-windows-bmp;image/gif;""")
     f.close()
-    os.remove(os.path.join(os.path.expanduser("~"), "bin", "ryouko"))
+    if os.path.exists(os.path.join(os.path.expanduser("~"), "bin", "ryouko")):
+        os.remove(os.path.join(os.path.expanduser("~"), "bin", "ryouko"))
     os.system("ln -s \"" + os.path.join(os.path.expanduser("~"), "ryouko", "ryouko") + "\" \"" + os.path.join(os.path.expanduser("~"), "bin", "ryouko") + "\"")
