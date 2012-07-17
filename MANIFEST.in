@@ -4,6 +4,7 @@ include compile-windows.bat
 include do-finish-compile-windows.py
 include qt.conf
 include install-ubuntu.py
+include install-debian-singleuser.py
 recursive-include ryouko_lib/translations *
 recursive-include ryouko_lib/icons *
 recursive-include ryouko_lib *
