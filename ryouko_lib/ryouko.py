@@ -62,7 +62,7 @@ else:
     pynotify.init("Ryouko")
     use_linux_notifications = True
 
-import os, sys, json, time, datetime, string, shutil
+import os, sys, json, time, datetime, string, shutil, commands
 
 try: from urllib.request import urlretrieve
 except ImportError:
@@ -2588,7 +2588,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.cornerWidgets.setLayout(self.cornerWidgetsLayout)
         self.cornerWidgetsToolBar = QtGui.QToolBar()
         themet = ""
-        if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance":
+        if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance" and "gnome-session" in commands.getoutput('ps -A'):
             themet = """ 
             QPushButton, QToolButton {
             color: #dfdbd2;
