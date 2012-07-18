@@ -1586,13 +1586,22 @@ class Browser(QtGui.QMainWindow):
         self.setCentralWidget(self.centralWidget)
         self.mainToolBar.setMovable(False)
         self.mainToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.mainToolBar.setStyleSheet("""
-        QToolBar {
-        border: 0;
-        border-bottom: 1px solid palette(shadow);
-        background: palette(window);
-        }
-        """)
+        if app_gnome_unity_integration:
+            self.mainToolBar.setStyleSheet("""
+            QToolBar {
+            border: 0;
+            border-bottom: 1px solid palette(shadow);
+            background: palette(window);
+            }
+            """)
+        else:
+            self.mainToolBar.setStyleSheet("""
+            QToolBar {
+            border: 0;
+            border-bottom: 1px solid palette(shadow);
+            background: transparent;
+            }
+            """)
         self.webView = RWebView(self, self.pb)
         self.updateSettings()
 
