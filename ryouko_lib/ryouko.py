@@ -109,6 +109,10 @@ from NotificationManager import *
 from TranslationManager import *
 from DownloadManager import *
 
+app_gnome_unity_integration = False
+if sys.platform.startswith("linux"):
+    if "gnome-session" in commands.getoutput('ps -A'):
+        app_gnome_unity_integration = True
 app_use_ambiance = False
 if sys.platform.startswith("linux"):
     if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance" and "gnome-session" in commands.getoutput('ps -A'):
@@ -399,7 +403,10 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
             self.setWindowIcon(QtGui.QIcon(app_logo))
         self.setWindowTitle(tr('bookmarks'))
         self.nameToolBar = QtGui.QToolBar("Add a bookmarky")
-        self.nameToolBar.setStyleSheet(windowtoolbarsheet)
+        if app_gnome_unity_integration:
+            self.nameToolBar.setStyleSheet(windowtoolbarsheet)
+        else:
+            self.nameToolBar.setStyleSheet(blanktoolbarsheet)
         self.nameToolBar.setMovable(False)
         self.nameToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         nameLabel = QtGui.QLabel(tr('name') + ": ")
@@ -408,7 +415,10 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.nameToolBar.addWidget(nameLabel)
         self.nameToolBar.addWidget(self.nameField)
         self.urlToolBar = QtGui.QToolBar("Add a bookmarky")
-        self.urlToolBar.setStyleSheet(windowtoolbarsheet)
+        if app_gnome_unity_integration:
+            self.urlToolBar.setStyleSheet(windowtoolbarsheet)
+        else:
+            self.urlToolBar.setStyleSheet(blanktoolbarsheet)
         self.urlToolBar.setMovable(False)
         self.urlToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         uLabel = QtGui.QLabel(tr('url') + ": ")
@@ -417,7 +427,10 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.urlToolBar.addWidget(uLabel)
         self.urlToolBar.addWidget(self.urlField)
         self.finishToolBar = QtGui.QToolBar()
-        self.finishToolBar.setStyleSheet(windowtoolbarsheet)
+        if app_gnome_unity_integration:
+            self.finishToolBar.setStyleSheet(windowtoolbarsheet)
+        else:
+            self.finishToolBar.setStyleSheet(blanktoolbarsheet)
         self.finishToolBar.setMovable(False)
         self.finishToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addButton = QtGui.QPushButton(tr('add'))
@@ -697,7 +710,10 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         self.parent = parent
 
         self.historyToolBar = QtGui.QToolBar("")
-        self.historyToolBar.setStyleSheet(windowtoolbarsheet)
+        if app_gnome_unity_integration:
+            self.historyToolBar.setStyleSheet(windowtoolbarsheet)
+        else:
+            self.historyToolBar.setStyleSheet(blanktoolbarsheet)
         self.historyToolBar.setMovable(False)
         self.historyToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addToolBar(self.historyToolBar)
