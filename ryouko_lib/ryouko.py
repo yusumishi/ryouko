@@ -1167,6 +1167,8 @@ class RWebView(QtWebKit.QWebView):
         self.page().unsupportedContent.connect(self.downloadUnsupportedContent)
         self.page().downloadRequested.connect(self.downloadFile)
         self.loadFinished.connect(self.checkForAds)
+        if sys.platform.startswith("win"):
+            self.loadFinished.connect(self.replaceAV)
         self.updateSettings()
         self.establishPBMode(pb)
         self.loadFinished.connect(self.loadLinks)
@@ -1181,6 +1183,15 @@ class RWebView(QtWebKit.QWebView):
             app_windows.append(self)
         else:
             self.isWindow = False
+
+    def replaceAV(self):
+        av = self.page().mainFrame().findAllElements("audio, video")
+        for element in av:
+            src = element.attribute("src", "")
+            w = element.attribute("width", "")
+            h = element.attribute("height", "")
+            i = element.attribute("id", "")
+            element.replace("<object id=\"" + i + "\" width=\"" + w + "\" height=\"" + h + "\" data=\"" + src + "\"></object>")
 
     def translate(self):
         l = app_locale[0] + app_locale[1]
