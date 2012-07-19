@@ -160,6 +160,7 @@
 "toggleFullscreen": "Alternar modo de pantalla completa",
 "toolsHKey": "Herramien&tas",
 "translate": "Traducir",
+"translateBtnTT": "<b>Traducir</b><br>Ctrl+Shift+L",
 "type": "Tipo",
 "undoCloseTabBtn": "&Deshacer el cierre de la última pestaña",
 "undoCloseTabBtnTT": "<b>Deshacer el cierre de la última pestaña</b><br>Ctrl+Shift+T",
