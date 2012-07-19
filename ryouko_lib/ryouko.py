@@ -1706,7 +1706,7 @@ class Browser(QtGui.QMainWindow):
 
         self.translateAction = QtGui.QAction(self)
         self.translateAction.triggered.connect(self.webView.translate)
-        self.findNextAction.setIcon(QtGui.QIcon().fromTheme("preferences-desktop-locale", QtGui.QIcon(os.path.join(app_icons, 'translate.png'))))
+        self.translateAction.setIcon(QtGui.QIcon().fromTheme("preferences-desktop-locale", QtGui.QIcon(os.path.join(app_icons, 'translate.png'))))
         self.mainToolBar.addAction(self.translateAction)
         self.mainToolBar.widgetForAction(self.translateAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
