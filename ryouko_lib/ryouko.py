@@ -28,6 +28,7 @@ SOFTWARE.
 ## END OF LICENSE ##
 
 from __future__ import print_function
+import locale
 
 def do_nothing():
     return
@@ -81,6 +82,7 @@ try:
 except:
     __file__ = sys.executable
 app_lib = os.path.dirname(os.path.realpath(__file__))
+app_locale = locale.getdefaultlocale()[0]
 sys.path.append(app_lib)
 app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
 app_default_useragent = "Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/534.34 (KHTML, like Gecko) Qt/4.8.1 Safari/534.34"
@@ -1180,6 +1182,10 @@ class RWebView(QtWebKit.QWebView):
         else:
             self.isWindow = False
 
+    def translate(self):
+        l = app_locale[0] + app_locale[1]
+        self.load(QtCore.QUrl("http://translate.google.com/translate?hl=" + l + "&sl=auto&tl=" + l + "&u=" + unicode(self.url().toString())))
+
     def autoSave(self):
         self.autoSaveInterval += 1
         if self.autoSaveInterval >= 4:
@@ -1697,6 +1703,12 @@ class Browser(QtGui.QMainWindow):
         self.findNextAction.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(os.path.join(app_icons, 'find-next.png'))))
         self.mainToolBar.addAction(self.findNextAction)
         self.mainToolBar.widgetForAction(self.findNextAction).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        self.translateButton = QtGui.QToolButton(self)
+        self.translateButton.clicked.connect(self.webView.translate)
+        self.translateButton.setIcon(QtGui.QIcon().fromTheme("preferences-desktop-locale"), QtGui.QIcon(os.path.join(app_icons, "translate.png")))
+        self.translateButton.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.mainToolBar.addWidget(self.translateButton)
 
         self.urlBar = QtGui.QLineEdit()
         self.mainToolBar.addWidget(self.urlBar)
