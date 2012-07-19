@@ -1706,7 +1706,7 @@ class Browser(QtGui.QMainWindow):
 
         self.translateAction = QtGui.QAction(self)
         self.translateAction.triggered.connect(self.webView.translate)
-        self.translateAction.setShortcut("Ctrl+Shift+L")
+        self.translateAction.setShortcut("Alt+Shfit+T")
         self.translateAction.setIcon(QtGui.QIcon().fromTheme("preferences-desktop-locale", QtGui.QIcon(os.path.join(app_icons, 'translate.png'))))
         self.translateAction.setToolTip(tr("translateBtnTT"))
         self.mainToolBar.addAction(self.translateAction)
