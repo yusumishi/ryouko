@@ -1186,6 +1186,16 @@ class RWebView(QtWebKit.QWebView):
 
     def replaceAV(self):
         av = self.page().mainFrame().findAllElements("audio, video")
+        if not os.path.exists(os.path.join(app_profile, "win-vlc.conf")) and len(av) >= 0:
+            q = QtGui.QMessageBox.question(None, tr("ryoukoSays"),
+        tr("audioVideoUnsupported"), QtGui.QMessageBox.Yes | 
+        QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            if q == QtGui.QMessageBox.Yes:
+                wv = self.createWindow(QtWebKit.QWebPage.WebBrowserWindow)
+                wv.load(QtCore.QUrl("http://www.videolan.org/vlc/index.html"))
+            f = open(os.path.join(app_profile, "win-vlc.conf"))
+            f.write("This file is here to tell Ryouko not to ask the user to install VLC again.")
+            f.close()
         for element in av:
             src = element.attribute("src", "")
             w = element.attribute("width", "")
@@ -2446,7 +2456,7 @@ class CDialog(QtGui.QMainWindow):
             if os.path.isdir(os.path.join(app_profile_folder, profile)):
                 self.profileList.addItem(profile)
     def saveSettings(self):
-        if unicode(self.undoCloseTabCount.text()) == ""
+        if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
         self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
         f = open(app_default_profile_file, "w")

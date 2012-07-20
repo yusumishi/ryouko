@@ -9,6 +9,7 @@
 "addBookmarkTT": "<b>Bookmark this page</b><br>Ctrl+D",
 "addProfile": "Add Profile",
 "apply": "Apply",
+"audioVideoUnsupported": "There are <audio> and/or <video> tags in this page, but Ryouko can't load them and is converting them to <embed> tags instead. It is suggested that you install VLC to handle <embed> tags; would you like to do this? (NOTE: Ryouko will not ask you again if you say \"No\".)",
 "autoLoadImages": "Automatically load &images",
 "back": "Back",
 "backBtnTT": "<b>Previous Page</b><br>Alt+Left",
