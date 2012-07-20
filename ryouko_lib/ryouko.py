@@ -1191,7 +1191,7 @@ class RWebView(QtWebKit.QWebView):
             w = element.attribute("width", "")
             h = element.attribute("height", "")
             i = element.attribute("id", "")
-            element.replace("<object id=\"" + i + "\" width=\"" + w + "\" height=\"" + h + "\" data=\"" + src + "\"></object>")
+            element.replace("<embed id=\"" + i + "\" width=\"" + w + "\" height=\"" + h + "\" src=\"" + src + "\"></embed>")
 
     def translate(self):
         l = app_locale[0] + app_locale[1]
@@ -2317,8 +2317,11 @@ class CDialog(QtGui.QMainWindow):
         else:
             self.storageBox.setChecked(self.settings['storageEnabled'])
         try: self.settings['pluginsEnabled']
-        except: 
-            self.pluginsBox.setChecked(False)
+        except:
+            if sys.platform.startswith("linux"):
+                self.pluginsBox.setChecked(False)
+            else:
+                self.pluginsBox.setChecked(True)
         else:
             self.pluginsBox.setChecked(self.settings['pluginsEnabled'])
         try: self.settings['privateBrowsing']
@@ -2443,6 +2446,8 @@ class CDialog(QtGui.QMainWindow):
             if os.path.isdir(os.path.join(app_profile_folder, profile)):
                 self.profileList.addItem(profile)
     def saveSettings(self):
+        if unicode(self.undoCloseTabCount.text()) == ""
+            self.undoCloseTabCount.setText("-1")
         self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
         f = open(app_default_profile_file, "w")
         f.write(unicode(self.profileList.currentItem().text()))
