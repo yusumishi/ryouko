@@ -1186,7 +1186,7 @@ class RWebView(QtWebKit.QWebView):
 
     def replaceAV(self):
         av = self.page().mainFrame().findAllElements("audio, video")
-        if not os.path.exists(os.path.join(app_profile, "win-vlc.conf")) and len(av) >= 0:
+        if not os.path.exists(os.path.join(app_profile, "win-vlc.conf")) and len(av) > 0:
             q = QtGui.QMessageBox.question(None, tr("ryoukoSays"),
         tr("audioVideoUnsupported"), QtGui.QMessageBox.Yes | 
         QtGui.QMessageBox.No, QtGui.QMessageBox.No)
