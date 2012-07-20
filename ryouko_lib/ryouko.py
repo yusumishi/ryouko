@@ -1200,7 +1200,7 @@ class RWebView(QtWebKit.QWebView):
             a = element.attributeNames()
             e = "<embed "
             for attribute in a:
-                e = e + a + "=\"" + element.attribute(attribute) + "\" "
+                e = e + attribute + "=\"" + element.attribute(attribute) + "\" "
             e = e + "></embed>"
             element.replace(e)
 
