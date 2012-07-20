@@ -1197,11 +1197,12 @@ class RWebView(QtWebKit.QWebView):
             f.write("This file is here to tell Ryouko not to ask the user to install VLC again.")
             f.close()
         for element in av:
-            src = element.attribute("src", "")
-            w = element.attribute("width", "")
-            h = element.attribute("height", "")
-            i = element.attribute("id", "")
-            element.replace("<embed id=\"" + i + "\" width=\"" + w + "\" height=\"" + h + "\" src=\"" + src + "\"></embed>")
+            a = element.attributeNames()
+            e = "<embed "
+            for attribute in a:
+                e = e + a + "=\"" + element.attribute(attribute) + "\" "
+            e = e + "></embed>"
+            element.replace(e)
 
     def translate(self):
         l = app_locale[0] + app_locale[1]
