@@ -113,11 +113,11 @@ from DownloadManager import *
 
 app_gnome_unity_integration = False
 if sys.platform.startswith("linux"):
-    if "gnome-session" in commands.getoutput('ps -A'):
+    if "gnome-session" in commands.getoutput('ps -A') or "mate-session" in commands.getoutput('ps -A'):
         app_gnome_unity_integration = True
 app_use_ambiance = False
 if sys.platform.startswith("linux"):
-    if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance" and "gnome-session" in commands.getoutput('ps -A'):
+    if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance" and ("gnome-session" in commands.getoutput('ps -A') or "mate-session" in commands.getoutput('ps -A')):
         app_use_ambiance = True
 
 app_windows = []
