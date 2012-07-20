@@ -45,7 +45,7 @@ class MovableTabWidget(QtGui.QTabWidget):
         self.gnome_session = False
         if sys.platform.startswith("linux"):
             output = commands.getoutput('ps -A')
-            if 'gnome-session' in output:
+            if 'gnome-session' in output or 'mate-session' in output:
                 self.gnome_session = True
 
         self.parent = parent
