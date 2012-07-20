@@ -1193,7 +1193,7 @@ class RWebView(QtWebKit.QWebView):
             if q == QtGui.QMessageBox.Yes:
                 wv = self.createWindow(QtWebKit.QWebPage.WebBrowserWindow)
                 wv.load(QtCore.QUrl("http://www.videolan.org/vlc/index.html"))
-            f = open(os.path.join(app_profile, "win-vlc.conf"))
+            f = open(os.path.join(app_profile, "win-vlc.conf"), "w")
             f.write("This file is here to tell Ryouko not to ask the user to install VLC again.")
             f.close()
         for element in av:
