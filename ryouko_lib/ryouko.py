@@ -1951,8 +1951,13 @@ class Browser(QtGui.QMainWindow):
         self.enableDisableBF()
 
     def setIcon(self):
-        self.urlBar.setIcon(self.webView.icon())
-        self.urlBar2.setIcon(self.webView.icon())
+        i = self.webView.icon()
+        if i.actualSize(QtCore.QSize(16, 16)).width() > 0:
+            self.urlBar.setIcon(i)
+            self.urlBar2.setIcon(i)
+        else:
+            self.urlBar.setIcon(app_webview_default_icon)
+            self.urlBar2.setIcon(app_webview_default_icon)
 
     def enableDisableBF(self):
         if self.webView.page().history().canGoBack():
@@ -2584,7 +2589,10 @@ self.origY + ev.globalY() - self.mouseY)
         confirmQuit()
 
     def closeEvent(self, ev):
-        if self.tabs.count() > 1:
+        if len(app_windows) <= 1:
+            ev.ignore()
+            q = QtGui.QMessageBox.Yes
+        elif self.tabs.count() > 1:
             q = QtGui.QMessageBox.question(None, tr("warning"),
         tr("multiWindowWarn"), QtGui.QMessageBox.Yes | 
         QtGui.QMessageBox.No, QtGui.QMessageBox.No)
