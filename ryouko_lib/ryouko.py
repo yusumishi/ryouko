@@ -2592,10 +2592,10 @@ self.origY + ev.globalY() - self.mouseY)
         if len(app_windows) <= 1:
             ev.ignore()
             q = QtGui.QMessageBox.Yes
-        elif self.tabs.count() > 1:
-            q = QtGui.QMessageBox.question(None, tr("warning"),
-        tr("multiWindowWarn"), QtGui.QMessageBox.Yes | 
-        QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+#        elif self.tabs.count() > 1:
+#            q = QtGui.QMessageBox.question(None, tr("warning"),
+#        tr("multiWindowWarn"), QtGui.QMessageBox.Yes | 
+#        QtGui.QMessageBox.No, QtGui.QMessageBox.No)
         else:
            q = QtGui.QMessageBox.Yes 
         if q == QtGui.QMessageBox.Yes:
