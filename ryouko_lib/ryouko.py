@@ -3195,7 +3195,7 @@ self.origY + ev.globalY() - self.mouseY)
                     self.tabs.setTabText(tab, tr('newPBTab'))
                 if tab == self.tabs.currentIndex():
                     self.setWindowTitle("Ryouko")
-                self.tabs.setTabIcon(tab, app_webview_default_icon)                    
+                self.tabs.setTabIcon(tab app_webview_default_icon)                    
             else:
                 if len(unicode(self.tabs.widget(tab).webView.title())) > 20:
                     title = ""
