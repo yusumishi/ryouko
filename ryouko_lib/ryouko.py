@@ -89,6 +89,7 @@ app_default_useragent = "Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/534.34 (KHT
 app_webview_default_icon = QtGui.QIcon()
 
 from ryouko_common import *
+from RUrlBar import *
 from Python23Compat import *
 from QStringFunctions import *
 from SystemTerminal import *
@@ -1736,10 +1737,13 @@ class Browser(QtGui.QMainWindow):
         self.addAction(self.translateAction)
         self.mainToolBar.widgetForAction(self.translateAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
-        self.urlBar = QtGui.QLineEdit()
+        self.urlBar = RUrlBar(self.webView.icon(), self)
+        self.webView.iconChanged.connect(self.setIcon)
+        self.urlBar.setIcon(self.webView.icon())
         self.mainToolBar.addWidget(self.urlBar)
 
-        self.urlBar2 = QtGui.QLineEdit()
+        self.urlBar2 = RUrlBar()
+        self.urlBar2.setIcon(self.webView.icon())
         self.historyCompletionBoxLayout.addWidget(self.urlBar2)
         self.historyCompletionBoxLayout.addWidget(self.historyCompletion)
 
@@ -1930,6 +1934,10 @@ class Browser(QtGui.QMainWindow):
         self.zoomSlider.valueChanged.connect(self.zoom)
         self.webView.show()
         self.enableDisableBF()
+
+    def setIcon(self):
+        self.urlBar.setIcon(self.webView.icon())
+        self.urlBar2.setIcon(self.webView.icon())
 
     def enableDisableBF(self):
         if self.webView.page().history().canGoBack():
