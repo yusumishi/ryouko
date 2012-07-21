@@ -279,6 +279,21 @@ def linux_notification(string="This is a message."):
     n = pynotify.Notification(tr("ryoukoSays"), string)
     n.show()
 
+def confirmQuit():
+    if len(app_windows) == 0:
+        undoCloseWindow()
+    q = QtGui.QMessageBox.question(None, tr("warning"),
+    tr("quitWarning"), QtGui.QMessageBox.Yes | 
+    QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+    if downloadManagerGUI.progress > 0.0:
+        r = QtGui.QMessageBox.question(None, tr("warning"),
+    tr("downloadsInProgress"), QtGui.QMessageBox.Yes | 
+    QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+    else:
+        r = QtGui.QMessageBox.Yes
+    if q == QtGui.QMessageBox.Yes and r == QtGui.QMessageBox.Yes:
+        QtCore.QCoreApplication.instance().quit()
+
 def prepareQuit():
     if os.path.exists(app_lock) and not os.path.isdir(app_lock):
         os.remove(app_lock)
@@ -2563,25 +2578,28 @@ self.origY + ev.globalY() - self.mouseY)
             shred_directory(os.path.join(app_profile, "temp"))
 
     def quit(self):
-        q = QtGui.QMessageBox.Yes
-        if downloadManagerGUI.progress > 0.0:
-            q = QtGui.QMessageBox.question(None, tr("warning"),
-        tr("downloadsInProgress"), QtGui.QMessageBox.Yes | 
-        QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-        if q == QtGui.QMessageBox.Yes:
-            self.close()
-            QtCore.QCoreApplication.instance().quit()
+        confirmQuit()
 
     def closeEvent(self, ev):
-        global app_windows
-        if self in app_windows:
-            del app_windows[app_windows.index(self)]
-            global app_closed_windows
-            if len(app_closed_windows) >= 10:
-                del app_closed_windows[0]
-            app_closed_windows.append(self)
-        self.closed = True
-        return QtGui.QMainWindow.closeEvent(self, ev)
+        if self.tabs.count() > 1:
+            q = QtGui.QMessageBox.question(None, tr("warning"),
+        tr("multiWindowWarn"), QtGui.QMessageBox.Yes | 
+        QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        else:
+           q = QtGui.QMessageBox.Yes 
+        if q == QtGui.QMessageBox.Yes:
+            global app_windows
+            if self in app_windows:
+                del app_windows[app_windows.index(self)]
+                global app_closed_windows
+                if len(app_closed_windows) >= 10:
+                    del app_closed_windows[0]
+                app_closed_windows.append(self)
+            self.closed = True
+            return QtGui.QMainWindow.closeEvent(self, ev)
+        else:
+            ev.ignore()
+            return
 
     def aboutRyoukoHKey(self):
         aboutDialog.show()
@@ -3376,6 +3394,8 @@ def main():
             user_links = reload_user_links(app_links)
             global reset
             app = QtGui.QApplication(sys.argv)
+            app.setQuitOnLastWindowClosed(False)
+            app.lastWindowClosed.connect(confirmQuit)
             app.aboutToQuit.connect(prepareQuit)
             if reset == True:
                 browserHistory.reset()
