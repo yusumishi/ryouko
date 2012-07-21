@@ -2408,7 +2408,10 @@ class CDialog(QtGui.QMainWindow):
         except:
             self.undoCloseTabCount.setText("-1")
         else:
-            self.undoCloseTabCount.setText(str(self.settings['maxUndoCloseTab']))
+            try:
+                self.undoCloseTabCount.setText(str(self.settings['maxUndoCloseTab']))
+            except:
+                self.undoCloseTabCount.setText("-1")
         try: self.settings['proxy']
         except:
             doNothing()
