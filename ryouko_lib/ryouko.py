@@ -282,7 +282,7 @@ def linux_notification(string="This is a message."):
 def confirmQuit():
     if len(app_windows) == 0:
         undoCloseWindow()
-    q = QtGui.QMessageBox.question(None, tr("warning"),
+    q = QtGui.QMessageBox.question(None, tr("query"),
     tr("quitWarning"), QtGui.QMessageBox.Yes | 
     QtGui.QMessageBox.No, QtGui.QMessageBox.No)
     if downloadManagerGUI.progress > 0.0:
@@ -292,7 +292,7 @@ def confirmQuit():
     else:
         r = QtGui.QMessageBox.Yes
     if q == QtGui.QMessageBox.Yes and r == QtGui.QMessageBox.Yes:
-        QtCore.QCoreApplication.instance().quit()
+        QtCore.QCoreApplication.instance().quit() 
 
 def prepareQuit():
     if os.path.exists(app_lock) and not os.path.isdir(app_lock):
