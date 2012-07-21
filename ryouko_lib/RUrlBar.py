@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+from __future__ import division
 from PyQt4 import QtCore, QtGui
 
 def qMax(a, b):
@@ -25,10 +26,10 @@ class RUrlBar(QtGui.QLineEdit):
         self.setMinimumSize(qMax(msz.width(), self.icon.sizeHint().height() + fw * 2 + 2), qMax(msz.height(), self.icon.sizeHint().height() + fw * 2 + 2))
 
     def paintEvent(self, ev):
-        sz = self.icon.sizeHint()
+        sz = self.icon
         fw = self.style().pixelMetric(QtGui.QStyle.PM_DefaultFrameWidth)
         QtGui.QLineEdit.paintEvent(self, ev)
-        self.icon.render(self, QtCore.QPoint(self.rect().left() + (self.height() + 1 - sz.height())/2, (self.height() + 1 - sz.height())/2))
+        self.icon.render(self, QtCore.QPoint(self.rect().left() + (self.height() + 1 - sz.width())/2, (self.height() + 1 - sz.height())/2))
 
     def setIcon(self, icon):
         self.icon.setIcon(icon)
