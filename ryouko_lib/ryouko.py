@@ -86,6 +86,7 @@ app_locale = locale.getdefaultlocale()[0]
 sys.path.append(app_lib)
 app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
 app_default_useragent = "Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/534.34 (KHTML, like Gecko) Qt/4.8.1 Safari/534.34"
+app_webview_default_icon = QtGui.QIcon()
 
 from ryouko_common import *
 from Python23Compat import *
@@ -3176,9 +3177,14 @@ self.origY + ev.globalY() - self.mouseY)
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
             if self.tabs.widget(self.tabs.currentIndex()).webView.url().toString() == "about:blank":
                 self.tabs.widget(self.tabs.currentIndex()).webView.back()
+
     def updateIcons(self):
         for tab in range(self.tabs.count()):
-            self.tabs.setTabIcon(tab, self.tabs.widget(tab).webView.icon())
+            i = self.tabs.widget(tab).webView.icon()
+            if i.actualSize(QtCore.QSize(16, 16)).width() > 0:
+                self.tabs.setTabIcon(tab, self.tabs.widget(tab).webView.icon())
+            else:
+                self.tabs.setTabIcon(tab, app_webview_default_icon)
 
     def updateTitles(self):
         for tab in range(self.tabs.count()):
@@ -3189,6 +3195,7 @@ self.origY + ev.globalY() - self.mouseY)
                     self.tabs.setTabText(tab, tr('newPBTab'))
                 if tab == self.tabs.currentIndex():
                     self.setWindowTitle("Ryouko")
+                self.tabs.setTabIcon(tab, app_webview_default_icon)                    
             else:
                 if len(unicode(self.tabs.widget(tab).webView.title())) > 20:
                     title = ""
@@ -3221,6 +3228,12 @@ class Ryouko(QtGui.QWidget):
         app_default_useragent = unicode(dA.mainFrame().findFirstElement("#userAgent").toPlainText()).replace("Safari", "Ryouko/" + app_version + " Safari")
         dA.deleteLater()
         del dA
+        q = QtWebKit.QWebView()
+        q.load(QtCore.QUrl("about:blank"))
+        global app_webview_default_icon
+        app_webview_default_icon = QtGui.QIcon(q.icon())
+        q.deleteLater()
+        del q
         if not os.path.isdir(app_profile):
             os.makedirs(app_profile)
         if not os.path.isdir(os.path.join(app_profile, "temp")):
@@ -3262,7 +3275,8 @@ class Ryouko(QtGui.QWidget):
                         f.write("%s\n" % (sys.argv[arg]))
                 f.close()
             else:
-                os.remove(app_lock)
+                if os.path.exists(app_lock):
+                    os.remove(app_lock)
                 args = ""
                 for arg in sys.argv:
                     args = "%s%s " % (args, arg)
