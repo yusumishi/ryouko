@@ -196,40 +196,24 @@ class RSettingsManager(SettingsManager):
 settingsManager = RSettingsManager()
 
 def changeProfile(profile, init = False):
-    global app_profile_name
-    global app_profile
-    global app_links
-    global app_lock
-    global app_cookies
-    global app_instance2
-    global app_profile_exists
-    app_profile_name = os.path.split(profile)[1]
-    app_profile = profile
+    global app_profile_name; global app_profile; global app_links; global app_lock; global app_cookies; global app_instance2
+    app_profile_name = profile
+    app_profile = os.path.join(app_profile_folder, profile)
     app_links = os.path.join(app_profile, "links")
     app_lock = os.path.join(app_profile, ".lockfile")
     app_cookies = os.path.join(app_profile, "cookies.json")
     app_instance2 = os.path.join(app_profile, "instance2-says.txt")
-    loadCookies()
-    migrate = False
+    loadCookies()    
     if not os.path.isdir(app_home):
-        os.mkdir(app_home)
-    else:
-        migrate = False
+        os.makedirs(app_home)
     if not os.path.isdir(app_profile_folder):
         os.makedirs(app_profile_folder)
     if not os.path.isdir(app_profile):
         os.makedirs(app_profile)
-    else:
-        if init == False:
-            app_profile_exists = True
-    if migrate == True:
-        l = os.listdir(app_home)
-        for fname in l:
-            fpath = os.path.join(app_home, fname)
-            if not fpath == app_profile_folder:
-                if not os.path.exists(os.path.join(app_profile, fname)):
-                    shutil.move(fpath, app_profile)
+
     settingsManager.changeProfile(app_profile)
+    settingsManager.loadSettings()
+
     try: bookmarksManager
     except: doNothing()
     else: bookmarksManager.setDirectory(app_links)
@@ -255,7 +239,7 @@ if os.path.exists(app_default_profile_file):
     app_default_profile_name = app_default_profile_name.replace("\n", "")
 if not os.path.exists(os.path.join(app_profile_folder, app_default_profile_name)):
     app_default_profile_name = "default"
-changeProfile(os.path.join(app_profile_folder, app_default_profile_name), True)
+changeProfile(app_default_profile_name, True)
 
 reset = False
 
@@ -301,7 +285,7 @@ def prepareQuit():
     if os.path.exists(app_lock) and not os.path.isdir(app_lock):
         os.remove(app_lock)
     saveCookies()
-    try: settingsManager.settings['cloudService']
+    """try: settingsManager.settings['cloudService']
     except: doNothing()
     else:
         if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None":
@@ -309,7 +293,7 @@ def prepareQuit():
             if os.path.exists(os.path.join(local_app_profile, "settings.json")) and os.path.exists(os.path.join(os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name), "settings.json")):
                 os.remove(os.path.join(local_app_profile, "settings.json"))
                 print(app_profile)
-                shutil.copy(os.path.join(os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name), "settings.json"), local_app_profile)
+                shutil.copy(os.path.join(os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name), "settings.json"), local_app_profile)"""
 
     sys.exit()
 
@@ -3416,6 +3400,9 @@ win = None
 
 class Ryouko(QtGui.QWidget):
     def __init__(self):
+
+        # Prepare stuff
+
         dA = QtWebKit.QWebPage()
         dA.mainFrame().setHtml("<html><body><span id='userAgent'></span></body></html>")
         dA.mainFrame().evaluateJavaScript("document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;")
@@ -3429,35 +3416,7 @@ class Ryouko(QtGui.QWidget):
         app_webview_default_icon = QtGui.QIcon(q.icon())
         q.deleteLater()
         del q
-        if not os.path.isdir(app_profile):
-            os.makedirs(app_profile)
-        if not os.path.isdir(os.path.join(app_profile, "temp")):
-            os.mkdir(os.path.join(app_profile, "temp"))
-        if not os.path.isdir(os.path.join(app_profile, "adblock")):
-            os.mkdir(os.path.join(app_profile, "adblock"))
-        try:
-            settingsManager.loadSettings()
-            try: settingsManager.settings['cloudService']
-            except:
-                doNothing()
-            else:
-                if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None":
-                    bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name)
-                else:
-                    bck = os.path.join(os.path.expanduser("~"), ".ryouko-data", "profiles", app_profile_name)
-                a = ""
-                for char in settingsManager.settings['cloudService']:
-                    a = a + char
-                changeProfile(bck)
-                loadCookies()
-                searchManager.changeProfile(app_profile)
-                browserHistory.setAppProfile(app_profile)
-                browserHistory.reload()
-                settingsManager.changeProfile(app_profile)
-                settingsManager.settings['cloudService'] = a
-                settingsManager.saveSettings()
-        except:
-            doNothing()
+
         if os.path.exists(app_lock) and not sys.platform.startswith("win"):
             reply = QtGui.QMessageBox.question(None, tr("error"),
         tr("isRunning"), QtGui.QMessageBox.Yes | 
@@ -3480,6 +3439,12 @@ class Ryouko(QtGui.QWidget):
                 os.system("%s && echo \"\"" % (args))
             QtCore.QCoreApplication.instance().quit()
             sys.exit()
+
+        if not os.path.isdir(app_profile):
+            os.makedirs(app_profile)
+        if not os.path.isdir(os.path.join(app_profile, "adblock")):
+            os.mkdir(os.path.join(app_profile, "adblock"))
+        settingsManager.loadSettings()
         if not os.path.isdir(app_profile):
             os.makedirs(app_profile)
         if not os.path.isdir(os.path.join(app_profile, "temp")):
@@ -3526,62 +3491,21 @@ def main():
     if "--icons" in sys.argv:
         print(app_icons)
     else:
-        if "-P" in sys.argv:
-            try:
-                i = sys.argv.index("-P")
-            except:
-                doNothing()
-            else:
-                try:
-                    sys.argv[i + 1]
-                except:
-                    doNothing()
-                else:
-                    changeProfile(os.path.join(app_profile_folder, sys.argv[i + 1]))
-        if os.path.exists(app_lock) and sys.platform.startswith("win"):
-            app = QtGui.QApplication(sys.argv)
-            reply = QtGui.QMessageBox.question(None, tr("error"),
-        tr("isRunning"), QtGui.QMessageBox.Yes | 
-        QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
-            if reply == QtGui.QMessageBox.Yes:
-                f = open(app_instance2, "w")
-                f.write("")
-                f.close()
-                f = open(app_instance2, "a")
-                for arg in range(1, len(sys.argv)):
-                    if not sys.argv[arg].lower() == "--pb" and not sys.argv[arg].lower() == "-pb" and not sys.argv[arg] == "-P":
-                        f.write("%s\n" % (sys.argv[arg]))
-                f.close()
-            else:
-                os.remove(app_lock)
-                args = ""
-                for arg in sys.argv:
-                    args = "%s%s " % (args, arg)
-                os.system("%s && echo \"\"" % (args))
-            QtCore.QCoreApplication.instance().quit()
-            sys.exit()
-        else:
-            global user_links
-            user_links = reload_user_links(app_links)
-            global reset
-            app = QtGui.QApplication(sys.argv)
-            app.setQuitOnLastWindowClosed(False)
-            app.lastWindowClosed.connect(confirmQuit)
-            app.aboutToQuit.connect(prepareQuit)
-            if reset == True:
-                browserHistory.reset()
-                reset = False
-            ryouko = Ryouko()
-            ryouko.primeBrowser()
-            f = open(app_lock, "w")
-            f.write("")
-            f.close()
-            if use_unity_launcher == True:
-                loop = GObject.MainLoop()
-                global app_launcher
-                app_launcher = Unity.LauncherEntry.get_for_desktop_id("ryouko.desktop")
-                downloadManagerGUI.downloadProgress.connect(updateProgress)
-            app.exec_()
+        app = QtGui.QApplication(sys.argv)
+        app.setQuitOnLastWindowClosed(False)
+        app.lastWindowClosed.connect(confirmQuit)
+        app.aboutToQuit.connect(prepareQuit)
+        ryouko = Ryouko()
+        ryouko.primeBrowser()
+        f = open(app_lock, "w")
+        f.write("")
+        f.close()
+        if use_unity_launcher == True:
+            loop = GObject.MainLoop()
+            global app_launcher
+            app_launcher = Unity.LauncherEntry.get_for_desktop_id("ryouko.desktop")
+            downloadManagerGUI.downloadProgress.connect(updateProgress)
+        app.exec_()
 
 if __name__ == "__main__":
     main()
