@@ -304,13 +304,13 @@ def prepareQuit():
     try: settingsManager.settings['cloudService']
     except: doNothing()
     else:
-        if settingsManager.settings['cloudService'] != "No":
+        if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None":
             local_app_profile = os.path.join(app_profile_folder, app_profile_name)
-            if os.path.exists(os.path.join(local_app_profile, "settings.json")):
+            if os.path.exists(os.path.join(local_app_profile, "settings.json")) and os.path.exists(os.path.join(os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name), "settings.json")):
                 os.remove(os.path.join(local_app_profile, "settings.json"))
-            try: shutil.copy(os.path.join(app_profile, "settings.json"), local_app_profile)
-            except:
-                doNothing()
+                print(app_profile)
+                shutil.copy(os.path.join(os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name), "settings.json"), local_app_profile)
+
     sys.exit()
 
 def touch(fname):
@@ -2173,6 +2173,8 @@ class CDialog(QtGui.QMainWindow):
                 if unicode(u) == app_default_profile_name:
                     self.profileList.setCurrentRow(i)
                     break
+        try: self.profileList.currentItem()
+        except: self.profileList.setCurrentRow(0)
         try:
             global app_windows
             for window in app_windows:
@@ -2205,6 +2207,11 @@ class CDialog(QtGui.QMainWindow):
             self.undoCloseTabCount.setText("-1")
         self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
         f = open(app_default_profile_file, "w")
+        if self.profileList.currentItem() == None:
+            self.profileList.setCurrentRow(0)
+            if self.profileList.currentItem() == None:
+                self.profileList.addItem("default")
+                self.profileList.setCurrentRow(0)
         f.write(unicode(self.profileList.currentItem().text()))
         f.close()
         settingsManager.settings = self.settings
@@ -2217,10 +2224,11 @@ class CDialog(QtGui.QMainWindow):
             except:
                 doNothing()
         local_app_profile = os.path.join(app_profile_folder, app_profile_name)
-        if settingsManager.settings['cloudService'] == "No":
+        if settingsManager.settings['cloudService'] == "No" or settingsManager.settings['cloudService'] == "None":
             if os.path.exists(os.path.join(local_app_profile, "settings.json")):
                 os.remove(os.path.join(local_app_profile, "settings.json"))
-            shutil.copy(os.path.join(app_profile, "settings.json"), local_app_profile)
+            try: shutil.copy(os.path.join(app_profile, "settings.json"), local_app_profile)
+            except: do_nothing()
 
 cDialog = None
 
@@ -3435,17 +3443,19 @@ class Ryouko(QtGui.QWidget):
             else:
                 if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None":
                     bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name)
-                    a = ""
-                    for char in settingsManager.settings['cloudService']:
-                        a = a + char
-                    changeProfile(bck)
-                    loadCookies()
-                    searchManager.changeProfile(app_profile)
-                    browserHistory.setAppProfile(app_profile)
-                    browserHistory.reload()
-                    settingsManager.changeProfile(app_profile)
-                    settingsManager.settings['cloudService'] = a
-                    settingsManager.saveSettings()
+                else:
+                    bck = os.path.join(os.path.expanduser("~"), ".ryouko-data", "profiles", app_profile_name)
+                a = ""
+                for char in settingsManager.settings['cloudService']:
+                    a = a + char
+                changeProfile(bck)
+                loadCookies()
+                searchManager.changeProfile(app_profile)
+                browserHistory.setAppProfile(app_profile)
+                browserHistory.reload()
+                settingsManager.changeProfile(app_profile)
+                settingsManager.settings['cloudService'] = a
+                settingsManager.saveSettings()
         except:
             doNothing()
         if os.path.exists(app_lock) and not sys.platform.startswith("win"):
