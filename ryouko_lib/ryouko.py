@@ -1097,8 +1097,8 @@ notificationManager = None
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
     def __init__(self, parent=False, pb=False):
-        super(RWebView, self).__init__()
-        self.setParent(parent)
+        QtWebKit.QWebView.__init__(self, parent)
+        self.parent2 = parent
         page = RWebPage(self)
         self.setPage(page)
         self.loading = False
@@ -1226,6 +1226,10 @@ class RWebView(QtWebKit.QWebView):
             app_windows.append(self)
         else:
             self.isWindow = False
+
+    def setParent(self, parent=None):
+        QtWebKit.QWebView.setParent(self, parent)
+        self.parent2 = parent
 
     def setLoadingTrue(self):
         self.loading = True
@@ -1499,20 +1503,20 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         if forceLoad == True:
             self.load(QtCore.QUrl("about:blank"))
         f = str(searchManager.currentSearch.replace("%s", ""))
-        if type(self.parent()) == Browser:
+        if type(self.parent2) == Browser:
             t = tr('newTab')
         else:
             t = tr('newWindow')
         html = "<!DOCTYPE html><html><head><title>" + t + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('search') + ":</b><form method='get' action='" + f + "' style='display: inline-block;'><input type='text'  name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
         h = tr('newTabShortcuts')
-        try: self.parent().parent.closedTabsList
+        try: self.parent2.parent.closedTabsList
         except:
             doNothing()
         else:
-            if len(self.parent().parent.closedTabsList) > 0:
+            if len(self.parent2.parent.closedTabsList) > 0:
                 html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><b>" + tr('rCTabs') + "</b><br/>"
                 html = html + "<object type=\"application/x-qt-plugin\" classid=\"ctl\"></object>"
-            if not len(self.parent().parent.closedTabsList) > 0:
+            if not len(self.parent2.parent.closedTabsList) > 0:
                 h = h.replace("style='padding-left: 4px;'", "")
         html = html + h + "</tr></body></html>"
         self.setHtml(html)
