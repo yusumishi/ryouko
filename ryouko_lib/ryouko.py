@@ -2527,13 +2527,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addToolBar(self.mainToolBar)
 
-        self.mainToolBar.setStyleSheet("""
-        QToolBar {
-        border: 0;
-        background: palette(window);
-        }
-        """)
-
         self.historyCompletionBox = QtGui.QWidget()
 
         self.downArrowAction = QtGui.QAction(self)
