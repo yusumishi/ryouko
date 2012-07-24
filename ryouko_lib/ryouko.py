@@ -2492,6 +2492,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.closedTabsListGUI.display(True, self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).mapToGlobal(QtCore.QPoint(0,0)).x(), self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).mapToGlobal(QtCore.QPoint(0,0)).y(),
         self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).width(),
         self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).height())
+        self.closedTabsListGUI.list.setFocus()
 
     def editSearch(self):
         searchEditor.display(True, self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).x(), self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).y(), self.searchEditButton.width(), self.searchEditButton.height())
