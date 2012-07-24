@@ -55,7 +55,7 @@ class MovableTabWidget(QtGui.QTabWidget):
 
         theme = get_key("/desktop/gnome/shell/windows/theme")
 
-        if theme == "Ambiance" and self.gnome_session:
+        #if theme == "Ambiance" and self.gnome_session:
             self.setStyleSheet(win_stylesheet)
             self.parent.setStyleSheet("""
             QMainWindow {
@@ -63,7 +63,7 @@ class MovableTabWidget(QtGui.QTabWidget):
             }
             """)
 
-        elif theme == "Radiance" and self.gnome_session:
+        #elif theme == "Radiance" and self.gnome_session:
             self.setStyleSheet(win_stylesheet)
             self.parent.setStyleSheet("""
             QMainWindow {
@@ -71,7 +71,7 @@ class MovableTabWidget(QtGui.QTabWidget):
             }
             """)
 
-        elif sys.platform.startswith("win"):
+        if sys.platform.startswith("win"):
             self.setStyleSheet(win_stylesheet)
 
         self.mouseX = False

@@ -3,13 +3,13 @@
 from __future__ import division
 import os, sys
 from PyQt4 import QtCore, QtGui, QtNetwork
-try:
-    __file__
-except:
-    __file__ = sys.executable
+
+try: __file__
+except: __file__ = sys.executable
 app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-app_icons = os.path.join(app_lib, "icons")
 sys.path.append(app_lib)
+
+app_icons = os.path.join(app_lib, "icons")
 from Python23Compat import *
 from QStringFunctions import *
 from TranslationManager import *

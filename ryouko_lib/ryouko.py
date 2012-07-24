@@ -1617,10 +1617,10 @@ class Browser(QtGui.QMainWindow):
         super(Browser, self).__init__()
         self.parent = parent
         self.pb = pb
-        self.tempHistory = []
         self.findText = ""
         self.initUI(url)
     def initUI(self, url):
+
         self.mainToolBar = QtGui.QToolBar("")
         self.mainToolBar.setMovable(False)
         self.mainToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -1629,26 +1629,15 @@ class Browser(QtGui.QMainWindow):
         self.mainLayout = QtGui.QGridLayout()
         self.centralWidget.setLayout(self.mainLayout)
         self.setCentralWidget(self.centralWidget)
-        self.mainToolBar.setMovable(False)
-        self.mainToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        if app_gnome_unity_integration:
-            self.mainToolBar.setStyleSheet("""
-            QToolBar {
-            border: 0;
-            border-bottom: 1px solid palette(shadow);
-            background: palette(window);
-            }
-            """)
-        else:
-            self.mainToolBar.setStyleSheet("""
-            QToolBar {
-            border: 0;
-            border-bottom: 1px solid palette(shadow);
-            background: transparent;
-            }
-            """)
+    
         self.webView = RWebView(self, self.pb)
         self.updateSettings()
+
+        if not self.pb:
+            self.webView.urlChanged.connect(browserHistory.reload)
+            self.webView.titleChanged.connect(browserHistory.reload)
+            self.webView.urlChanged.connect(browserHistory.append)
+            self.webView.titleChanged.connect(browserHistory.updateTitles)
 
         self.webInspector = QtWebKit.QWebInspector(self)
         self.webInspector.setPage(self.webView.page())
@@ -1660,178 +1649,14 @@ class Browser(QtGui.QMainWindow):
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.webInspectorDock)
         self.webInspectorDock.hide()
 
-        self.historyCompletionBox = QtGui.QWidget()
-
-        self.downArrowAction = QtGui.QAction(self)
-        self.downArrowAction.setShortcut("Down")
-        self.downArrowAction.triggered.connect(self.historyDown)
-
-        self.historyCompletionBox.addAction(self.downArrowAction)
-
-        self.upArrowAction = QtGui.QAction(self)
-        self.upArrowAction.setShortcut("Up")
-        self.upArrowAction.triggered.connect(self.historyUp)
-
-        self.historyCompletionBox.addAction(self.upArrowAction)
-
-        self.historyCompletionBoxLayout = QtGui.QVBoxLayout()
-        self.historyCompletionBoxLayout.setContentsMargins(0,0,0,0)
-        self.historyCompletionBoxLayout.setSpacing(0)
-        self.historyCompletionBox.setLayout(self.historyCompletionBoxLayout)
-        self.historyCompletionBox.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Popup)
-        self.historyCompletion = HistoryCompletionList(self)
-        self.historyCompletion.setWordWrap(True)
-        self.historyCompletion.itemActivated.connect(self.openHistoryItem)
-
         self.mainLayout.setSpacing(0);
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
-
-        self.backAction = QtGui.QAction(self)
-        self.backAction.setText(tr("back"))
-        self.backAction.setToolTip(tr("backBtnTT"))
-        self.backAction.triggered.connect(self.webView.back)
-        self.backAction.setIcon(QtGui.QIcon().fromTheme("go-previous", QtGui.QIcon(os.path.join(app_icons, 'back.png'))))
-        self.mainToolBar.addAction(self.backAction)
-        self.mainToolBar.widgetForAction(self.backAction).setFocusPolicy(QtCore.Qt.TabFocus)
-
-        self.nextAction = QtGui.QAction(self)
-        self.nextAction.setToolTip(tr("nextBtnTT"))
-        self.nextAction.triggered.connect(self.webView.forward)
-        self.nextAction.setText("")
-        self.nextAction.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_icons, 'next.png'))))
-        self.mainToolBar.addAction(self.nextAction)
-        self.mainToolBar.widgetForAction(self.nextAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         historySearchAction = QtGui.QAction(self)
         historySearchAction.triggered.connect(self.parent.focusHistorySearch)
         historySearchAction.setShortcuts(["Alt+H"])
         self.addAction(historySearchAction)
 
-        self.reloadAction = QtGui.QAction(self)
-        self.reloadAction.triggered.connect(self.webView.reload)
-        self.reloadAction.setText("")
-        self.reloadAction.setToolTip(tr("reloadBtnTT"))
-        self.reloadAction.setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
-        self.mainToolBar.addAction(self.reloadAction)
-        self.mainToolBar.widgetForAction(self.reloadAction).setFocusPolicy(QtCore.Qt.TabFocus)
-
-        self.stopAction = QtGui.QAction(self)
-        self.stopAction.setShortcut("Esc")
-        self.stopAction.triggered.connect(self.webView.stop)
-        self.stopAction.triggered.connect(self.historyCompletionBox.hide)
-        self.stopAction.triggered.connect(self.updateText)
-        self.stopAction.setText("")
-        self.stopAction.setToolTip(tr("stopBtnTT"))
-        self.stopAction.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, 'stop.png'))))
-        self.mainToolBar.addAction(self.stopAction)
-        self.addAction(self.stopAction)
-        self.mainToolBar.widgetForAction(self.stopAction).setFocusPolicy(QtCore.Qt.TabFocus)
-
-        self.findAction = QtGui.QAction(self)
-        self.findAction.triggered.connect(self.webView.find)
-        self.findAction.setText("")
-        self.findAction.setToolTip(tr("findBtnTT"))
-        self.findAction.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_icons, 'find.png'))))
-        self.mainToolBar.addAction(self.findAction)
-        self.mainToolBar.widgetForAction(self.findAction).setFocusPolicy(QtCore.Qt.TabFocus)
-
-        self.findNextAction = QtGui.QAction(self)
-        self.findNextAction.triggered.connect(self.webView.findNext)
-        self.findNextAction.setText("")
-        self.findNextAction.setToolTip(tr("findNextBtnTT"))
-        self.findNextAction.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(os.path.join(app_icons, 'find-next.png'))))
-        self.mainToolBar.addAction(self.findNextAction)
-        self.mainToolBar.widgetForAction(self.findNextAction).setFocusPolicy(QtCore.Qt.TabFocus)
-
-        self.translateAction = QtGui.QAction(self)
-        self.translateAction.triggered.connect(self.webView.translate)
-        self.translateAction.setShortcut("Alt+Shift+T")
-        self.translateAction.setIcon(QtGui.QIcon().fromTheme("preferences-desktop-locale", QtGui.QIcon(os.path.join(app_icons, 'translate.png'))))
-        self.translateAction.setToolTip(tr("translateBtnTT"))
-        self.mainToolBar.addAction(self.translateAction)
-        self.addAction(self.translateAction)
-        self.mainToolBar.widgetForAction(self.translateAction).setFocusPolicy(QtCore.Qt.TabFocus)
-
-        self.urlBar = RUrlBar(self.webView.icon(), self)
-        self.webView.iconChanged.connect(self.setIcon)
-        self.urlBar.setIcon(self.webView.icon())
-        self.mainToolBar.addWidget(self.urlBar)
-
-        self.urlBar2 = RUrlBar()
-        self.urlBar2.setIcon(self.webView.icon())
-        self.historyCompletionBoxLayout.addWidget(self.urlBar2)
-        self.historyCompletionBoxLayout.addWidget(self.historyCompletion)
-
-        self.urlBar.setToolTip(tr("locationBarTT"))
-        self.urlBar.textChanged.connect(self.rSyncText)
-        self.urlBar.textChanged.connect(self.showHistoryBox)
-
-        self.urlBar2.textChanged.connect(self.syncText)
-        self.urlBar2.returnPressed.connect(self.updateWeb)
-        self.urlBar.returnPressed.connect(self.updateWeb)
-        if not self.pb:
-            self.urlBar2.textChanged.connect(self.searchHistory)
-        self.webView.urlChanged.connect(self.updateText)
-        self.webView.urlChanged.connect(self.enableDisableBF)
-        if not self.pb:
-            self.webView.urlChanged.connect(browserHistory.reload)
-            self.webView.titleChanged.connect(browserHistory.reload)
-            self.webView.urlChanged.connect(browserHistory.append)
-            self.webView.titleChanged.connect(browserHistory.updateTitles)
-        searchAction = QtGui.QAction(self)
-        searchAction.setShortcut("Ctrl+K")
-        searchAction.triggered.connect(self.searchWeb)
-        self.addAction(searchAction)
-        self.historyCompletionBox.addAction(searchAction)
-
-
-        self.addBookmarkButton = QtGui.QToolButton(self)
-        self.addBookmarkButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.addBookmarkButton.clicked.connect(self.bookmarkPage)
-        self.addBookmarkButton.setText("")
-        self.addBookmarkButton.setToolTip(tr("addBookmarkTT"))
-        self.addBookmarkButton.setShortcut("Ctrl+D")
-        self.addBookmarkButton.setIcon(QtGui.QIcon().fromTheme("emblem-favorite", QtGui.QIcon(os.path.join(app_icons, 'heart.png'))))
-        self.addBookmarkButton.setIconSize(QtCore.QSize(16, 16))
-        self.mainToolBar.addWidget(self.addBookmarkButton)
-
-        self.goButton = QtGui.QToolButton(self)
-        self.goButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.goButton.clicked.connect(self.updateWeb)
-        self.goButton.setText("")
-        self.goButton.setToolTip(tr("go"))
-        self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(os.path.join(app_icons, 'go.png'))))
-        self.goButton.setIconSize(QtCore.QSize(16, 16))
-        self.mainToolBar.addWidget(self.goButton)
-
-        self.searchButton = QtGui.QPushButton(self)
-        self.searchButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.searchButton.clicked.connect(self.searchWeb)
-        self.searchButton.setText(tr("searchBtn"))
-        self.searchButton.setToolTip(tr("searchBtnTT"))
-        self.mainToolBar.addWidget(self.searchButton)
-
-        self.searchEditButtonContainer = QtGui.QWidget(self)
-        self.searchEditButtonContainerLayout = QtGui.QVBoxLayout(self)
-        self.searchEditButtonContainerLayout.setSpacing(0);
-        self.searchEditButtonContainerLayout.setContentsMargins(0, 0, 0, 0)
-        self.searchEditButtonContainer.setLayout(self.searchEditButtonContainerLayout)
-        self.searchEditButton = QtGui.QToolButton(self)
-        self.searchEditButton.setStyleSheet("QToolButton { max-width: 20px; }")
-        self.searchEditButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.searchEditButton.setToolTip(tr("searchBtnTT"))
-        self.searchEditButton.clicked.connect(self.editSearch)
-        self.searchEditButton.setShortcut("Ctrl+Shift+K")
-        self.searchEditButton.setToolTip(tr("editSearchTT"))
-        self.searchEditButton.setArrowType(QtCore.Qt.DownArrow)
-        self.searchEditButtonContainerLayout.addWidget(self.searchEditButton)
-        self.mainToolBar.addWidget(self.searchEditButtonContainer)
-
-        self.focusURLBarAction = QtGui.QAction(self)
-        self.historyCompletionBox.addAction(self.focusURLBarAction)
-        self.focusURLBarAction.setShortcuts(["Alt+D", "Ctrl+L"])
-        self.focusURLBarAction.triggered.connect(self.focusURLBar)
-        self.addAction(self.focusURLBarAction)
         self.mainLayout.addWidget(self.webView, 2, 0)
         self.webView.settings().setIconDatabasePath(qstring(app_profile))
         self.webView.page().linkHovered.connect(self.updateStatusMessage)
@@ -1858,7 +1683,7 @@ class Browser(QtGui.QMainWindow):
         self.statusMessage = QtGui.QLineEdit()
         self.statusMessage.setReadOnly(True)
         self.statusMessage.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.historyCompletion.statusMessage.connect(self.statusMessage.setText)
+        self.parent.historyCompletion.statusMessage.connect(self.statusMessage.setText)
         self.statusMessage.setStyleSheet("""
         QLineEdit {
         min-height: 1em;
@@ -1928,10 +1753,6 @@ class Browser(QtGui.QMainWindow):
 
         self.webView.statusBarMessage.connect(self.statusMessage.setText)
 
-        if not url == False and not url == "":
-            self.urlBar.setText(qstring(url))
-            self.updateWeb()
-        self.updateText()
         self.zoomOutAction = QtGui.QAction(self)
         self.zoomOutAction.setShortcut("Ctrl+-")
         self.zoomOutAction.triggered.connect(self.zoomOut)
@@ -1948,48 +1769,7 @@ class Browser(QtGui.QMainWindow):
         self.zoomInButton.clicked.connect(self.zoomIn)
         self.zoomSlider.valueChanged.connect(self.zoom)
         self.webView.show()
-        self.enableDisableBF()
-
-    def setIcon(self):
-        i = self.webView.icon()
-        if i.actualSize(QtCore.QSize(16, 16)).width() > 0:
-            self.urlBar.setIcon(i)
-            self.urlBar2.setIcon(i)
-        else:
-            self.urlBar.setIcon(app_webview_default_icon)
-            self.urlBar2.setIcon(app_webview_default_icon)
-
-    def enableDisableBF(self):
-        if self.webView.page().history().canGoBack():
-            self.mainToolBar.widgetForAction(self.backAction).setEnabled(True)
-        else:
-            self.mainToolBar.widgetForAction(self.backAction).setEnabled(False)
-        if self.webView.page().history().canGoForward():
-            self.mainToolBar.widgetForAction(self.nextAction).setEnabled(True)
-        else:
-            self.mainToolBar.widgetForAction(self.nextAction).setEnabled(False)
-
-    def historyUp(self):
-        if self.historyCompletion.currentRow() == 0 and self.historyCompletion.hasFocus():
-            self.historyCompletion.setFocus(False)
-            self.urlBar2.setFocus(True)
-        elif not self.urlBar2.hasFocus():
-            self.historyCompletion.setCurrentRow(self.historyCompletion.currentRow() - 1)
-        else:
-            self.urlBar2.setFocus(False)
-            self.historyCompletion.setFocus(True)
-            self.historyCompletion.setCurrentRow(self.historyCompletion.count() - 1)
-
-    def historyDown(self):
-        if self.urlBar2.hasFocus():
-            self.historyCompletion.setCurrentRow(0)
-            self.urlBar2.setFocus(False)
-            self.historyCompletion.setFocus(True)
-        elif not self.historyCompletion.currentRow() == self.historyCompletion.count() - 1:
-            self.historyCompletion.setCurrentRow(self.historyCompletion.currentRow() + 1)
-        else:
-            self.historyCompletion.setFocus(False)
-            self.urlBar2.setFocus(True)
+        #self.enableDisableBF()
 
     def zoomIn(self):
         self.zoomSlider.setValue(self.zoomSlider.value() + 1)
@@ -2009,99 +1789,6 @@ class Browser(QtGui.QMainWindow):
 
     def updateSettings(self):
         self.webView.updateSettings()
-
-    def showHistoryBox(self):
-        if not self.historyCompletionBox.isVisible():
-            if not self.urlBar.text() == self.webView.url().toString():
-                self.urlBar2.setFocus(True)
-                self.historyCompletionBox.move(self.urlBar.mapToGlobal(QtCore.QPoint(0,0)).x(), self.urlBar.mapToGlobal(QtCore.QPoint(0,0)).y())
-                self.historyCompletionBox.show()
-                self.historyCompletionBox.resize(self.urlBar.width(), self.historyCompletionBox.height())
-
-    def searchHistory(self, string):
-        string = unicode(string)
-        if string != "" and string != unicode(self.webView.url().toString()) and string != "about:version":
-            self.searchOn = True
-            self.historyCompletion.clear()
-            history = []
-            string = unicode(string)
-            for item in browserHistory.history:
-                add = False
-                for subitem in item:
-                    if string.lower() in unicode(item[subitem]).lower():
-                        add = True
-                        break
-                if add == True:
-                    history.append(item)
-                    self.historyCompletion.addItem(item['name'])
-            self.tempHistory = history
-        else:
-            self.historyCompletionBox.hide()
-    def openHistoryItem(self, item):
-        self.webView.load(QtCore.QUrl(self.tempHistory[self.historyCompletion.row(item)]['url']))
-        self.historyCompletionBox.hide()
-        self.webView.show()
-    def licensing(self):
-        url = QtCore.QUrl(os.path.join(app_lib, "LICENSE.html"))
-        self.webView.load(url)
-
-    def searchWeb(self):
-        urlBar = self.urlBar.text()
-        url = QtCore.QUrl(searchManager.currentSearch.replace("%s", urlBar))
-        self.webView.load(url)
-
-    def editSearch(self):
-        searchEditor.display(True, self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).x(), self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).y(), self.searchEditButton.width(), self.searchEditButton.height())
-
-    def focusURLBar(self):
-        if not self.historyCompletionBox.isVisible():
-            self.urlBar.setFocus()
-            self.urlBar.selectAll()
-        else:
-            self.urlBar2.setFocus()
-            self.urlBar2.selectAll()
-
-    def bookmarkPage(self):
-        name = inputDialog(tr('addBookmark'), tr('enterName'), unicode(self.webView.title()))
-        if name and name != "":
-            bookmarksManager.add(unicode(self.webView.url().toString()), unicode(name))
-
-    def updateWeb(self):
-        urlBar = self.urlBar.text()
-        urlBar = unicode(urlBar)
-        header = ""
-        search = False
-        for key in searchManager.searchEngines:
-            if urlBar.startswith("%s " % (searchManager.searchEngines[key]['keyword'])):
-                search = searchManager.searchEngines[key]
-                break
-        if search:
-            urlBar = urlBar.replace("%s " % (search['keyword']), "")
-            urlBar = QtCore.QUrl(search['expression'].replace("%s", urlBar))
-            self.webView.load(urlBar)
-        else:
-            if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and " " in unicode(urlBar):
-                self.searchWeb()
-            else:
-                if os.path.exists(unicode(urlBar)):
-                    header = "file://"
-                elif not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and not "javascript:" in unicode(urlBar):
-                    header = "http://"
-                if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
-                    showAboutPage(self.webView)
-                else:
-                    url = qstring(header + unicode(urlBar))
-                    url = QtCore.QUrl(url)
-                    self.webView.load(url)
-    def syncText(self):
-        self.urlBar.setText(self.urlBar2.text())
-    def rSyncText(self):
-        if self.urlBar2.text() != self.urlBar.text():
-            self.urlBar2.setText(self.urlBar.text())
-    def updateText(self):
-        url = self.webView.url()
-        texturl = url.toString()
-        self.urlBar2.setText(texturl)
 
 downloaderThread = DownloaderThread()
 
@@ -2525,6 +2212,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.tabCount = 0
         self.closed = False
         self.closedTabList = []
+        self.tempHistory = []
         self.searchOn = False
         self.tempHistory = []
 
@@ -2615,6 +2303,165 @@ self.origY + ev.globalY() - self.mouseY)
     def aboutRyoukoHKey(self):
         aboutDialog.show()
 
+    def currentWebView(self):
+        return self.tabs.widget(self.tabs.currentIndex()).webView
+
+    def back(self):
+        self.currentWebView().back()
+
+    def forward(self):
+        self.currentWebView().forward()
+
+    def reload(self):
+        self.currentWebView().reload()
+
+    def stop(self):
+        self.currentWebView().stop()
+
+    def find(self):
+        self.currentWebView().find()
+
+    def findNext(self):
+        self.currentWebView().findNext()
+
+    def translate(self):
+        self.currentWebView().translate()
+
+    def showHistoryBox(self):
+        if not self.historyCompletionBox.isVisible():
+            if not self.urlBar.text() == self.currentWebView().url().toString():
+                self.urlBar2.setFocus(True)
+                self.historyCompletionBox.move(self.urlBar.mapToGlobal(QtCore.QPoint(0,0)).x(), self.urlBar.mapToGlobal(QtCore.QPoint(0,0)).y())
+                self.historyCompletionBox.show()
+                self.historyCompletionBox.resize(self.urlBar.width(), self.historyCompletionBox.height())
+
+    def historyUp(self):
+        if self.historyCompletion.currentRow() == 0 and self.historyCompletion.hasFocus():
+            self.historyCompletion.setFocus(False)
+            self.urlBar2.setFocus(True)
+        elif not self.urlBar2.hasFocus():
+            self.historyCompletion.setCurrentRow(self.historyCompletion.currentRow() - 1)
+        else:
+            self.urlBar2.setFocus(False)
+            self.historyCompletion.setFocus(True)
+            self.historyCompletion.setCurrentRow(self.historyCompletion.count() - 1)
+
+    def historyDown(self):
+        if self.urlBar2.hasFocus():
+            self.historyCompletion.setCurrentRow(0)
+            self.urlBar2.setFocus(False)
+            self.historyCompletion.setFocus(True)
+        elif not self.historyCompletion.currentRow() == self.historyCompletion.count() - 1:
+            self.historyCompletion.setCurrentRow(self.historyCompletion.currentRow() + 1)
+        else:
+            self.historyCompletion.setFocus(False)
+            self.urlBar2.setFocus(True)
+
+    def enableDisableBF(self):
+        if self.currentWebView().page().history().canGoBack():
+            self.mainToolBar.widgetForAction(self.backAction).setEnabled(True)
+        else:
+            self.mainToolBar.widgetForAction(self.backAction).setEnabled(False)
+        if self.currentWebView().page().history().canGoForward():
+            self.mainToolBar.widgetForAction(self.nextAction).setEnabled(True)
+        else:
+            self.mainToolBar.widgetForAction(self.nextAction).setEnabled(False)
+
+    def setIcon(self):
+        i = self.currentWebView().icon()
+        if i.actualSize(QtCore.QSize(16, 16)).width() > 0:
+            self.urlBar.setIcon(i)
+            self.urlBar2.setIcon(i)
+        else:
+            self.urlBar.setIcon(app_webview_default_icon)
+            self.urlBar2.setIcon(app_webview_default_icon)
+
+    def searchWeb(self):
+        urlBar = self.urlBar.text()
+        url = QtCore.QUrl(searchManager.currentSearch.replace("%s", urlBar))
+        self.currentWebView().load(url)
+
+    def focusURLBar(self):
+        if not self.historyCompletionBox.isVisible():
+            self.urlBar.setFocus()
+            self.urlBar.selectAll()
+        else:
+            self.urlBar2.setFocus()
+            self.urlBar2.selectAll()
+
+    def updateWeb(self):
+        urlBar = self.urlBar.text()
+        urlBar = unicode(urlBar)
+        header = ""
+        search = False
+        for key in searchManager.searchEngines:
+            if urlBar.startswith("%s " % (searchManager.searchEngines[key]['keyword'])):
+                search = searchManager.searchEngines[key]
+                break
+        if search:
+            urlBar = urlBar.replace("%s " % (search['keyword']), "")
+            urlBar = QtCore.QUrl(search['expression'].replace("%s", urlBar))
+            self.currentWebView().load(urlBar)
+        else:
+            if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and " " in unicode(urlBar):
+                self.searchWeb()
+            else:
+                if os.path.exists(unicode(urlBar)):
+                    header = "file://"
+                elif not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and not "javascript:" in unicode(urlBar):
+                    header = "http://"
+                if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
+                    showAboutPage(self.currentWebView())
+                else:
+                    url = qstring(header + unicode(urlBar))
+                    url = QtCore.QUrl(url)
+                    self.currentWebView().load(url)
+
+    def searchHistory(self, string):
+        string = unicode(string)
+        if string != "" and string != unicode(self.currentWebView().url().toString()) and string != "about:version":
+            self.searchOn = True
+            self.historyCompletion.clear()
+            history = []
+            string = unicode(string)
+            for item in browserHistory.history:
+                add = False
+                for subitem in item:
+                    if string.lower() in unicode(item[subitem]).lower():
+                        add = True
+                        break
+                if add == True:
+                    history.append(item)
+                    self.historyCompletion.addItem(item['name'])
+            self.tempHistory = history
+        else:
+            self.historyCompletionBox.hide()
+
+    def updateText(self):
+        url = self.currentWebView().url()
+        texturl = url.toString()
+        self.currentWebView().setText(texturl)
+
+    def rSyncText(self):
+        if self.urlBar2.text() != self.urlBar.text():
+            self.urlBar2.setText(self.urlBar.text())
+
+    def syncText(self):
+        self.urlBar.setText(self.urlBar2.text())
+
+    def openHistoryItem(self, item):
+        self.currentWebView().load(QtCore.QUrl(self.tempHistory[self.historyCompletion.row(item)]['url']))
+        self.historyCompletionBox.hide()
+        self.currentWebView().show()                    
+
+    def bookmarkPage(self):
+        name = inputDialog(tr('addBookmark'), tr('enterName'), unicode(self.currentWebView().title()))
+        if name and name != "":
+            bookmarksManager.add(unicode(self.currentWebView().url().toString()), unicode(name))
+
+    def editSearch(self):
+        searchEditor.display(True, self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).x(), self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).y(), self.searchEditButton.width(), self.searchEditButton.height())
+
     def initUI(self):
 
         # Quit action
@@ -2666,6 +2513,175 @@ self.origY + ev.globalY() - self.mouseY)
         viewNotificationsAction.setShortcut("Ctrl+Alt+N")
         viewNotificationsAction.triggered.connect(notificationManager.show)
         self.addAction(viewNotificationsAction)
+
+        #Main toolbar
+        self.mainToolBar = QtGui.QToolBar("")
+        self.mainToolBar.setMovable(False)
+        self.mainToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.addToolBar(self.mainToolBar)
+
+        self.mainToolBar.setStyleSheet("""
+        QToolBar {
+        border: 0;
+        border-bottom: 1px solid palette(shadow);
+        background: palette(window);
+        }
+        """)
+
+        self.historyCompletionBox = QtGui.QWidget()
+
+        self.downArrowAction = QtGui.QAction(self)
+        self.downArrowAction.setShortcut("Down")
+        self.downArrowAction.triggered.connect(self.historyDown)
+
+        self.historyCompletionBox.addAction(self.downArrowAction)
+
+        self.upArrowAction = QtGui.QAction(self)
+        self.upArrowAction.setShortcut("Up")
+        self.upArrowAction.triggered.connect(self.historyUp)
+
+        self.historyCompletionBox.addAction(self.upArrowAction)
+
+        self.historyCompletionBoxLayout = QtGui.QVBoxLayout()
+        self.historyCompletionBoxLayout.setContentsMargins(0,0,0,0)
+        self.historyCompletionBoxLayout.setSpacing(0)
+        self.historyCompletionBox.setLayout(self.historyCompletionBoxLayout)
+        self.historyCompletionBox.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Popup)
+        self.historyCompletion = HistoryCompletionList(self)
+        self.historyCompletion.setWordWrap(True)
+        self.historyCompletion.itemActivated.connect(self.openHistoryItem)        
+
+        self.backAction = QtGui.QAction(self)
+        self.backAction.setText(tr("back"))
+        self.backAction.setToolTip(tr("backBtnTT"))
+        self.backAction.triggered.connect(self.back)
+        self.backAction.setIcon(QtGui.QIcon().fromTheme("go-previous", QtGui.QIcon(os.path.join(app_icons, 'back.png'))))
+        self.mainToolBar.addAction(self.backAction)
+        self.mainToolBar.widgetForAction(self.backAction).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        self.nextAction = QtGui.QAction(self)
+        self.nextAction.setToolTip(tr("nextBtnTT"))
+        self.nextAction.triggered.connect(self.forward)
+        self.nextAction.setText("")
+        self.nextAction.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_icons, 'next.png'))))
+        self.mainToolBar.addAction(self.nextAction)
+        self.mainToolBar.widgetForAction(self.nextAction).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        self.reloadAction = QtGui.QAction(self)
+        self.reloadAction.triggered.connect(self.reload)
+        self.reloadAction.setText("")
+        self.reloadAction.setToolTip(tr("reloadBtnTT"))
+        self.reloadAction.setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
+        self.mainToolBar.addAction(self.reloadAction)
+        self.mainToolBar.widgetForAction(self.reloadAction).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        self.stopAction = QtGui.QAction(self)
+        self.stopAction.setShortcut("Esc")
+        self.stopAction.triggered.connect(self.stop)
+        self.stopAction.triggered.connect(self.historyCompletionBox.hide)
+        self.stopAction.triggered.connect(self.updateText)
+        self.stopAction.setText("")
+        self.stopAction.setToolTip(tr("stopBtnTT"))
+        self.stopAction.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, 'stop.png'))))
+        self.mainToolBar.addAction(self.stopAction)
+        self.addAction(self.stopAction)
+        self.mainToolBar.widgetForAction(self.stopAction).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        self.findAction = QtGui.QAction(self)
+        self.findAction.triggered.connect(self.find)
+        self.findAction.setText("")
+        self.findAction.setToolTip(tr("findBtnTT"))
+        self.findAction.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_icons, 'find.png'))))
+        self.mainToolBar.addAction(self.findAction)
+        self.mainToolBar.widgetForAction(self.findAction).setFocusPolicy(QtCore.Qt.TabFocus)        
+
+        self.findNextAction = QtGui.QAction(self)
+        self.findNextAction.triggered.connect(self.findNext)
+        self.findNextAction.setText("")
+        self.findNextAction.setToolTip(tr("findNextBtnTT"))
+        self.findNextAction.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(os.path.join(app_icons, 'find-next.png'))))
+        self.mainToolBar.addAction(self.findNextAction)
+        self.mainToolBar.widgetForAction(self.findNextAction).setFocusPolicy(QtCore.Qt.TabFocus)        
+
+        self.translateAction = QtGui.QAction(self)
+        self.translateAction.triggered.connect(self.translate)
+        self.translateAction.setShortcut("Alt+Shift+T")
+        self.translateAction.setIcon(QtGui.QIcon().fromTheme("preferences-desktop-locale", QtGui.QIcon(os.path.join(app_icons, 'translate.png'))))
+        self.translateAction.setToolTip(tr("translateBtnTT"))
+        self.mainToolBar.addAction(self.translateAction)
+        self.addAction(self.translateAction)
+        self.mainToolBar.widgetForAction(self.translateAction).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        # URL bar and history completion
+        self.urlBar = RUrlBar(QtGui.QIcon(), self)
+        self.mainToolBar.addWidget(self.urlBar)
+
+        self.urlBar2 = RUrlBar()
+        self.urlBar2.setIcon(QtGui.QIcon())
+        self.historyCompletionBoxLayout.addWidget(self.urlBar2)
+        self.historyCompletionBoxLayout.addWidget(self.historyCompletion)
+
+        self.urlBar.setToolTip(tr("locationBarTT"))
+        self.urlBar.textChanged.connect(self.rSyncText)
+        self.urlBar.textChanged.connect(self.showHistoryBox)
+
+        self.urlBar2.textChanged.connect(self.syncText)
+        self.urlBar2.returnPressed.connect(self.updateWeb)
+        self.urlBar.returnPressed.connect(self.updateWeb)
+        self.urlBar2.textChanged.connect(self.searchHistory)
+        searchAction = QtGui.QAction(self)
+        searchAction.setShortcut("Ctrl+K")
+        searchAction.triggered.connect(self.searchWeb)
+        self.addAction(searchAction)
+        self.historyCompletionBox.addAction(searchAction)        
+
+        self.addBookmarkButton = QtGui.QToolButton(self)
+        self.addBookmarkButton.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.addBookmarkButton.clicked.connect(self.bookmarkPage)
+        self.addBookmarkButton.setText("")
+        self.addBookmarkButton.setToolTip(tr("addBookmarkTT"))
+        self.addBookmarkButton.setShortcut("Ctrl+D")
+        self.addBookmarkButton.setIcon(QtGui.QIcon().fromTheme("emblem-favorite", QtGui.QIcon(os.path.join(app_icons, 'heart.png'))))
+        self.addBookmarkButton.setIconSize(QtCore.QSize(16, 16))
+        self.mainToolBar.addWidget(self.addBookmarkButton)
+
+        self.goButton = QtGui.QToolButton(self)
+        self.goButton.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.goButton.clicked.connect(self.updateWeb)
+        self.goButton.setText("")
+        self.goButton.setToolTip(tr("go"))
+        self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(os.path.join(app_icons, 'go.png'))))
+        self.goButton.setIconSize(QtCore.QSize(16, 16))
+        self.mainToolBar.addWidget(self.goButton)
+
+        self.searchButton = QtGui.QPushButton(self)
+        self.searchButton.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.searchButton.clicked.connect(self.searchWeb)
+        self.searchButton.setText(tr("searchBtn"))
+        self.searchButton.setToolTip(tr("searchBtnTT"))
+        self.mainToolBar.addWidget(self.searchButton)
+
+        self.searchEditButtonContainer = QtGui.QWidget(self)
+        self.searchEditButtonContainerLayout = QtGui.QVBoxLayout(self)
+        self.searchEditButtonContainerLayout.setSpacing(0);
+        self.searchEditButtonContainerLayout.setContentsMargins(0, 0, 0, 0)
+        self.searchEditButtonContainer.setLayout(self.searchEditButtonContainerLayout)
+        self.searchEditButton = QtGui.QToolButton(self)
+        self.searchEditButton.setStyleSheet("QToolButton { max-width: 20px; }")
+        self.searchEditButton.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.searchEditButton.setToolTip(tr("searchBtnTT"))
+        self.searchEditButton.clicked.connect(self.editSearch)
+        self.searchEditButton.setShortcut("Ctrl+Shift+K")
+        self.searchEditButton.setToolTip(tr("editSearchTT"))
+        self.searchEditButton.setArrowType(QtCore.Qt.DownArrow)
+        self.searchEditButtonContainerLayout.addWidget(self.searchEditButton)
+        self.mainToolBar.addWidget(self.searchEditButtonContainer)
+
+        self.focusURLBarAction = QtGui.QAction(self)
+        self.historyCompletionBox.addAction(self.focusURLBarAction)
+        self.focusURLBarAction.setShortcuts(["Alt+D", "Ctrl+L"])
+        self.focusURLBarAction.triggered.connect(self.focusURLBar)
+        self.addAction(self.focusURLBarAction)        
 
         # Tabs
         self.tabs = MovableTabWidget(self)
@@ -3094,6 +3110,8 @@ self.origY + ev.globalY() - self.mouseY)
             exec("tab%s.webView.urlChanged.connect(self.reloadHistory)" % (s))
             exec("tab%s.webView.titleChanged.connect(self.reloadHistory)" % (s))
             exec("tab%s.webView.iconChanged.connect(self.updateIcons)" % (s))
+            exec("tab%s.webView.urlChanged.connect(self.enableDisableBF)" % (s))
+            exec("tab%s.webView.urlChanged.connect(self.updateText)" % (s))
             exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
@@ -3108,6 +3126,8 @@ self.origY + ev.globalY() - self.mouseY)
         exec("tab" + s + ".webView.urlChanged.connect(self.reloadHistory)")
         exec("tab" + s + ".webView.titleChanged.connect(self.reloadHistory)")
         exec("tab" + s + ".webView.iconChanged.connect(self.updateIcons)")
+        exec("tab%s.webView.urlChanged.connect(self.enableDisableBF)" % (s))
+        exec("tab%s.webView.urlChanged.connect(self.updateText)" % (s))
         exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
@@ -3216,6 +3236,7 @@ self.origY + ev.globalY() - self.mouseY)
                 self.tabs.widget(self.tabs.currentIndex()).webView.back()
 
     def updateIcons(self):
+        self.setIcon()
         for tab in range(self.tabs.count()):
             i = self.tabs.widget(tab).webView.icon()
             if i.actualSize(QtCore.QSize(16, 16)).width() > 0:
