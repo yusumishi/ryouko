@@ -2365,7 +2365,7 @@ self.origY + ev.globalY() - self.mouseY)
             self.mainToolBar.widgetForAction(self.stopReloadAction).setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, "stop.png"))))
         else:
             self.mainToolBar.widgetForAction(self.stopReloadAction).setToolTip(tr("reloadBtnTT"))
-            self.mainToolBar.widgetForAction(self.stopReloadAction).setIcon(QtGui.QIcon().fromTheme("view-reload", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
+            self.mainToolBar.widgetForAction(self.stopReloadAction).setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
 
     def find(self):
         self.currentWebView().find()
