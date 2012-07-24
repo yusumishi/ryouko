@@ -1050,7 +1050,7 @@ class RAboutDialog(QtWebKit.QWebView):
     def __init__(self, parent=None):
         super(RAboutDialog, self).__init__()
         self.parent = parent
-        page = RWebPage()
+        page = RWebPage(self)
         self.setPage(page)
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))

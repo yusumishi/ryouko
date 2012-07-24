@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import sys
-from PyQt4 import QtCore, QtWebKit
+from PyQt4 import QtCore, QtGui, QtWebKit
 
 class RWebPage(QtWebKit.QWebPage):
     def __init__(self, parent=None):
