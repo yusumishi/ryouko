@@ -1,4 +1,4 @@
-0.13.0
-Remi
+0.14.0
+Shiori
 
-Kanji: 恋実
+Kanji: 栞
