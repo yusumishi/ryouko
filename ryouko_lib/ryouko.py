@@ -319,11 +319,17 @@ searchManager = SearchManager(app_profile)
 
 class ClosedTabsListGUI(MenuPopupWindow):
     currentRowChanged = QtCore.pyqtSignal(int)
+    itemActivated = QtCore.pyqtSignal(QtGui.QListWidgetItem)
+    itemClicked = QtCore.pyqtSignal(QtGui.QListWidgetItem)
     def __init__(self, parent=None):
         MenuPopupWindow.__init__(self, parent)
         self.list = QtGui.QListWidget()
         self.list.currentRowChanged.connect(self.currentRowChanged.emit)
+        self.list.itemActivated.connect(self.itemActivated.emit)
+        self.list.itemClicked.connect(self.itemClicked.emit)
         self.setCentralWidget(self.list)
+    def row(self, item):
+        return self.list.row(item)
     def setCurrentRow(self, index):
         self.list.setCurrentRow(index)
     def append(self, text):
@@ -2531,7 +2537,8 @@ self.origY + ev.globalY() - self.mouseY)
         self.historyDock.hide()
 
         self.closedTabsListGUI = ClosedTabsListGUI()
-        self.closedTabsListGUI.currentRowChanged.connect(self.undoCloseTabMod)
+        self.closedTabsListGUI.itemClicked.connect(self.undoCloseTab)
+        self.closedTabsListGUI.itemActivated.connect(self.undoCloseTab)
 
         # Bookmarks manager! FINALLY! Yay!
         manageBookmarksAction = QtGui.QAction(tr('viewBookmarks'), self)
@@ -3260,8 +3267,7 @@ self.origY + ev.globalY() - self.mouseY)
 
     def reloadClosedTabsListGUI(self):
         self.closedTabsListGUI.clear()
-        self.closedTabsListGUI.addItem(tr("closedTabs"))
-        #self.closedTabsListGUI.setCurrentRow(0)
+        self.closedTabsListGUI.setCurrentRow(0)
         for tab in self.closedTabsList:
             self.closedTabsListGUI.addItem(tab["title"])
 
@@ -3278,16 +3284,11 @@ self.origY + ev.globalY() - self.mouseY)
         while self.tabs.currentIndex() != self.tabs.count() - 1:
             self.closeTab(self.tabs.count() - 1)
 
-    def undoCloseTabMod(self, index=False):
-        if index == False:
-            index = len(self.closedTabsList)
-        if index <= 0:
-            return
-        self.undoCloseTab(index - 1)
-
     def undoCloseTab(self, index=False):
         if index == False:
             index = len(self.closedTabsList) - 1
+        elif type(index) != int:
+            index = self.closedTabsListGUI.row(index)
         if len(self.closedTabsList) > 0:
             self.tabs.addTab(self.closedTabsList[index]['widget'], self.closedTabsList[index]['widget'].webView.icon(), self.closedTabsList[index]['widget'].webView.title())
             del self.closedTabsList[index]
