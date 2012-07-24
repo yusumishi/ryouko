@@ -13,7 +13,7 @@ else:
 app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(app_lib)
 from MovableTabBar import *
-from GConfFunctions import *
+#from GConfFunctions import *
 
 def doNothing():
     return
@@ -53,7 +53,7 @@ class MovableTabWidget(QtGui.QTabWidget):
         self.setTabBar(self.nuTabBar)
         self.setDocumentMode(True)
 
-        theme = get_key("/desktop/gnome/shell/windows/theme")
+        #theme = get_key("/desktop/gnome/shell/windows/theme")
 
         """"if theme == "Ambiance" and self.gnome_session:
             self.setStyleSheet(win_stylesheet)

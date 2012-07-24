@@ -98,7 +98,7 @@ from RWebPage import *
 from DownloaderThread import *
 from DialogFunctions import *
 from MovableTabWidget import *
-from GConfFunctions import *
+#from GConfFunctions import *
 from BrowserHistory import *
 from HistoryCompletionList import *
 from BookmarksManager import *
@@ -114,13 +114,13 @@ from TranslationManager import *
 from DownloadManager import *
 
 app_gnome_unity_integration = False
-if sys.platform.startswith("linux"):
+"""if sys.platform.startswith("linux"):
     if "gnome-session" in commands.getoutput('ps -A'):
         app_gnome_unity_integration = True
-app_use_ambiance = False
+#app_use_ambiance = False
 if sys.platform.startswith("linux"):
     if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance" and "gnome-session" in commands.getoutput('ps -A'):
-        app_use_ambiance = True
+        app_use_ambiance = True"""
 
 app_windows = []
 app_closed_windows = []
