@@ -258,7 +258,7 @@ reset = False
 
 blanktoolbarsheet = "QToolBar { border: 0; }"
 windowtoolbarsheet = "QToolBar { border: 0; background: palette(window); }"
-dw_stylesheet = "QDockWidget { color: #dfdbd2; }"
+dw_stylesheet = ""
 
 # From http://stackoverflow.com/questions/448207/python-downloading-a-file-over-http-with-progress-bar-and-basic-authentication
 
@@ -1621,10 +1621,6 @@ class Browser(QtGui.QMainWindow):
         self.initUI(url)
     def initUI(self, url):
 
-        self.mainToolBar = QtGui.QToolBar("")
-        self.mainToolBar.setMovable(False)
-        self.mainToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.addToolBar(self.mainToolBar)
         self.centralWidget = QtGui.QWidget()
         self.mainLayout = QtGui.QGridLayout()
         self.centralWidget.setLayout(self.mainLayout)
@@ -1657,7 +1653,7 @@ class Browser(QtGui.QMainWindow):
         historySearchAction.setShortcuts(["Alt+H"])
         self.addAction(historySearchAction)
 
-        self.mainLayout.addWidget(self.webView, 2, 0)
+        self.mainLayout.addWidget(self.webView, 1, 0)
         self.webView.settings().setIconDatabasePath(qstring(app_profile))
         self.webView.page().linkHovered.connect(self.updateStatusMessage)
 
@@ -1668,7 +1664,7 @@ class Browser(QtGui.QMainWindow):
         """)
         self.statusBarBorder.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed))
         self.statusBarBorder.setMinimumHeight(1)
-        self.mainLayout.addWidget(self.statusBarBorder, 3, 0)
+        self.mainLayout.addWidget(self.statusBarBorder, 2, 0)
         self.statusBar = QtGui.QFrame()
         self.statusBar.setStyleSheet("""
         QFrame {
@@ -1676,7 +1672,7 @@ class Browser(QtGui.QMainWindow):
         border: 0;
         }
         """)
-        self.mainLayout.addWidget(self.statusBar, 4, 0)
+        self.mainLayout.addWidget(self.statusBar, 3, 0)
         self.statusBarLayout = QtGui.QHBoxLayout()
         self.statusBarLayout.setContentsMargins(0,0,0,0)        
         self.statusBar.setLayout(self.statusBarLayout)
@@ -2317,6 +2313,7 @@ self.origY + ev.globalY() - self.mouseY)
 
     def stop(self):
         self.currentWebView().stop()
+        self.urlBar2.setText(self.currentWebView().url().toString())
 
     def find(self):
         self.currentWebView().find()
@@ -2358,23 +2355,30 @@ self.origY + ev.globalY() - self.mouseY)
             self.urlBar2.setFocus(True)
 
     def enableDisableBF(self):
-        if self.currentWebView().page().history().canGoBack():
-            self.mainToolBar.widgetForAction(self.backAction).setEnabled(True)
+        try: self.currentWebView()
+        except: do_nothing()
         else:
-            self.mainToolBar.widgetForAction(self.backAction).setEnabled(False)
-        if self.currentWebView().page().history().canGoForward():
-            self.mainToolBar.widgetForAction(self.nextAction).setEnabled(True)
-        else:
-            self.mainToolBar.widgetForAction(self.nextAction).setEnabled(False)
+            if self.currentWebView().page().history().canGoBack():
+                self.mainToolBar.widgetForAction(self.backAction).setEnabled(True)
+            else:
+                self.mainToolBar.widgetForAction(self.backAction).setEnabled(False)
+            if self.currentWebView().page().history().canGoForward():
+                self.mainToolBar.widgetForAction(self.nextAction).setEnabled(True)
+            else:
+                self.mainToolBar.widgetForAction(self.nextAction).setEnabled(False)
 
     def setIcon(self):
-        i = self.currentWebView().icon()
-        if i.actualSize(QtCore.QSize(16, 16)).width() > 0:
-            self.urlBar.setIcon(i)
-            self.urlBar2.setIcon(i)
+        try: i = self.currentWebView().icon()
+        except: do_nothing()
         else:
-            self.urlBar.setIcon(app_webview_default_icon)
-            self.urlBar2.setIcon(app_webview_default_icon)
+            if i.actualSize(QtCore.QSize(16, 16)).width() < 1 or    self.currentWebView().url() == QtCore.QUrl("about:blank"):
+                self.urlBar.setIcon(app_webview_default_icon)
+                self.urlBar2.setIcon(app_webview_default_icon)
+            else:
+                self.urlBar.setIcon(i)
+                self.urlBar2.setIcon(i)
+            self.urlBar.repaint()
+            self.urlBar2.repaint()
 
     def searchWeb(self):
         urlBar = self.urlBar.text()
@@ -2417,7 +2421,7 @@ self.origY + ev.globalY() - self.mouseY)
                     url = QtCore.QUrl(url)
                     self.currentWebView().load(url)
 
-    def searchHistory(self, string):
+    def searchHistoryFromPopup(self, string):
         string = unicode(string)
         if string != "" and string != unicode(self.currentWebView().url().toString()) and string != "about:version":
             self.searchOn = True
@@ -2440,7 +2444,7 @@ self.origY + ev.globalY() - self.mouseY)
     def updateText(self):
         url = self.currentWebView().url()
         texturl = url.toString()
-        self.currentWebView().setText(texturl)
+        #self.currentWebView().parent.setText(texturl)
 
     def rSyncText(self):
         if self.urlBar2.text() != self.urlBar.text():
@@ -2449,7 +2453,7 @@ self.origY + ev.globalY() - self.mouseY)
     def syncText(self):
         self.urlBar.setText(self.urlBar2.text())
 
-    def openHistoryItem(self, item):
+    def openHistoryItemFromPopup(self, item):
         self.currentWebView().load(QtCore.QUrl(self.tempHistory[self.historyCompletion.row(item)]['url']))
         self.historyCompletionBox.hide()
         self.currentWebView().show()                    
@@ -2523,7 +2527,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainToolBar.setStyleSheet("""
         QToolBar {
         border: 0;
-        border-bottom: 1px solid palette(shadow);
         background: palette(window);
         }
         """)
@@ -2549,7 +2552,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.historyCompletionBox.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Popup)
         self.historyCompletion = HistoryCompletionList(self)
         self.historyCompletion.setWordWrap(True)
-        self.historyCompletion.itemActivated.connect(self.openHistoryItem)        
+        self.historyCompletion.itemActivated.connect(self.openHistoryItemFromPopup)       
 
         self.backAction = QtGui.QAction(self)
         self.backAction.setText(tr("back"))
@@ -2587,13 +2590,15 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(self.stopAction)
         self.mainToolBar.widgetForAction(self.stopAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
+        self.mainToolBar.addSeparator()
+
         self.findAction = QtGui.QAction(self)
         self.findAction.triggered.connect(self.find)
         self.findAction.setText("")
         self.findAction.setToolTip(tr("findBtnTT"))
         self.findAction.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_icons, 'find.png'))))
         self.mainToolBar.addAction(self.findAction)
-        self.mainToolBar.widgetForAction(self.findAction).setFocusPolicy(QtCore.Qt.TabFocus)        
+        self.mainToolBar.widgetForAction(self.findAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         self.findNextAction = QtGui.QAction(self)
         self.findNextAction.triggered.connect(self.findNext)
@@ -2601,7 +2606,9 @@ self.origY + ev.globalY() - self.mouseY)
         self.findNextAction.setToolTip(tr("findNextBtnTT"))
         self.findNextAction.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(os.path.join(app_icons, 'find-next.png'))))
         self.mainToolBar.addAction(self.findNextAction)
-        self.mainToolBar.widgetForAction(self.findNextAction).setFocusPolicy(QtCore.Qt.TabFocus)        
+        self.mainToolBar.widgetForAction(self.findNextAction).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        self.mainToolBar.addSeparator()
 
         self.translateAction = QtGui.QAction(self)
         self.translateAction.triggered.connect(self.translate)
@@ -2628,7 +2635,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.urlBar2.textChanged.connect(self.syncText)
         self.urlBar2.returnPressed.connect(self.updateWeb)
         self.urlBar.returnPressed.connect(self.updateWeb)
-        self.urlBar2.textChanged.connect(self.searchHistory)
+        self.urlBar2.textChanged.connect(self.searchHistoryFromPopup)
         searchAction = QtGui.QAction(self)
         searchAction.setShortcut("Ctrl+K")
         searchAction.triggered.connect(self.searchWeb)
@@ -2686,6 +2693,9 @@ self.origY + ev.globalY() - self.mouseY)
         # Tabs
         self.tabs = MovableTabWidget(self)
         self.tabs.currentChanged.connect(self.hideInspectors)
+        self.tabs.currentChanged.connect(self.enableDisableBF)
+        self.tabs.currentChanged.connect(self.setIcon)
+        self.tabs.currentChanged.connect(self.correctURLText)
         self.tabs.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.tabs.setMovable(True)
         self.nextTabAction = QtGui.QAction(self)
@@ -2720,17 +2730,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.cornerWidgetsLayout.setSpacing(0)
         self.cornerWidgets.setLayout(self.cornerWidgetsLayout)
         self.cornerWidgetsToolBar = QtGui.QToolBar()
-        themet = ""
-        if app_use_ambiance:
-            themet = """ 
-            QPushButton, QToolButton {
-            color: #dfdbd2;
-            }
-
-            QPushButton:hover, QToolButton:hover {
-            color: palette(button-text);
-            }"""
-        self.cornerWidgetsToolBar.setStyleSheet("QToolBar { border: 0; background: transparent; padding: 0; margin: 0; }" + themet)
+        self.cornerWidgetsToolBar.setStyleSheet("QToolBar { border: 0; background: transparent; padding: 0; margin: 0; }")
         self.cornerWidgetsLayout.addWidget(self.cornerWidgetsToolBar)
 
         """self.showCornerWidgetsMenuAction = QtGui.QAction(self)
@@ -2739,6 +2739,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.showCornerWidgetsMenuAction.triggered.connect(self.showCornerWidgetsMenu)"""
         self.mainMenuButton = QtGui.QAction(self)
         self.mainMenuButton.setText(tr("menu"))
+        self.mainMenuButton.setIcon(QtGui.QIcon.fromTheme("document-properties"))
         self.mainMenuButton.setShortcuts(["Alt+M", "Alt+F", "Alt+E"])
         self.mainMenuButton.triggered.connect(self.showCornerWidgetsMenu)
 #        self.mainMenuButton.setArrowType(QtCore.Qt.DownArrow)
@@ -2873,10 +2874,11 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.tabs.customContextMenuRequested.connect(self.tabsContextMenu.show2)
 
-        self.cornerWidgetsToolBar.addSeparator()
+#        self.cornerWidgetsToolBar.addSeparator()
 
-        self.cornerWidgetsToolBar.addAction(self.mainMenuButton)
-        self.cornerWidgetsToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
+        self.mainToolBar.addSeparator()
+        self.mainToolBar.addAction(self.mainMenuButton)
+        self.mainToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
 
         # Activate tab actions
         activateTab1Action = QtGui.QAction(self)
@@ -3057,10 +3059,10 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenu.move(x, y)
 
     def showCornerWidgetsMenu(self):
-        x = self.cornerWidgetsToolBar.widgetForAction(self.mainMenuButton).mapToGlobal(QtCore.QPoint(0,0)).x()
-        y = self.cornerWidgetsToolBar.widgetForAction(self.mainMenuButton).mapToGlobal(QtCore.QPoint(0,0)).y()
-        width = self.cornerWidgetsToolBar.widgetForAction(self.mainMenuButton).width()
-        height = self.cornerWidgetsToolBar.widgetForAction(self.mainMenuButton).height()
+        x = self.mainToolBar.widgetForAction(self.mainMenuButton).mapToGlobal(QtCore.QPoint(0,0)).x()
+        y = self.mainToolBar.widgetForAction(self.mainMenuButton).mapToGlobal(QtCore.QPoint(0,0)).y()
+        width = self.mainToolBar.widgetForAction(self.mainMenuButton).width()
+        height = self.mainToolBar.widgetForAction(self.mainMenuButton).height()
         self.mainMenu.show()
         if x - self.mainMenu.width() + width < 0:
             x = 0
@@ -3093,7 +3095,10 @@ self.origY + ev.globalY() - self.mouseY)
         else:
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
-    def newTab(self, url="about:blank"):
+    def correctURLText(self):
+        self.urlBar.setText(self.currentWebView().url().toString())
+
+    def newTab(self, url=False):
         if cDialog.settings['privateBrowsing']:
             self.newpbTab(url)
         else:
@@ -3112,10 +3117,13 @@ self.origY + ev.globalY() - self.mouseY)
             exec("tab%s.webView.iconChanged.connect(self.updateIcons)" % (s))
             exec("tab%s.webView.urlChanged.connect(self.enableDisableBF)" % (s))
             exec("tab%s.webView.urlChanged.connect(self.updateText)" % (s))
+            exec("tab%s.webView.loadFinished.connect(self.correctURLText)" % (s))
             exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
+            if url != False:
+                self.currentWebView().load(QtCore.QUrl(metaunquote(url)))
 
-    def newpbTab(self, url="about:blank"):
+    def newpbTab(self, url=False):
         self.tabCount += 1
         s = str(self.tabCount)
         if url != False:
@@ -3128,8 +3136,11 @@ self.origY + ev.globalY() - self.mouseY)
         exec("tab" + s + ".webView.iconChanged.connect(self.updateIcons)")
         exec("tab%s.webView.urlChanged.connect(self.enableDisableBF)" % (s))
         exec("tab%s.webView.urlChanged.connect(self.updateText)" % (s))
+        exec("tab%s.webView.loadFinished.connect(self.correctURLText)" % (s))
         exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
+        if url != False:
+            self.currentWebView().load(QtCore.QUrl(metaunquote(url)))
 
     def newWindow(self):
         if settingsManager.settings['oldSchoolWindows']:
@@ -3143,6 +3154,7 @@ self.origY + ev.globalY() - self.mouseY)
             self.newTab(browserHistory.history[self.historyList.row(item)]['url'])
         else:
             self.newTab(self.tempHistory[self.historyList.row(item)]['url'])
+
     def reloadHistory(self):
         try:
             if self.searchOn == False:

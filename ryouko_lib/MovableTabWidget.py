@@ -61,7 +61,7 @@ class MovableTabWidget(QtGui.QTabWidget):
             #QMainWindow {
             #background: #3C3B37;
             #}
-            """)
+        """)
 
         elif theme == "Radiance" and self.gnome_session:
             self.setStyleSheet(win_stylesheet)
@@ -69,7 +69,7 @@ class MovableTabWidget(QtGui.QTabWidget):
             #QMainWindow {
             #background: #DFD7CF;
             #}
-            """)"""
+        """)"""
 
         if sys.platform.startswith("win"):
             self.setStyleSheet(win_stylesheet)
