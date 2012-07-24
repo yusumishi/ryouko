@@ -25,7 +25,7 @@ class RWebPage(QtWebKit.QWebPage):
             try:
                 for tab in self.parent().parent.parent.closedTabsList:
                     v.addItem(tab["title"])
-                v.itemClicked.connect(self.parent().parent.parent.undoCloseTab)
+                v.itemClicked.connect(self.parent().parent.parent.undoCloseTabInThisTab)
             except: do_nothing()
             else:
                 return v

@@ -3259,7 +3259,7 @@ self.origY + ev.globalY() - self.mouseY)
     def closeCurrentTab(self):
         self.closeTab(self.tabs.currentIndex())
 
-    def closeTab(self, index=None, permanent=False):
+    def closeTab(self, index=None, permanent=False, allowZeroTabs=False):
         if index == None:
             index = self.tabs.currentIndex()
         if self.tabs.count() > 0:
@@ -3277,7 +3277,7 @@ self.origY + ev.globalY() - self.mouseY)
                     if len(self.closedTabsList) >= int(settingsManager.settings['maxUndoCloseTab'] + 1):
                         self.closedTabsList[0]["widget"].deleteLater()
                         del self.closedTabsList[0]
-            if self.tabs.count() == 0:
+            if self.tabs.count() == 0 and allowZeroTabs == False:
                 self.close()
         self.reloadClosedTabsListGUI()
 
@@ -3299,6 +3299,22 @@ self.origY + ev.globalY() - self.mouseY)
     def closeRightTabs(self):
         while self.tabs.currentIndex() != self.tabs.count() - 1:
             self.closeTab(self.tabs.count() - 1)
+
+    def undoCloseTabInThisTab(self, index=False):
+        i = self.tabs.currentIndex()
+        if index == False:
+            index = len(self.closedTabsList) - 1
+        elif type(index) != int:
+            index = self.closedTabsListGUI.row(index)
+        self.closeTab(i, True, True)
+        if len(self.closedTabsList) > 0:
+            self.tabs.insertTab(i, self.closedTabsList[index]['widget'], self.closedTabsList[index]['widget'].webView.icon(), self.closedTabsList[index]['widget'].webView.title())
+            del self.closedTabsList[index]
+            self.updateTitles()
+            self.tabs.setCurrentIndex(i)
+            if self.tabs.widget(self.tabs.currentIndex()).webView.url().toString() == "about:blank":
+                self.tabs.widget(self.tabs.currentIndex()).webView.back()
+        self.reloadClosedTabsListGUI()
 
     def undoCloseTab(self, index=False):
         if index == False:
