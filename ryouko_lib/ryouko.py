@@ -212,7 +212,6 @@ def changeProfile(profile, init = False):
         os.makedirs(app_profile)
 
     settingsManager.changeProfile(app_profile)
-    settingsManager.loadSettings()
 
     try: bookmarksManager
     except: doNothing()
@@ -288,13 +287,38 @@ def prepareQuit():
     try: settingsManager.settings['cloudService']
     except: doNothing()
     else:
-        if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None":
-            remote = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles")
-            if not os.path.exists(remote):
-                os.makedirs(remote)
-            shutil.copytree(app_profile, os.path.join(remote, app_profile_name))
+        syncData()
 
     sys.exit()
+
+def acopy(f1, f2):
+    if os.path.isdir(f1):
+        shutil.copytree(f1, f2)
+    else:
+        shutil.copy2(f1, f2)
+
+def syncData():
+    if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None":
+        remote = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles")
+        remote_profile = os.path.join(remote, app_profile_name)
+        if not os.path.exists(remote_profile):
+            os.makedirs(remote_profile)
+            shutil.copytree(app_profile, os.path.join(remote, app_profile_name))
+        else:
+            for fname in os.path.listdir(remote_profile):
+                r = os.path.join(remote_profile, fname)
+                l = os.path.join(app_profile, fname)
+                if os.path.exists(r) and os.path.exists(l):
+                    rt = os.stat(r).st_mtime
+                    lt = os.stat(r).st_mtime
+                    if rt > lt:
+                        acopy(r, l)
+                    elif lt < rt:
+                        acopy(l, r)
+                elif os.path.exists(r):
+                    acopy(r, l)
+                elif os.path.exists(l):
+                    acopy(l, r)
 
 def touch(fname):
     f = open(fname, "w")
@@ -3450,6 +3474,7 @@ class Ryouko(QtGui.QWidget):
             os.mkdir(os.path.join(app_profile, "temp"))
         if not os.path.isdir(os.path.join(app_profile, "adblock")):
             os.mkdir(os.path.join(app_profile, "adblock"))
+        syncData()
         loadCookies()
         global library
         global searchEditor
