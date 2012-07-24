@@ -2481,10 +2481,10 @@ self.origY + ev.globalY() - self.mouseY)
         else:
             self.historyCompletionBox.hide()
 
-    def updateText(self):
+    def updateText(self):        
         url = self.currentWebView().url()
         texturl = url.toString()
-        #self.currentWebView().parent.setText(texturl)
+        #self.setText(texturl)
 
     def rSyncText(self):
         if self.urlBar2.text() != self.urlBar.text():
@@ -2567,6 +2567,15 @@ self.origY + ev.globalY() - self.mouseY)
         viewNotificationsAction.setShortcut("Ctrl+Alt+N")
         viewNotificationsAction.triggered.connect(notificationManager.show)
         self.addAction(viewNotificationsAction)
+
+        #Tabs toolbar:
+        self.tabsToolBar = QtGui.QToolBar("")
+        self.tabsToolBar.setMovable(False)
+        self.tabsToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.tabsToolBar.setStyleSheet("QToolBar { border: 0; }")
+        self.addToolBar(self.tabsToolBar)
+
+        self.addToolBarBreak()
 
         #Main toolbar
         self.mainToolBar = QtGui.QToolBar("")
@@ -2783,15 +2792,15 @@ self.origY + ev.globalY() - self.mouseY)
 
         # "Toolbar" for top right corner
         self.cornerWidgets = QtGui.QWidget()
-        self.cornerWidgets.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
+        self.cornerWidgets.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
 #        self.cornerWidgets.setStyleSheet(cornerWidgetsSheet)
-        self.tabs.setCornerWidget(self.cornerWidgets,QtCore.Qt.TopRightCorner)
+        #self.tabs.setCornerWidget(self.cornerWidgets,QtCore.Qt.TopRightCorner)
         self.cornerWidgetsLayout = QtGui.QHBoxLayout()
         self.cornerWidgetsLayout.setContentsMargins(0,0,0,0)
         self.cornerWidgetsLayout.setSpacing(0)
         self.cornerWidgets.setLayout(self.cornerWidgetsLayout)
         self.cornerWidgetsToolBar = QtGui.QToolBar()
-        self.cornerWidgetsToolBar.setStyleSheet("QToolBar { border: 0; background: transparent; padding: 0; margin: 0; }")
+        self.cornerWidgetsToolBar.setStyleSheet("QToolBar { border: 0; background: transparent; padding: 0; margin: 0; icon-size: 16px; }")
         self.cornerWidgetsLayout.addWidget(self.cornerWidgetsToolBar)
 
         """self.showCornerWidgetsMenuAction = QtGui.QAction(self)
@@ -2993,6 +3002,14 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addAction(quitAction)
 
         self.setCentralWidget(self.tabs)
+        self.tabs.nuTabBar.setParent(self)
+        self.tabs.nuTabBar.setStyleSheet("Q {}")
+        #self.tabs.nuTabBar.setHidden(True)
+        self.tabsToolBar.addWidget(self.tabs.nuTabBar)
+        self.tabs.tabBar().setVisible(False)
+        self.tabsToolBar.addWidget(RExpander())
+        self.tabsToolBar.addWidget(self.cornerWidgets)
+        #self.tabsToolBar.addWidget(self.tabs.cornerWidget(QtCore.Qt.TopRightCorner))
         if len(sys.argv) == 1:
             self.newTab()
             self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
@@ -3021,6 +3038,12 @@ self.origY + ev.globalY() - self.mouseY)
             if self.tabs.count() == 0:
                 self.newTab()
                 self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
+
+    def show(self):
+        self.setVisible(True)
+        self.mainToolBar.setStyleSheet("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
+        self.tabs.setStyleSheet("QTabWidget::pane { margin-top: -" + str(self.tabs.nuTabBar.height()) + "px; padding-top: 0; }")
+        print("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
 
     def toggleFullScreen(self):
         if self.windowState() == QtCore.Qt.WindowFullScreen:
@@ -3146,7 +3169,10 @@ self.origY + ev.globalY() - self.mouseY)
         else:
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
-    def correctURLText(self):
+    def correctURLText(self, url=False):
+        if not url == False:
+            if self.currentWebView().url() != url:
+                return
         try: self.urlBar.setText(self.currentWebView().url().toString())
         except:
             do_nothing()
@@ -3170,7 +3196,7 @@ self.origY + ev.globalY() - self.mouseY)
             exec("tab%s.webView.iconChanged.connect(self.updateIcons)" % (s))
             exec("tab%s.webView.urlChanged.connect(self.enableDisableBF)" % (s))
             exec("tab%s.webView.urlChanged.connect(self.updateText)" % (s))
-            exec("tab%s.webView.loadFinished.connect(self.correctURLText)" % (s))
+            exec("tab%s.webView.urlChanged.connect(self.correctURLText)" % (s))
             exec("tab%s.webView.loadProgress.connect(self.toggleStopReload)" % (s))
             exec("tab%s.webView.loadFinished.connect(self.toggleStopReload)" % (s))
             exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
@@ -3191,7 +3217,7 @@ self.origY + ev.globalY() - self.mouseY)
         exec("tab" + s + ".webView.iconChanged.connect(self.updateIcons)")
         exec("tab%s.webView.urlChanged.connect(self.enableDisableBF)" % (s))
         exec("tab%s.webView.urlChanged.connect(self.updateText)" % (s))
-        exec("tab%s.webView.loadFinished.connect(self.correctURLText)" % (s))
+        exec("tab%s.webView.urlChanged.connect(self.correctURLText)" % (s))
         exec("tab%s.webView.loadProgress.connect(self.toggleStopReload)" % (s))
         exec("tab%s.webView.loadFinished.connect(self.toggleStopReload)" % (s))
         exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
