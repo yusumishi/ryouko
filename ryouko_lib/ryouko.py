@@ -1678,14 +1678,14 @@ class Browser(QtGui.QMainWindow):
         self.webView.page().linkHovered.connect(self.updateStatusMessage)
 
         # Status bar
-        self.statusBarBorder = QtGui.QWidget()
+        self.statusBarBorder = QtGui.QWidget(self)
         self.statusBarBorder.setStyleSheet("""
         background: palette(shadow);
         """)
         self.statusBarBorder.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed))
         self.statusBarBorder.setMinimumHeight(1)
         self.mainLayout.addWidget(self.statusBarBorder, 2, 0)
-        self.statusBar = QtGui.QFrame()
+        self.statusBar = QtGui.QFrame(self)
         self.statusBar.setStyleSheet("""
         QFrame {
         background: palette(window);
@@ -1693,10 +1693,10 @@ class Browser(QtGui.QMainWindow):
         }
         """)
         self.mainLayout.addWidget(self.statusBar, 3, 0)
-        self.statusBarLayout = QtGui.QHBoxLayout()
+        self.statusBarLayout = QtGui.QHBoxLayout(self)
         self.statusBarLayout.setContentsMargins(0,0,0,0)        
         self.statusBar.setLayout(self.statusBarLayout)
-        self.statusMessage = QtGui.QLineEdit()
+        self.statusMessage = QtGui.QLineEdit(self)
         self.statusMessage.setReadOnly(True)
         self.statusMessage.setFocusPolicy(QtCore.Qt.TabFocus)
         self.parent.historyCompletion.statusMessage.connect(self.statusMessage.setText)
@@ -1709,7 +1709,7 @@ class Browser(QtGui.QMainWindow):
         }
         """)
         self.statusBarLayout.addWidget(self.statusMessage)
-        self.progressBar = QtGui.QProgressBar()
+        self.progressBar = QtGui.QProgressBar(self)
         self.progressBar.hide()
         self.webView.loadFinished.connect(self.progressBar.hide)
         self.webView.loadProgress.connect(self.progressBar.setValue)
@@ -1721,7 +1721,7 @@ class Browser(QtGui.QMainWindow):
         max-width: 200px;
         """)
         self.statusBarLayout.addWidget(self.progressBar)
-        self.zoomBar = QtGui.QWidget()
+        self.zoomBar = QtGui.QWidget(self)
         self.zoomBar.setStyleSheet("""
         QToolButton, QPushButton {
         min-width: 16px;
@@ -1740,14 +1740,14 @@ class Browser(QtGui.QMainWindow):
         }
         """)
         self.statusBarLayout.addWidget(self.zoomBar)
-        self.zoomBarLayout = QtGui.QHBoxLayout()
+        self.zoomBarLayout = QtGui.QHBoxLayout(self)
         self.zoomBarLayout.setContentsMargins(0,2,0,0)
         self.zoomBarLayout.setSpacing(0)
         self.zoomBar.setLayout(self.zoomBarLayout)
         
-        self.zoomOutButton = QtGui.QPushButton("-")
+        self.zoomOutButton = QtGui.QPushButton("-", self)
         self.zoomOutButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.zoomSlider = QtGui.QSlider()
+        self.zoomSlider = QtGui.QSlider(self)
         self.zoomSlider.setStyleSheet("max-height: 1em;")
         self.zoomSlider.setFocusPolicy(QtCore.Qt.TabFocus)
         self.zoomSlider.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed))
@@ -1758,7 +1758,7 @@ class Browser(QtGui.QMainWindow):
         self.zoomSlider.setTickInterval(1)
         self.zoomSlider.setTickPosition(QtGui.QSlider.TicksBelow)
         self.zoomSlider.setMinimumWidth(128)
-        self.zoomInButton = QtGui.QPushButton("+")
+        self.zoomInButton = QtGui.QPushButton("+", self)
         self.zoomInButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.zoomLabel = QtGui.QLabel("1.00x")
         self.zoomLabel.setStyleSheet("margin-left: 2px;")
