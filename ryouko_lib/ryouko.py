@@ -2872,7 +2872,7 @@ self.origY + ev.globalY() - self.mouseY)
 
 #        self.cornerWidgetsToolBar.addSeparator()
 
-        self.mainToolBar.addSeparator()
+        #self.mainToolBar.addSeparator()
         self.mainToolBar.addAction(self.mainMenuButton)
         self.mainToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
 
@@ -3092,7 +3092,9 @@ self.origY + ev.globalY() - self.mouseY)
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def correctURLText(self):
-        self.urlBar.setText(self.currentWebView().url().toString())
+        try: self.urlBar.setText(self.currentWebView().url().toString())
+        except:
+            do_nothing()
 
     def newTab(self, url=False):
         if cDialog.settings['privateBrowsing']:
