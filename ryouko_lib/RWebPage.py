@@ -18,3 +18,15 @@ class RWebPage(QtWebKit.QWebPage):
                 return str(self.userAgent)
     def setUserAgent(self, string):
         self.userAgent = string
+        
+    def createPlugin(self, classid, url, paramNames, paramValues):
+        if classid == "ctl":
+            v = QtGui.QListWidget(self.view())
+            try:
+                for tab in self.parent().parent.parent.closedTabsList:
+                    v.addItem(tab["title"])
+                v.itemClicked.connect(self.parent().parent.parent.undoCloseTab)
+            except: do_nothing()
+            else:
+                return v
+        return

@@ -1504,29 +1504,15 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             t = tr('newWindow')
         html = "<!DOCTYPE html><html><head><title>" + t + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('search') + ":</b><form method='get' action='" + f + "' style='display: inline-block;'><input type='text'  name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
         h = tr('newTabShortcuts')
-        try: self.parent.parent.closedTabList
+        try: self.parent.parent.closedTabsList
         except:
             doNothing()
         else:
-            if len(self.parent.parent.closedTabList) > 0:
+            if len(self.parent.parent.closedTabsList) > 0:
                 html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><b>" + tr('rCTabs') + "</b><br/>"
-            urls = []
-            if 1:
-                for link in self.parent.parent.closedTabList:
-                    breakyes = False
-                    for item in urls:
-                        if item == link['url']:
-                            breakyes = True
-                            break
-                    if breakyes == True:
-                        doNothing()
-                    else:
-                        html = html + "<a href=\"" + link['url'] + "\">" + link['title'] + "</a><br/>"
-                        urls.append(link['url'])
-                if len(self.parent.parent.closedTabList) > 0:
-                    html = "%s</td>" % (html)
-                if not len(self.parent.parent.closedTabList) > 0:
-                    h = h.replace("style='padding-left: 4px;'", "")
+                html = html + "<object type=\"application/x-qt-plugin\" classid=\"ctl\"></object>"
+            if not len(self.parent.parent.closedTabsList) > 0:
+                h = h.replace("style='padding-left: 4px;'", "")
         html = html + h + "</tr></body></html>"
         self.setHtml(html)
 
@@ -2626,7 +2612,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainToolBar.widgetForAction(self.nextAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         self.reloadAction = QtGui.QAction(self)
-        self.reloadAction.setShortcuts(["Ctrl+R", "F5"])
         self.reloadAction.triggered.connect(self.reload)
         self.addAction(self.reloadAction)
 
