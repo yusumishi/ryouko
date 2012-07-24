@@ -3278,7 +3278,7 @@ self.origY + ev.globalY() - self.mouseY)
                         self.closedTabsList[0]["widget"].deleteLater()
                         del self.closedTabsList[0]
             if self.tabs.count() == 0 and allowZeroTabs == False:
-                self.close()
+                self.newTab()
         self.reloadClosedTabsListGUI()
 
     def reloadClosedTabsListGUI(self):
