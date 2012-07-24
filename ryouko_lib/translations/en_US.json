@@ -25,6 +25,7 @@
 "clearHistoryWarn": "Your selection will be cleared <b>permanently</b>. Are you sure?",
 "clearTempFilesMsg": "Temporary files will be cleared on browser restart.",
 "close": "Close",
+"closedTabs": "Closed Tabs",
 "closeLeftTabs": "Close tabs on the &left",
 "closeRighttTabs": "Close tabs on the &right",
 "closeTab": "&Close Tab",

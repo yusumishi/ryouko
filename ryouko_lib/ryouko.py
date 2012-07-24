@@ -317,6 +317,22 @@ def touch(fname):
 
 searchManager = SearchManager(app_profile)
 
+class ClosedTabsListGUI(MenuPopupWindow):
+    currentRowChanged = QtCore.pyqtSignal(int)
+    def __init__(self, parent=None):
+        MenuPopupWindow.__init__(self, parent)
+        self.list = QtGui.QListWidget()
+        self.list.currentRowChanged.connect(self.currentRowChanged.emit)
+        self.setCentralWidget(self.list)
+    def setCurrentRow(self, index):
+        self.list.setCurrentRow(index)
+    def append(self, text):
+        self.list.addItem(text)
+    def addItem(self, text):
+        self.append(text)
+    def clear(self):
+        self.list.clear()
+
 class SearchEditor(MenuPopupWindow):
     def __init__(self, parent=None):
         super(SearchEditor, self).__init__(parent)
@@ -2207,7 +2223,7 @@ class TabBrowser(QtGui.QMainWindow):
                     self.setWindowIcon(QtGui.QIcon(os.path.join(app_icons, 'about-logo.png')))
         self.tabCount = 0
         self.closed = False
-        self.closedTabList = []
+        self.closedTabsList = []
         self.tempHistory = []
         self.searchOn = False
         self.tempHistory = []
@@ -2466,6 +2482,11 @@ self.origY + ev.globalY() - self.mouseY)
         if name and name != "":
             bookmarksManager.add(unicode(self.currentWebView().url().toString()), unicode(name))
 
+    def showClosedTabsListGUI(self):
+        self.closedTabsListGUI.display(True, self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).mapToGlobal(QtCore.QPoint(0,0)).x(), self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).mapToGlobal(QtCore.QPoint(0,0)).y(),
+        self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).width(),
+        self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).height())
+
     def editSearch(self):
         searchEditor.display(True, self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).x(), self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).y(), self.searchEditButton.width(), self.searchEditButton.height())
 
@@ -2508,6 +2529,9 @@ self.origY + ev.globalY() - self.mouseY)
         self.reloadHistory()
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.historyDock)
         self.historyDock.hide()
+
+        self.closedTabsListGUI = ClosedTabsListGUI()
+        self.closedTabsListGUI.currentRowChanged.connect(self.undoCloseTabMod)
 
         # Bookmarks manager! FINALLY! Yay!
         manageBookmarksAction = QtGui.QAction(tr('viewBookmarks'), self)
@@ -2586,7 +2610,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(self.stopAction)
         self.mainToolBar.widgetForAction(self.stopAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
-        self.mainToolBar.addSeparator()
+        #self.mainToolBar.addSeparator()
 
         self.findAction = QtGui.QAction(self)
         self.findAction.triggered.connect(self.find)
@@ -2604,7 +2628,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainToolBar.addAction(self.findNextAction)
         self.mainToolBar.widgetForAction(self.findNextAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
-        self.mainToolBar.addSeparator()
+        #self.mainToolBar.addSeparator()
 
         self.translateAction = QtGui.QAction(self)
         self.translateAction.triggered.connect(self.translate)
@@ -2686,6 +2710,26 @@ self.origY + ev.globalY() - self.mouseY)
         self.focusURLBarAction.triggered.connect(self.focusURLBar)
         self.addAction(self.focusURLBarAction)        
 
+        self.closedTabsListGUIButton = QtGui.QAction(self)
+        self.closedTabsListGUIButton.setText(tr("closedTabs"))
+        self.closedTabsListGUIButton.setIcon(QtGui.QIcon.fromTheme("user-trash"))
+        self.closedTabsListGUIButton.triggered.connect(self.showClosedTabsListGUI)
+
+        self.mainMenuButton = QtGui.QAction(self)
+        self.mainMenuButton.setText(tr("menu"))
+        self.mainMenuButton.setIcon(QtGui.QIcon.fromTheme("document-properties"))
+        self.mainMenuButton.setShortcuts(["Alt+M", "Alt+F", "Alt+E"])
+        self.mainMenuButton.triggered.connect(self.showCornerWidgetsMenu)
+#        self.mainMenuButton.setArrowType(QtCore.Qt.DownArrow)
+        self.mainMenu = QtGui.QMenu(self)
+        self.mainMenu.setTitle(tr('menu'))
+
+        self.mainToolBar.addAction(self.closedTabsListGUIButton)
+        self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        self.mainToolBar.addAction(self.mainMenuButton)
+        self.mainToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
+
         # Tabs
         self.tabs = MovableTabWidget(self)
         self.tabs.currentChanged.connect(self.hideInspectors)
@@ -2733,14 +2777,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.showCornerWidgetsMenuAction.setShortcut("Alt+M")
         self.showCornerWidgetsMenuAction.setToolTip(tr("cornerWidgetsMenuTT"))
         self.showCornerWidgetsMenuAction.triggered.connect(self.showCornerWidgetsMenu)"""
-        self.mainMenuButton = QtGui.QAction(self)
-        self.mainMenuButton.setText(tr("menu"))
-        self.mainMenuButton.setIcon(QtGui.QIcon.fromTheme("document-properties"))
-        self.mainMenuButton.setShortcuts(["Alt+M", "Alt+F", "Alt+E"])
-        self.mainMenuButton.triggered.connect(self.showCornerWidgetsMenu)
-#        self.mainMenuButton.setArrowType(QtCore.Qt.DownArrow)
-        self.mainMenu = QtGui.QMenu(self)
-        self.mainMenu.setTitle(tr('menu'))
 
         closeTabForeverAction = QtGui.QAction(tr('closeTabForever'), self)
         closeTabForeverAction.setShortcut("Ctrl+Shift+W")
@@ -2873,8 +2909,6 @@ self.origY + ev.globalY() - self.mouseY)
 #        self.cornerWidgetsToolBar.addSeparator()
 
         #self.mainToolBar.addSeparator()
-        self.mainToolBar.addAction(self.mainMenuButton)
-        self.mainToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
 
         # Activate tab actions
         activateTab1Action = QtGui.QAction(self)
@@ -3209,7 +3243,7 @@ self.origY + ev.globalY() - self.mouseY)
             if (self.tabs.widget(index).webView.pb) or (unicode(self.tabs.widget(index).webView.url().toString()) == "" or unicode(self.tabs.widget(index).webView.url().toString()) == "about:blank") or permanent==True:
                 self.tabs.widget(index).deleteLater()
             else:
-                self.closedTabList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
+                self.closedTabsList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
                 self.tabs.widget(index).webView.load(QtCore.QUrl("about:blank"))
             self.tabs.removeTab(index)
             try: settingsManager.settings['maxUndoCloseTab']
@@ -3217,11 +3251,19 @@ self.origY + ev.globalY() - self.mouseY)
                 doNothing()
             else:
                 if settingsManager.settings['maxUndoCloseTab'] >= 0:
-                    if len(self.closedTabList) >= int(settingsManager.settings['maxUndoCloseTab'] + 1):
-                        self.closedTabList[0]["widget"].deleteLater()
-                        del self.closedTabList[0]
+                    if len(self.closedTabsList) >= int(settingsManager.settings['maxUndoCloseTab'] + 1):
+                        self.closedTabsList[0]["widget"].deleteLater()
+                        del self.closedTabsList[0]
             if self.tabs.count() == 0:
                 self.close()
+        self.reloadClosedTabsListGUI()
+
+    def reloadClosedTabsListGUI(self):
+        self.closedTabsListGUI.clear()
+        self.closedTabsListGUI.addItem(tr("closedTabs"))
+        #self.closedTabsListGUI.setCurrentRow(0)
+        for tab in self.closedTabsList:
+            self.closedTabsListGUI.addItem(tab["title"])
 
     def permanentCloseTab(self):
         self.closeTab(self.tabs.currentIndex(), True)
@@ -3236,14 +3278,24 @@ self.origY + ev.globalY() - self.mouseY)
         while self.tabs.currentIndex() != self.tabs.count() - 1:
             self.closeTab(self.tabs.count() - 1)
 
+    def undoCloseTabMod(self, index=False):
+        if index == False:
+            index = len(self.closedTabsList)
+        if index <= 0:
+            return
+        self.undoCloseTab(index - 1)
+
     def undoCloseTab(self, index=False):
-        if len(self.closedTabList) > 0:
-            self.tabs.addTab(self.closedTabList[len(self.closedTabList) - 1]['widget'], self.closedTabList[len(self.closedTabList) - 1]['widget'].webView.icon(), self.closedTabList[len(self.closedTabList) - 1]['widget'].webView.title())
-            del self.closedTabList[len(self.closedTabList) - 1]
+        if index == False:
+            index = len(self.closedTabsList) - 1
+        if len(self.closedTabsList) > 0:
+            self.tabs.addTab(self.closedTabsList[index]['widget'], self.closedTabsList[index]['widget'].webView.icon(), self.closedTabsList[index]['widget'].webView.title())
+            del self.closedTabsList[index]
             self.updateTitles()
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
             if self.tabs.widget(self.tabs.currentIndex()).webView.url().toString() == "about:blank":
                 self.tabs.widget(self.tabs.currentIndex()).webView.back()
+        self.reloadClosedTabsListGUI()
 
     def updateIcons(self):
         self.setIcon()
