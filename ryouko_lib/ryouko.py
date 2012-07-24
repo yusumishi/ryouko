@@ -2603,8 +2603,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.reloadAction.setText("")
         self.reloadAction.setToolTip(tr("reloadBtnTT"))
         self.reloadAction.setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
-        self.mainToolBar.addAction(self.reloadAction)
-        self.mainToolBar.widgetForAction(self.reloadAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         self.stopAction = QtGui.QAction(self)
         self.stopAction.setShortcut("Esc")
@@ -2617,6 +2615,9 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainToolBar.addAction(self.stopAction)
         self.addAction(self.stopAction)
         self.mainToolBar.widgetForAction(self.stopAction).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        self.mainToolBar.addAction(self.reloadAction)
+        self.mainToolBar.widgetForAction(self.reloadAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         #self.mainToolBar.addSeparator()
 
