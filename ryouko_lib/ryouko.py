@@ -234,6 +234,9 @@ def changeProfile(profile, init = False):
     except: doNothing()
     else: bookmarksManager.setDirectory(app_links)
 
+    global user_links
+    user_links = reload_user_links(app_links)
+
     try: browserHistory
     except: doNothing()
     else:
@@ -3430,7 +3433,7 @@ class Ryouko(QtGui.QWidget):
             except:
                 doNothing()
             else:
-                if settingsManager.settings['cloudService'] != "No":
+                if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None":
                     bck = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name)
                     a = ""
                     for char in settingsManager.settings['cloudService']:
