@@ -1658,8 +1658,8 @@ class Browser(QtGui.QMainWindow):
         self.webInspector = QtWebKit.QWebInspector(self)
         self.webInspector.setPage(self.webView.page())
         self.webInspectorDock = QtGui.QDockWidget(tr('webInspector'))
-        if app_use_ambiance:
-            self.webInspectorDock.setStyleSheet(dw_stylesheet)
+#        if app_use_ambiance:
+#            self.webInspectorDock.setStyleSheet(dw_stylesheet)
         self.webInspectorDock.setFeatures(QtGui.QDockWidget.DockWidgetClosable)
         self.webInspectorDock.setWidget(self.webInspector)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.webInspectorDock)
@@ -2520,8 +2520,8 @@ self.origY + ev.globalY() - self.mouseY)
 
         # History sidebar
         self.historyDock = QtGui.QDockWidget(tr('history'))
-        if app_use_ambiance:
-            self.historyDock.setStyleSheet(dw_stylesheet)
+#        if app_use_ambiance:
+#            self.historyDock.setStyleSheet(dw_stylesheet)
         self.historyDock.setFeatures(QtGui.QDockWidget.DockWidgetClosable)
         self.historyDockWindow = QtGui.QMainWindow()
         self.historyToolBar = QtGui.QToolBar("History Toolbar")
