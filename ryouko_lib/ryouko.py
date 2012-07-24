@@ -1100,6 +1100,7 @@ class RWebView(QtWebKit.QWebView):
         self.parent = parent
         page = RWebPage(self)
         self.setPage(page)
+        self.loading = False
         self.destinations = []
         self.sourceViews = []
         self.autoSaveInterval = 0
@@ -1211,6 +1212,7 @@ class RWebView(QtWebKit.QWebView):
         self.updateSettings()
         self.establishPBMode(pb)
         self.loadFinished.connect(self.loadLinks)
+        self.loadFinished.connect(self.setLoadingFalse)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == ""):
             self.buildNewTabPage()
             if not type(self.parent) == Browser:
@@ -1222,6 +1224,15 @@ class RWebView(QtWebKit.QWebView):
             app_windows.append(self)
         else:
             self.isWindow = False
+
+    def setLoadingTrue(self):
+        self.loading = True
+
+    def setLoadingFalse(self):
+        self.loading = False
+
+    def isLoading(self):
+        return self.loading
 
     def replaceAV(self):
         av = self.page().mainFrame().findAllElements("audio, video")
@@ -2340,6 +2351,17 @@ self.origY + ev.globalY() - self.mouseY)
         self.currentWebView().stop()
         self.urlBar2.setText(self.currentWebView().url().toString())
 
+    def stopReload(self):
+        if self.currentWebView().isLoading():
+            self.stop()
+            self.historyCompletionBox.hide()
+            self.stopReloadAction.setToolTip(tr("stopBtnTT"))
+            self.stopReloadAction.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, "stop.png"))))
+        else:
+            self.reload()
+            self.stopReloadAction.setToolTip(tr("reloadBtnTT"))
+            self.stopReloadAction.setIcon(QtGui.QIcon().fromTheme("view-reload", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
+
     def find(self):
         self.currentWebView().find()
 
@@ -2599,25 +2621,23 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainToolBar.widgetForAction(self.nextAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         self.reloadAction = QtGui.QAction(self)
+        self.reloadAction.setShortcuts(["Ctrl+R", "F5"])
         self.reloadAction.triggered.connect(self.reload)
-        self.reloadAction.setText("")
-        self.reloadAction.setToolTip(tr("reloadBtnTT"))
-        self.reloadAction.setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
+        self.addAction(self.reloadAction)
 
         self.stopAction = QtGui.QAction(self)
-        self.stopAction.setShortcut("Esc")
+        self.stopAction.setShortcuts(["Esc"])
         self.stopAction.triggered.connect(self.stop)
-        self.stopAction.triggered.connect(self.historyCompletionBox.hide)
-        self.stopAction.triggered.connect(self.updateText)
-        self.stopAction.setText("")
-        self.stopAction.setToolTip(tr("stopBtnTT"))
-        self.stopAction.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, 'stop.png'))))
-        self.mainToolBar.addAction(self.stopAction)
         self.addAction(self.stopAction)
-        self.mainToolBar.widgetForAction(self.stopAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
-        self.mainToolBar.addAction(self.reloadAction)
-        self.mainToolBar.widgetForAction(self.reloadAction).setFocusPolicy(QtCore.Qt.TabFocus)
+        self.stopReloadAction = QtGui.QAction(self)
+        self.stopReloadAction.triggered.connect(self.stopReload)
+        self.stopReloadAction.setText("")
+        self.stopReloadAction.setToolTip(tr("reloadBtnTT"))
+        self.stopReloadAction.setIcon(QtGui.QIcon().fromTheme("view-reload", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
+        self.mainToolBar.addAction(self.stopReloadAction)
+        self.addAction(self.stopReloadAction)
+        self.mainToolBar.widgetForAction(self.stopReloadAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         #self.mainToolBar.addSeparator()
 
