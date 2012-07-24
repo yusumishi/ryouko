@@ -910,6 +910,7 @@ class Library(QtGui.QMainWindow):
 
         self.setWindowTitle(tr('library'))
         self.tabs = MovableTabWidget(self, True)
+        self.tabs.setDocumentMode(False)
         self.setCentralWidget(self.tabs)
         self.bookmarksManagerGUI = BookmarksManagerGUI(self)
         self.tabs.addTab(self.bookmarksManagerGUI, tr('bookmarks'))
