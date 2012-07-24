@@ -2569,13 +2569,13 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(viewNotificationsAction)
 
         #Tabs toolbar:
-        self.tabsToolBar = QtGui.QToolBar("")
-        self.tabsToolBar.setMovable(False)
-        self.tabsToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.tabsToolBar.setStyleSheet("QToolBar { border: 0; }")
-        self.addToolBar(self.tabsToolBar)
+        #self.tabsToolBar = QtGui.QToolBar("")
+        #elf.tabsToolBar.setMovable(False)
+        #self.tabsToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        #self.tabsToolBar.setStyleSheet("QToolBar { border: 0; }")
+        #self.addToolBar(self.tabsToolBar)
 
-        self.addToolBarBreak()
+        #self.addToolBarBreak()
 
         #Main toolbar
         self.mainToolBar = QtGui.QToolBar("")
@@ -3002,13 +3002,12 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addAction(quitAction)
 
         self.setCentralWidget(self.tabs)
-        self.tabs.nuTabBar.setParent(self)
-        self.tabs.nuTabBar.setStyleSheet("Q {}")
+#        self.tabs.nuTabBar.setParent(self)
         #self.tabs.nuTabBar.setHidden(True)
-        self.tabsToolBar.addWidget(self.tabs.nuTabBar)
-        self.tabs.tabBar().setVisible(False)
-        self.tabsToolBar.addWidget(RExpander())
-        self.tabsToolBar.addWidget(self.cornerWidgets)
+        #self.tabsToolBar.addWidget(self.tabs.nuTabBar)
+        #self.tabs.tabBar().setVisible(False)
+        #self.tabsToolBar.addWidget(RExpander())
+        #self.tabsToolBar.addWidget(self.cornerWidgets)
         #self.tabsToolBar.addWidget(self.tabs.cornerWidget(QtCore.Qt.TopRightCorner))
         if len(sys.argv) == 1:
             self.newTab()
@@ -3039,11 +3038,11 @@ self.origY + ev.globalY() - self.mouseY)
                 self.newTab()
                 self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
 
-    def show(self):
-        self.setVisible(True)
-        self.mainToolBar.setStyleSheet("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
-        self.tabs.setStyleSheet("QTabWidget::pane { margin-top: -" + str(self.tabs.nuTabBar.height()) + "px; padding-top: 0; }")
-        print("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
+    #def show(self):
+        #self.setVisible(True)
+        #self.mainToolBar.setStyleSheet("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
+        #self.tabs.setStyleSheet("QTabWidget::pane { margin-top: -" + str(self.tabs.nuTabBar.height()) + "px; padding-top: 0; }")
+        #print("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
 
     def toggleFullScreen(self):
         if self.windowState() == QtCore.Qt.WindowFullScreen:
@@ -3170,7 +3169,7 @@ self.origY + ev.globalY() - self.mouseY)
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
     def correctURLText(self, url=False):
-        if not url == False:
+        if type(url) == QtCore.QUrl:
             if self.currentWebView().url() != url:
                 return
         try: self.urlBar.setText(self.currentWebView().url().toString())
