@@ -1213,6 +1213,7 @@ class RWebView(QtWebKit.QWebView):
         self.establishPBMode(pb)
         self.loadFinished.connect(self.loadLinks)
         self.loadFinished.connect(self.setLoadingFalse)
+        self.loadProgress.connect(self.setLoadingTrue)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == ""):
             self.buildNewTabPage()
             if not type(self.parent) == Browser:
@@ -2354,13 +2355,17 @@ self.origY + ev.globalY() - self.mouseY)
     def stopReload(self):
         if self.currentWebView().isLoading():
             self.stop()
-            self.historyCompletionBox.hide()
-            self.stopReloadAction.setToolTip(tr("stopBtnTT"))
-            self.stopReloadAction.setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, "stop.png"))))
         else:
             self.reload()
-            self.stopReloadAction.setToolTip(tr("reloadBtnTT"))
-            self.stopReloadAction.setIcon(QtGui.QIcon().fromTheme("view-reload", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
+
+    def toggleStopReload(self):
+        if self.currentWebView().isLoading():
+            self.historyCompletionBox.hide()
+            self.mainToolBar.widgetForAction(self.stopReloadAction).setToolTip(tr("stopBtnTT"))
+            self.mainToolBar.widgetForAction(self.stopReloadAction).setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, "stop.png"))))
+        else:
+            self.mainToolBar.widgetForAction(self.stopReloadAction).setToolTip(tr("reloadBtnTT"))
+            self.mainToolBar.widgetForAction(self.stopReloadAction).setIcon(QtGui.QIcon().fromTheme("view-reload", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
 
     def find(self):
         self.currentWebView().find()
@@ -3179,6 +3184,8 @@ self.origY + ev.globalY() - self.mouseY)
             exec("tab%s.webView.urlChanged.connect(self.enableDisableBF)" % (s))
             exec("tab%s.webView.urlChanged.connect(self.updateText)" % (s))
             exec("tab%s.webView.loadFinished.connect(self.correctURLText)" % (s))
+            exec("tab%s.webView.loadProgress.connect(self.toggleStopReload)" % (s))
+            exec("tab%s.webView.loadFinished.connect(self.toggleStopReload)" % (s))
             exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
             if url != False:
@@ -3198,6 +3205,8 @@ self.origY + ev.globalY() - self.mouseY)
         exec("tab%s.webView.urlChanged.connect(self.enableDisableBF)" % (s))
         exec("tab%s.webView.urlChanged.connect(self.updateText)" % (s))
         exec("tab%s.webView.loadFinished.connect(self.correctURLText)" % (s))
+        exec("tab%s.webView.loadProgress.connect(self.toggleStopReload)" % (s))
+        exec("tab%s.webView.loadFinished.connect(self.toggleStopReload)" % (s))
         exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
         if url != False:
