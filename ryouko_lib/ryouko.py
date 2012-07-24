@@ -2304,12 +2304,15 @@ self.origY + ev.globalY() - self.mouseY)
 
     def back(self):
         self.currentWebView().back()
+        self.setIcon()
 
     def forward(self):
         self.currentWebView().forward()
+        self.setIcon()
 
     def reload(self):
         self.currentWebView().reload()
+        self.setIcon()
 
     def stop(self):
         self.currentWebView().stop()
@@ -3118,8 +3121,6 @@ self.origY + ev.globalY() - self.mouseY)
             exec("tab%s.webView.urlChanged.connect(self.enableDisableBF)" % (s))
             exec("tab%s.webView.urlChanged.connect(self.updateText)" % (s))
             exec("tab%s.webView.loadFinished.connect(self.correctURLText)" % (s))
-            exec("tab%s.webView.loadFinished.connect(self.urlBar.repaint())" % (s))
-            exec("tab%s.webView.loadFinished.connect(self.urlBar2.repaint())" % (s))
             exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
             if url != False:
@@ -3139,8 +3140,6 @@ self.origY + ev.globalY() - self.mouseY)
         exec("tab%s.webView.urlChanged.connect(self.enableDisableBF)" % (s))
         exec("tab%s.webView.urlChanged.connect(self.updateText)" % (s))
         exec("tab%s.webView.loadFinished.connect(self.correctURLText)" % (s))
-        exec("tab%s.webView.loadFinished.connect(self.urlBar.repaint())" % (s))
-        exec("tab%s.webView.loadFinished.connect(self.urlBar2.repaint())" % (s))
         exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
         if url != False:
