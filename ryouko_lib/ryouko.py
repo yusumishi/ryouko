@@ -285,15 +285,14 @@ def prepareQuit():
     if os.path.exists(app_lock) and not os.path.isdir(app_lock):
         os.remove(app_lock)
     saveCookies()
-    """try: settingsManager.settings['cloudService']
+    try: settingsManager.settings['cloudService']
     except: doNothing()
     else:
         if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None":
-            local_app_profile = os.path.join(app_profile_folder, app_profile_name)
-            if os.path.exists(os.path.join(local_app_profile, "settings.json")) and os.path.exists(os.path.join(os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name), "settings.json")):
-                os.remove(os.path.join(local_app_profile, "settings.json"))
-                print(app_profile)
-                shutil.copy(os.path.join(os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", app_profile_name), "settings.json"), local_app_profile)"""
+            remote = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles")
+            if not os.path.exists(remote):
+                os.makedirs(remote)
+            shutil.copytree(app_profile, os.path.join(remote, app_profile_name))
 
     sys.exit()
 
