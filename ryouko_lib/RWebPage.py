@@ -23,9 +23,9 @@ class RWebPage(QtWebKit.QWebPage):
         if classid == "ctl":
             v = QtGui.QListWidget(self.view())
             try:
-                for tab in self.parent().parent.parent.closedTabsList:
+                for tab in self.parent().parent().parent.closedTabsList:
                     v.addItem(tab["title"])
-                v.itemClicked.connect(self.parent().parent.parent.undoCloseTabInThisTab)
+                v.itemClicked.connect(self.parent().parent().parent.undoCloseTabInThisTab)
             except: do_nothing()
             else:
                 return v

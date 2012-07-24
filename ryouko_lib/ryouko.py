@@ -1097,7 +1097,7 @@ class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
     def __init__(self, parent=False, pb=False):
         super(RWebView, self).__init__()
-        self.parent = parent
+        self.setParent(parent)
         page = RWebPage(self)
         self.setPage(page)
         self.loading = False
@@ -1116,7 +1116,7 @@ class RWebView(QtWebKit.QWebView):
         else:
             self.setWindowTitle("Ryouko")
         if parent == False:
-            self.parent = None
+            self.setParent(None)
         self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
         self.text = ""
@@ -1216,10 +1216,10 @@ class RWebView(QtWebKit.QWebView):
         self.loadProgress.connect(self.setLoadingTrue)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == ""):
             self.buildNewTabPage()
-            if not type(self.parent) == Browser:
+            if not type(self.parent()) == Browser:
                 self.loadControls()
             self.updateTitle()
-        if not type(self.parent) == Browser:
+        if not type(self.parent()) == Browser:
             self.isWindow = True
             global app_windows
             app_windows.append(self)
@@ -1275,10 +1275,10 @@ class RWebView(QtWebKit.QWebView):
         return QtGui.QMainWindow.closeEvent(self, ev)
 
     def showInspector(self):
-        if self.parent.webInspectorDock:
-            self.parent.webInspectorDock.show()
-        if self.parent.webInspector:
-            self.parent.webInspector.show()
+        if self.parent().webInspectorDock:
+            self.parent().webInspectorDock.show()
+        if self.parent().webInspector:
+            self.parent().webInspector.show()
 
     def enableControls(self):
         self.loadFinished.connect(self.loadControls)
@@ -1498,20 +1498,20 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         if forceLoad == True:
             self.load(QtCore.QUrl("about:blank"))
         f = str(searchManager.currentSearch.replace("%s", ""))
-        if type(self.parent) == Browser:
+        if type(self.parent()) == Browser:
             t = tr('newTab')
         else:
             t = tr('newWindow')
         html = "<!DOCTYPE html><html><head><title>" + t + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('search') + ":</b><form method='get' action='" + f + "' style='display: inline-block;'><input type='text'  name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
         h = tr('newTabShortcuts')
-        try: self.parent.parent.closedTabsList
+        try: self.parent().parent.closedTabsList
         except:
             doNothing()
         else:
-            if len(self.parent.parent.closedTabsList) > 0:
+            if len(self.parent().parent.closedTabsList) > 0:
                 html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><b>" + tr('rCTabs') + "</b><br/>"
                 html = html + "<object type=\"application/x-qt-plugin\" classid=\"ctl\"></object>"
-            if not len(self.parent.parent.closedTabsList) > 0:
+            if not len(self.parent().parent.closedTabsList) > 0:
                 h = h.replace("style='padding-left: 4px;'", "")
         html = html + h + "</tr></body></html>"
         self.setHtml(html)
@@ -1603,13 +1603,13 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         else:
             if win.closed:
                 global win
-                if not self.parent == None:
+                if not self.parent() == None:
                     exec("win = TabBrowser(self)")
                 else:
                     exec("win = TabBrowser()")
                 exec("n = win")
             else:
-                if not self.parent == None:
+                if not self.parent() == None:
                     exec("self.newWindow%s = TabBrowser(self)" % (s))
                 else:
                     exec("self.newWindow%s = TabBrowser()" % (s))
