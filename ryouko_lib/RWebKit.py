@@ -86,7 +86,8 @@ class RWebPage(QtWebKit.QWebPage):
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
     saveCookies = QtCore.pyqtSignal()
-    openNewTab = QtCore.pyqtSignal(QtWebKit.QWebView)
+    newTabRequest = QtCore.pyqtSignal(QtWebKit.QWebView)
+    newWindowRequest = QtCore.pyqtSignal(QtWebKit.QWebView)
     undoCloseWindowRequest = QtCore.pyqtSignal()
     def __init__(self, parent=False, pb=False, app_profile=os.path.expanduser("~"), sm=None, user_links=""):
         QtWebKit.QWebView.__init__(self, parent)
@@ -637,38 +638,12 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
     def createWindow(self, windowType):
         s = str(len(self.newWindows))
         if self.settingsManager.settings['openInTabs']:
-            if self.settingsManager.settings['openInTabs']:
-                webView = RWebView(self, self.pb, self.app_profile, self.searchManager)
-                self.createNewWindow.emit(windowType)
-                self.openNewTab.emit(webView)
-                return webView
-            else:
-                if self.pb == True:
-                    exec("self.newWindow%s = RWebView(self, True)" % (s))
-                else:
-                    exec("self.newWindow%s = RWebView(self, False)" % (s))
-                exec("self.newWindow%s.buildNewTabPage()" % (s))
-                exec("self.newWindow%s.applyShortcuts()" % (s))
-                exec("self.newWindow%s.enableControls()" % (s))
-                exec("self.newWindow%s.loadControls()" % (s))
-                exec("self.newWindow%s.show()" % (s))
-                exec("self.newWindows.append(self.newWindow%s)" % (s))
-                exec("n = self.newWindow%s" % (s))
-                self.createNewWindow.emit(windowType)
-                return n
+            webView = RWebView(self, self.pb, self.app_profile, self.searchManager)
+            self.createNewWindow.emit(windowType)
+            self.newTabRequest.emit(webView)
+            return webView
         else:
-            if win.closed:
-                global win
-                if not self.parent() == None:
-                    exec("win = TabBrowser(self)")
-                else:
-                    exec("win = TabBrowser()")
-                exec("n = win")
-            else:
-                if not self.parent() == None:
-                    exec("self.newWindow%s = TabBrowser(self)" % (s))
-                else:
-                    exec("self.newWindow%s = TabBrowser()" % (s))
-                exec("n = self.newWindow%s" % (s))
-            n.show()
-            return n.tabs.widget(n.tabs.currentIndex()).webView
+            webView = RWebView(self, self.pb, self.app_profile, self.searchManager)
+            self.createNewWindow.emit(windowType)
+            self.newWindowRequest.emit(webView)
+            return webView

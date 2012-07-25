@@ -2666,6 +2666,16 @@ self.origY + ev.globalY() - self.mouseY)
         except:
             do_nothing()
 
+    def newWindowWithRWebView(self, webView):
+        win = self.newWindow()
+        win.closeTab(0, True, True)
+        win.newTab(webView)
+
+    def newpbWindowWithRWebView(self, webView):
+        win = self.newWindow()
+        win.closeTab(0, True, True)
+        win.newpbTab(webView)
+
     def newTab(self, webView = None, url=False):
         if cDialog.settings['privateBrowsing']:
             self.newpbTab(webView, url)
@@ -2681,7 +2691,8 @@ self.origY + ev.globalY() - self.mouseY)
                 exec("tab%s = Browser(self)" % (s))
             if webView != None and webView:
                 exec("tab%s.swapWebView(webView)" % (s))
-            exec("tab%s.webView.openNewTab.connect(self.newTab)" % (s))
+            exec("tab%s.webView.newTabRequest.connect(self.newTab)" % (s))
+            exec("tab%s.webView.newWindowRequest.connect(self.newWindowWithRWebView)" % (s))
             exec("tab%s.webView.titleChanged.connect(self.updateTitles)" % (s))
             exec("tab%s.webView.urlChanged.connect(self.reloadHistory)" % (s))
             exec("tab%s.webView.titleChanged.connect(self.reloadHistory)" % (s))
@@ -2705,7 +2716,8 @@ self.origY + ev.globalY() - self.mouseY)
             exec("tab" + s + " = Browser(self, 'about:blank', True)")
         if webView != None and webView:
             exec("tab%s.swapWebView(webView)" % (s))
-        exec("tab%s.webView.openNewTab.connect(self.newTab)" % (s))
+        exec("tab%s.webView.openNewTab.connect(self.newpbTab)" % (s))
+        exec("tab%s.webView.newWindowRequest.connect(self.newpbWindowWithRWebView)" % (s))
         exec("tab" + s + ".webView.titleChanged.connect(self.updateTitles)")
         exec("tab" + s + ".webView.urlChanged.connect(self.reloadHistory)")
         exec("tab" + s + ".webView.titleChanged.connect(self.reloadHistory)")
@@ -2723,6 +2735,7 @@ self.origY + ev.globalY() - self.mouseY)
     def newWindow(self):
         nwin = TabBrowser(self)
         nwin.show()
+        return nwin
 
     def openHistoryItem(self, item):
         if self.searchOn == False:
