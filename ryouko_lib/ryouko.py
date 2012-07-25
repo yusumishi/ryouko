@@ -2677,7 +2677,7 @@ self.origY + ev.globalY() - self.mouseY)
             exec("tab" + s + " = Browser(self, 'about:blank', True)")
         if webView != None and webView:
             exec("tab%s.swapWebView(webView)" % (s))
-        exec("tab%s.webView.openNewTab.connect(self.newpbTab)" % (s))
+        exec("tab%s.webView.newTabRequest.connect(self.newpbTab)" % (s))
         exec("tab%s.webView.newWindowRequest.connect(self.newpbWindowWithRWebView)" % (s))
         exec("tab" + s + ".webView.titleChanged.connect(self.updateTitles)")
         exec("tab" + s + ".webView.urlChanged.connect(self.reloadHistory)")
