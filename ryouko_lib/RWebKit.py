@@ -10,6 +10,7 @@ sys.path.append(app_lib)
 
 from Python23Compat import *
 from DialogFunctions import *
+from ViewSourceDialog import *
 from TranslationManager import *
 
 app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
