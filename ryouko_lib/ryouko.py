@@ -741,9 +741,11 @@ class ClearHistoryDialog(QtGui.QMainWindow):
                 saveDay = time.strftime("%d")
                 now = datetime.datetime.now()
                 saveYear = "%d" % now.year
+                newHistory = []
                 for item in browserHistory.history:
-                    if item['month'] == saveMonth and item['monthday'] == saveDay and item['year'] == saveYear:
-                        del browserHistory.history[browserHistory.history.index(item)]
+                    if item['month'] != saveMonth and item['monthday'] != saveDay and item['year'] != saveYear:
+                        newHistory.append(item)
+                browserHistory.history = newHistory
                 browserHistory.save()
                 for win in app_windows:
                     try:
@@ -1052,6 +1054,7 @@ class RAboutDialog(QtWebKit.QWebView):
     def __init__(self, parent=None):
         super(RAboutDialog, self).__init__()
         self.parent = parent
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
         page = RWebPage(self)
         self.setPage(page)
         if os.path.exists(app_logo):
@@ -1312,6 +1315,7 @@ class CDialog(QtGui.QMainWindow):
         super(CDialog, self).__init__()
         self.parent = parent
         self.settings = {}
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.initUI()
         self.filterListCount = 0
         self.resize(400, 400)
