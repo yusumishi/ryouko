@@ -216,7 +216,8 @@ def changeProfile(profile, init = False):
     else: bookmarksManager.setDirectory(app_links)
 
     global user_links
-    user_links = reload_user_links(app_links)
+    try: user_links = bookmarksManager.reload_user_links(app_links)
+    except: do_nothing()
 
     try: browserHistory
     except: doNothing()
@@ -237,6 +238,16 @@ if os.path.exists(app_default_profile_file):
 if not os.path.exists(os.path.join(app_profile_folder, app_default_profile_name)):
     app_default_profile_name = "default"
 changeProfile(app_default_profile_name, True)
+
+bookmarksManager = BookmarksManager(app_links)
+
+def rebuild_bookmarks_toolbar():
+    global user_links
+    user_links = bookmarksManager.reload_user_links(app_links)
+
+bookmarksManager.bookmarksChanged.connect(rebuild_bookmarks_toolbar)
+
+bookmarksManager.setDirectory(app_links)
 
 reset = False
 
@@ -469,16 +480,6 @@ class SearchEditor(MenuPopupWindow):
 
 searchEditor = None
 
-bookmarksManager = BookmarksManager(app_links)
-
-def rebuild_bookmarks_toolbar():
-    global user_links
-    user_links = reload_user_links(app_links)
-
-bookmarksManager.bookmarksChanged.connect(rebuild_bookmarks_toolbar)
-
-bookmarksManager.setDirectory(app_links)
-
 class BookmarksManagerGUI(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(BookmarksManagerGUI, self).__init__()
@@ -588,7 +589,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
             win.resize(800, 480)
         for bookmark in bookmarksManager.bookmarks:
             if bookmark["name"] == unicode(self.bookmarksList.currentItem().text()):
-                win.newTab(bookmark["url"])
+                win.newTab(None, bookmark["url"])
                 break
     def addBookmark(self):
         if unicode(self.nameField.text()) != "" and unicode(self.urlField.text()) != "":
@@ -903,7 +904,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
             win.show()
             win.closed = False
             win.resize(800, 480)
-        win.newTab(u)
+        win.newTab(None, u)
 
     def switchTabs(self):
         if self.parent.tabs:
@@ -967,54 +968,6 @@ class Library(QtGui.QMainWindow):
 library = ""
 
 browserHistory = BrowserHistory(app_profile)
-
-def runThroughFilters(url):
-    remove = False
-    invert = False
-    for f in settingsManager.filters:
-        exception = f.startswith("@@")
-        ending = f.endswith("|")
-        beginning = f.startswith("||")
-        if exception:
-            f = f.strip("@@")
-            invert = True
-        if beginning:
-            f = f.strip("||")
-            if sys.version_info[0] < 3:
-                string.split(f, "://")
-            else:
-                f.split("://")
-            if url.startswith(f):
-                remove = True
-                if invert == True:
-                    remove = False
-                else:
-                    break
-        if ending:
-            f = f.rstrip("|")
-            if url.endswith(f):
-                remove = True
-                if invert == True:
-                    remove = False
-                else:
-                    break
-        if sys.version_info[0] < 3:
-            g = string.split(f, "*")
-        else:
-            g = f.split("*")
-        h = 0
-        for word in g:
-            if not word in url:
-                remove = False
-            else:
-                h += 1
-        if h >= len(g):
-            remove = True
-            if invert == True:
-                remove = False
-            else:
-                break
-    return remove
 
 def showAboutPage(webView):
     webView.load(QtCore.QUrl("about:blank"))
@@ -1137,534 +1090,6 @@ def downloadFinished():
 
 notificationManager = None
 
-class RWebView(QtWebKit.QWebView):
-    createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)
-    def __init__(self, parent=False, pb=False):
-        QtWebKit.QWebView.__init__(self, parent)
-        self.parent2 = parent
-        page = RWebPage(self)
-        self.setPage(page)
-        self.loading = False
-        self.destinations = []
-        self.sourceViews = []
-        self.autoSaveInterval = 0
-        self.urlChanged.connect(self.autoSave)
-        self.printer = None
-        self.replies = []
-        self.newWindows = [0]
-        self.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
-        if os.path.exists(app_logo):
-            self.setWindowIcon(QtGui.QIcon(app_logo))
-        if pb:
-            self.setWindowTitle("Ryouko (PB)")
-        else:
-            self.setWindowTitle("Ryouko")
-        if parent == False:
-            self.setParent(None)
-        self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-
-        self.text = ""
-        self.zoomFactor = 1.0
-
-        self.titleChanged.connect(self.updateTitle)
-
-        self.viewSourceAction = QtGui.QAction(self)
-        self.viewSourceAction.setShortcut("Ctrl+Alt+U")
-        self.viewSourceAction.triggered.connect(self.viewSource)
-        self.addAction(self.viewSourceAction)
-
-        self.buildNewTabPageAction = QtGui.QAction(self)
-        self.buildNewTabPageAction.setShortcut("F1")
-        self.buildNewTabPageAction.triggered.connect(self.buildNewTabPage)
-        self.addAction(self.buildNewTabPageAction)
-
-        self.newWindowAction = QtGui.QAction(self)
-        self.newWindowAction.triggered.connect(self.newWindow)
-        self.addAction(self.newWindowAction)
-
-        self.closeWindowAction = QtGui.QAction(self)
-        self.closeWindowAction.triggered.connect(self.close)
-        self.addAction(self.closeWindowAction)
-        
-        self.backAction = QtGui.QAction(self)
-        self.backAction.setShortcut("Alt+Left")
-        self.backAction.triggered.connect(self.back)
-        self.addAction(self.backAction)
-
-        self.savePageAction = QtGui.QAction(self)
-        self.savePageAction.triggered.connect(self.savePage)
-        self.addAction(self.savePageAction)
-
-        self.printPageAction = QtGui.QAction(self)
-        self.printPageAction.triggered.connect(self.printPreview)
-        self.addAction(self.printPageAction)
-
-        self.nextAction = QtGui.QAction(self)
-        self.nextAction.setShortcut("Alt+Right")
-        self.nextAction.triggered.connect(self.forward)
-        self.addAction(self.nextAction)
-
-        self.stopAction = QtGui.QAction(self)
-        self.stopAction.triggered.connect(self.stop)
-        self.addAction(self.stopAction)
-
-        self.reloadAction = QtGui.QAction(self)
-        self.reloadAction.triggered.connect(self.reload)
-        self.reloadAction.setShortcuts(["Ctrl+R", "F5"])
-        self.addAction(self.reloadAction)
-
-        self.locationEditAction = QtGui.QAction(self)
-        self.locationEditAction.triggered.connect(self.locationEdit)
-        self.addAction(self.locationEditAction)
-
-        self.findAction = QtGui.QAction(self)
-        self.findAction.triggered.connect(self.find)
-        self.findAction.setShortcut("Ctrl+F")
-        self.addAction(self.findAction)
-
-        self.findNextAction = QtGui.QAction(self)
-        self.findNextAction.triggered.connect(self.findNext)
-        self.findNextAction.setShortcuts(["Ctrl+G", "F3"])
-        self.addAction(self.findNextAction)
-
-        self.zoomInAction = QtGui.QAction(self)
-        self.zoomInAction.triggered.connect(self.zoomIn)
-        self.addAction(self.zoomInAction)
-
-        self.zoomOutAction = QtGui.QAction(self)
-        self.zoomOutAction.triggered.connect(self.zoomOut)
-        self.addAction(self.zoomOutAction)
-
-        self.zoomResetAction = QtGui.QAction(self)
-        self.zoomResetAction.triggered.connect(self.zoomReset)
-        self.addAction(self.zoomResetAction)
-
-        self.undoCloseWindowAction = QtGui.QAction(tr('undoCloseWindow'), self)
-        self.undoCloseWindowAction.triggered.connect(undoCloseWindow)
-        self.addAction(self.undoCloseWindowAction)
-
-        self.page().action(QtWebKit.QWebPage.InspectElement).setShortcut("F12")
-        self.page().action(QtWebKit.QWebPage.InspectElement).triggered.connect(self.showInspector)
-        self.addAction(self.page().action(QtWebKit.QWebPage.InspectElement))
-
-        self.page().setForwardUnsupportedContent(True)
-        self.page().unsupportedContent.connect(self.downloadUnsupportedContent)
-        self.page().downloadRequested.connect(self.downloadFile)
-        self.loadFinished.connect(self.checkForAds)
-        if sys.platform.startswith("win"):
-            self.loadFinished.connect(self.replaceAV)
-        self.updateSettings()
-        self.establishPBMode(pb)
-        self.loadFinished.connect(self.loadLinks)
-        self.loadFinished.connect(self.setLoadingFalse)
-        self.loadProgress.connect(self.setLoadingTrue)
-        if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == ""):
-            self.buildNewTabPage()
-            if not type(self.parent()) == Browser:
-                self.loadControls()
-            self.updateTitle()
-        if not type(self.parent()) == Browser:
-            self.isWindow = True
-            global app_windows
-            app_windows.append(self)
-        else:
-            self.isWindow = False
-
-    def setParent(self, parent=None):
-        QtWebKit.QWebView.setParent(self, parent)
-        self.parent2 = parent
-
-    def setLoadingTrue(self):
-        self.loading = True
-
-    def setLoadingFalse(self):
-        self.loading = False
-
-    def isLoading(self):
-        return self.loading
-
-    def replaceAV(self):
-        av = self.page().mainFrame().findAllElements("audio, video")
-        if not os.path.exists(os.path.join(app_profile, "win-vlc.conf")) and len(av) > 0:
-            q = QtGui.QMessageBox.question(None, tr("ryoukoSays"),
-        tr("audioVideoUnsupported"), QtGui.QMessageBox.Yes | 
-        QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-            if q == QtGui.QMessageBox.Yes:
-                wv = self.createWindow(QtWebKit.QWebPage.WebBrowserWindow)
-                wv.load(QtCore.QUrl("http://www.videolan.org/vlc/index.html"))
-            f = open(os.path.join(app_profile, "win-vlc.conf"), "w")
-            f.write("This file is here to tell Ryouko not to ask the user to install VLC again.")
-            f.close()
-        for element in av:
-            a = element.attributeNames()
-            e = "<embed "
-            for attribute in a:
-                e = e + unicode(attribute) + "=\"" + unicode(element.attribute(attribute)) + "\" "
-            e = e + "></embed>"
-            element.replace(e)
-
-    def translate(self):
-        l = app_locale[0] + app_locale[1]
-        self.load(QtCore.QUrl("http://translate.google.com/translate?hl=" + l + "&sl=auto&tl=" + l + "&u=" + unicode(self.url().toString())))
-
-    def autoSave(self):
-        self.autoSaveInterval += 1
-        if self.autoSaveInterval >= 4:
-            saveCookies()
-            self.autoSaveInterval = 0
-
-    def closeEvent(self, ev):
-        if self.isWindow == True:
-            global app_windows
-            if self in app_windows:
-                del app_windows[app_windows.index(self)]
-            global app_closed_windows
-            app_closed_windows.append(self)
-        return QtGui.QMainWindow.closeEvent(self, ev)
-
-    def showInspector(self):
-        if self.parent().webInspectorDock:
-            self.parent().webInspectorDock.show()
-        if self.parent().webInspector:
-            self.parent().webInspector.show()
-
-    def enableControls(self):
-        self.loadFinished.connect(self.loadControls)
-
-    def loadLinks(self):
-        if os.path.isdir(app_links) and not user_links == "":
-            if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
-                self.buildToolBar()
-            if self.page().mainFrame().findFirstElement("#ryouko-link-bar").isNull():
-                self.page().mainFrame().findFirstElement("#ryouko-link-bar-container").appendInside("<span id=\"ryouko-link-bar\"></span>")
-                if not user_links == "":
-                    self.page().mainFrame().findFirstElement("#ryouko-link-bar").appendInside(user_links)
-                else:
-                    self.evaluateJavaScript("link = document.createElement('a');\nlink.innerHTML = '%s';\ndocument.getElementById('ryouko-link-bar').appendChild(link);" % (tr("noExtensions")))
-
-    def buildToolBar(self):
-        if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
-            self.page().mainFrame().findFirstElement("body").appendInside("""<style type="text/css">html{padding-bottom: 19.25pt;}#ryouko-toolbar {overflow-y: auto; height: 19.25pt; width: 100%; left: 0;padding: 2px;padding-left: 0;padding-right:0;background: ThreeDFace;position: fixed;visibility: visible;z-index: 9001;}#ryouko-toolbar *{font-family: sans-serif; font-size: 11pt; background: transparent; padding: 0; border: 0; color: ButtonText; text-decoration: none; -webkit-appearance: none;} #ryouko-toolbar a:hover, #ryouko-toolbar input:hover{text-decoration: underline; }</style><span id='ryouko-toolbar' style='bottom: 0; border-top: 1px solid ThreeDShadow;'><span id='ryouko-browser-controls'></span><span id='ryouko-link-bar-container'></span><input id='ryouko-switch-button' style='float: right; padding-left: 4px; padding-right: 4px; outline: 1px outset ThreeDHighlight;' value='^' type='button' onclick="if (document.getElementById('ryouko-toolbar').getAttribute('style')=='top: 0; border-bottom: 1px solid ThreeDShadow;') { document.getElementById('ryouko-toolbar').setAttribute('style', 'bottom: 0; border-top: 1px solid ThreeDShadow;'); document.getElementsByTagName('html')[0].setAttribute('style', 'padding-top: 0; padding-bottom: 19.25pt;'); document.getElementById('ryouko-switch-button').setAttribute('value','^'); } else { document.getElementById('ryouko-toolbar').setAttribute('style', 'top: 0; border-bottom: 1px solid ThreeDShadow;'); document.getElementsByTagName('html')[0].setAttribute('style', 'padding-top: 19.25pt; padding-bottom: 0;'); document.getElementById('ryouko-switch-button').setAttribute('value','v'); }"></input></span>""")
-
-    def loadControls(self):
-        if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
-            self.buildToolBar()
-        if self.page().mainFrame().findFirstElement("#ryouko-url-edit").isNull():
-            self.page().mainFrame().findFirstElement("#ryouko-browser-controls").appendInside("""<input type='button' value='""" + tr('back') + """' onclick='history.go(-1);'></input><input type='button' value='""" + tr('next') + """' onclick='history.go(+1);'></input><input id='ryouko-url-edit' type='button' value='""" + tr('open') + """' onclick="url = prompt('You are currently at:\\n' + window.location.href + '\\n\\nEnter a URL here:', 'http://'); if (url != null && url != '') {if (url.indexOf('://') == -1) {url = 'http://' + url;}window.location.href = url; }");
-ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank" target="_blank">""" + tr('newWindow') + """</a><span style='margin: -2px; padding-left: 6px; padding-right: 6px;'><span style='border-right: 1px solid ThreeDShadow;'></span></span>""")
-
-    def evaluateJavaScript(self, script):
-        self.page().mainFrame().evaluateJavaScript(script)
-
-    def checkForAds(self):
-        if settingsManager.settings['adBlock']:
-            elements = self.page().mainFrame().findAllElements("iframe, frame, object, embed, .ego_unit").toList()
-            for element in elements:
-                for attribute in element.attributeNames():
-                    e = unicode(element.attribute(attribute))
-                    delete = runThroughFilters(e)
-                    if delete:
-                        element.removeFromDocument()
-                        break
-
-    def establishPBMode(self, pb):
-        self.pb = pb
-        if not pb or pb == None:
-            self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
-        else:
-            self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, False)
-        if not pb:
-            try:
-                self.page().networkAccessManager().setCookieJar(app_cookiejar)
-                app_cookiejar.setParent(QtCore.QCoreApplication.instance())
-            except:
-                doNothing()
-        else:
-            cookies = QtNetwork.QNetworkCookieJar(None)
-            cookies.setAllCookies([])
-            self.page().networkAccessManager().setCookieJar(cookies)
-        if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.pb != None and self.pb != False:
-            self.buildNewTabPage()
-
-    def updateSettings(self):
-        try: settingsManager.settings['loadImages']
-        except: 
-            print("", end = "")
-        else:
-            self.settings().setAttribute(QtWebKit.QWebSettings.AutoLoadImages, settingsManager.settings['loadImages'])
-        try: settingsManager.settings['jsEnabled']
-        except: 
-            print("", end = "")
-        else:
-            self.settings().setAttribute(QtWebKit.QWebSettings.JavascriptEnabled, settingsManager.settings['jsEnabled'])
-        try: settingsManager.settings['customUserAgent']
-        except:
-            doNothing()
-        else:
-            if settingsManager.settings['customUserAgent'].replace(" ", "") != "":
-                self.page().setUserAgent(settingsManager.settings['customUserAgent'])
-            else:
-                self.page().setUserAgent(app_default_useragent)
-        try: settingsManager.settings['storageEnabled']
-        except:
-            self.settings().enablePersistentStorage(qstring(app_profile))
-        else:
-            if settingsManager.settings['storageEnabled'] == True:
-                self.settings().enablePersistentStorage(qstring(app_profile))
-            else:
-                self.settings().setOfflineStoragePath(qstring(""))
-                self.settings().setLocalStoragePath(qstring(""))
-                self.settings().setOfflineWebApplicationCachePath(qstring(""))
-                self.settings().setIconDatabasePath(qstring(app_profile))
-        try: settingsManager.settings['pluginsEnabled']
-        except: 
-            print("", end = "")
-        else:
-            self.settings().setAttribute(QtWebKit.QWebSettings.PluginsEnabled, settingsManager.settings['pluginsEnabled'])
-        try: settingsManager.settings['privateBrowsing']
-        except: 
-            print("", end = "")
-        else:
-            self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, settingsManager.settings['privateBrowsing'])
-            if settingsManager.settings['privateBrowsing'] == True:
-                self.establishPBMode(True)
-        try: settingsManager.settings['proxy']
-        except:
-            doNothing()
-        else:
-            pr = settingsManager.settings['proxy']
-            up = ""
-            if pr['user'] != "" and pr['password'] != "":
-                up = ", qstring(\"" + pr['user'] + "\"), qstring(\"" + pr['password'] + "\")"
-            try: pr['type']
-            except:
-                doNothing()
-            else:
-                t = pr['type']
-                if t == "None":
-                    t = "No"
-                try: exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + t + "Proxy, qstring(\"" + pr['hostname'] + "\"), int(\"" + str(pr['port']) + "\")" + up + "))")
-                except:
-                    try: exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy")
-                    except:
-                        doNothing()
-        aboutDialog.updateUserAgent()
-        for child in range(1, len(self.newWindows)):
-            try: self.newWindows[child].updateSettings()
-            except:
-                print("Error! %s does not have an updateSettings() method!" % (self.newWindows[child]))
-
-    def downloadUnsupportedContent(self, reply):
-        url = unicode(reply.url().toString())
-        try: settingsManager.settings['googleDocsViewerEnabled']
-        except:
-            d = True
-        else:
-            d = settingsManager.settings['googleDocsViewerEnabled']
-        if d == True and not "file://" in url:
-            for ext in app_google_docs_extensions:
-                if url.split("?")[0].lower().endswith(ext):
-                    self.stop()
-                    self.load(QtCore.QUrl("https://docs.google.com/viewer?embedded=true&url=" + url))
-                    return
-        self.downloadFile(reply.request())
-
-    def printPage(self):
-        self.printer = QtGui.QPrinter()
-        self.page().mainFrame().render(self.printer.paintEngine().painter())
-        q = QtGui.QPrintDialog(self.printer)
-        q.open()
-        q.accepted.connect(self.finishPrintPage)
-        q.exec_()
-
-    def printPreview(self):
-        self.printer = QtGui.QPrinter()
-        q = QtGui.QPrintPreviewDialog(self.printer, self)
-        q.paintRequested.connect(self.print)
-        q.exec_()
-        q.deleteLater()
-
-    def finishPrintPage(self):
-        self.print(self.printer)
-        self.printer = None
-
-    def savePage(self):
-        self.downloadFile(QtNetwork.QNetworkRequest(self.url()))
-
-    def viewSource(self):
-        try: self.sourceViews
-        except: self.sourceViews = []
-        nm = self.page().networkAccessManager()
-        reply = nm.get(QtNetwork.QNetworkRequest(self.url()))
-        s = ViewSourceDialog(reply, None)
-        self.sourceViews.append(s)
-        s.closed.connect(self.removeSourceView)
-        s.show()
-        s.resize(640, 480)
-        s.setWindowIcon(self.icon())
-
-    def removeSourceView(self, o):
-        del self.sourceViews[self.sourceViews.index(o)]
-
-    def downloadFile(self, request, fname = ""):
-        if not os.path.isdir(os.path.dirname(fname)):
-            fname = saveDialog(os.path.split(unicode(request.url().toString()))[1])
-        if fname:
-            if settingsManager.settings['backend'] == "qt":
-                nm = self.page().networkAccessManager()
-                if type(request) == QtNetwork.QNetworkReply:
-                    reply = nm.get(request.request())
-                else:
-                    reply = nm.get(request)
-                downloadManagerGUI.newReply(reply, fname)
-                global downloadStartTimer
-                downloadStartTimer.start(250)
-            else:
-                downloaderThread.setUrl(unicode(request.url().toString()))
-                downloaderThread.setDestination(fname)
-                username = False
-                password = False
-                if settingsManager.settings['loginToDownload'] == True:
-                    username = inputDialog("Enter a username", "Enter a username here [optional]:")
-                    if username.replace(" ", "") != "":
-                        password = inputDialog("Enter a username", "Enter a password here [optional]:")
-                    else:
-                        username = False
-                downloaderThread.username = username
-                downloaderThread.password = password
-                downloaderThread.start()
-
-    def updateTitle(self):
-        if self.title() != self.windowTitle():
-            t = self.title()
-            if self.pb:
-                self.setWindowTitle(qstring("%s (PB)" % (unicode(t))))
-            else:
-                self.setWindowTitle(t)
-
-    def buildNewTabPage(self, forceLoad = True):
-        if forceLoad == True:
-            self.load(QtCore.QUrl("about:blank"))
-        f = str(searchManager.currentSearch.replace("%s", ""))
-        if type(self.parent2) == Browser:
-            t = tr('newTab')
-        else:
-            t = tr('newWindow')
-        html = "<!DOCTYPE html><html><head><title>" + t + "</title><style type='text/css'>h1{margin-top: 0; margin-bottom: 0;}</style></head><body style='font-family: sans-serif;'><b style='display: inline-block;'>" + tr('search') + ":</b><form method='get' action='" + f + "' style='display: inline-block;'><input type='text'  name='q' size='31' maxlength='255' value='' /><input type='submit' value='" + tr('go') + "' /></form><table style='border: 0; margin: 0; padding: 0; width: 100%;' cellpadding='0' cellspacing='0'><tr valign='top'>"
-        h = tr('newTabShortcuts')
-        try: self.parent2.parent.closedTabsList
-        except:
-            doNothing()
-        else:
-            if len(self.parent2.parent.closedTabsList) > 0:
-                html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><b>" + tr('rCTabs') + "</b><br/>"
-                html = html + "<object type=\"application/x-qt-plugin\" classid=\"ctl\"></object>"
-            if not len(self.parent2.parent.closedTabsList) > 0:
-                h = h.replace("style='padding-left: 4px;'", "")
-        html = html + h + "</tr></body></html>"
-        self.setHtml(html)
-
-    def locationEdit(self):
-        url = inputDialog(tr('openLocation'), tr('enterURL'), self.url().toString())
-        if url:
-            header = ""
-            if not unicode(url).startswith("about:") and not "://" in unicode(url) and not "javascript:" in unicode(url):
-                header = "http://"
-            url = qstring(header + unicode(url))
-            self.load(QtCore.QUrl(url))
-
-    def find(self):
-        find = inputDialog(tr('find'), tr('searchFor'), self.text)
-        if find:
-            self.text = find
-        else:
-            self.text = ""
-        self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument)
-
-    def findNext(self):
-        if not self.text:
-            self.find()
-        else:
-            self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument)
-
-    def zoom(self, value=1.0):
-        self.zoomFactor = value
-        self.setZoomFactor(self.zoomFactor)
-
-    def zoomIn(self):
-        if self.zoomFactor < 3.0:
-            self.zoomFactor = self.zoomFactor + 0.25
-            self.setZoomFactor(self.zoomFactor)
-
-    def zoomOut(self):
-        if self.zoomFactor > 0.25:
-            self.zoomFactor = self.zoomFactor - 0.25
-            self.setZoomFactor(self.zoomFactor)
-
-    def zoomReset(self):
-        self.zoomFactor = 1.0
-        self.setZoomFactor(self.zoomFactor)
-
-    def newWindow(self):
-       self.createWindow(QtWebKit.QWebPage.WebBrowserWindow)
-
-    def applyShortcuts(self):
-        self.closeWindowAction.setShortcut('Ctrl+W')
-        self.newWindowAction.setShortcut('Ctrl+N')
-        self.printPageAction.setShortcut('Ctrl+P')
-        self.stopAction.setShortcut('Esc')
-        self.savePageAction.setShortcut('Ctrl+S')
-        self.locationEditAction.setShortcuts(['Ctrl+L', 'Alt+D'])
-        self.zoomInAction.setShortcuts(['Ctrl+Shift+=', 'Ctrl+='])
-        self.zoomOutAction.setShortcut('Ctrl+-')
-        self.zoomResetAction.setShortcut('Ctrl+0')
-        self.undoCloseWindowAction.setShortcut("Ctrl+Shift+N")
-
-    def createWindow(self, windowType):
-        s = str(len(self.newWindows))
-        if settingsManager.settings['openInTabs']:
-            if settingsManager.settings['openInTabs']:
-                if win.closed:
-                    exec("win.show()")
-                    exec("win.closed = False")
-                    exec("win.resize(800, 480)")
-                if self.pb == False:
-                    exec("win.newTab()")
-                else:
-                    exec("win.newpbTab()")
-                self.createNewWindow.emit(windowType)
-                return win.tabs.widget(win.tabs.currentIndex()).webView
-            else:
-                if self.pb == True:
-                    exec("self.newWindow%s = RWebView(self, True)" % (s))
-                else:
-                    exec("self.newWindow%s = RWebView(self, False)" % (s))
-                exec("self.newWindow%s.buildNewTabPage()" % (s))
-                exec("self.newWindow%s.applyShortcuts()" % (s))
-                exec("self.newWindow%s.enableControls()" % (s))
-                exec("self.newWindow%s.loadControls()" % (s))
-                exec("self.newWindow%s.show()" % (s))
-                exec("self.newWindows.append(self.newWindow%s)" % (s))
-                exec("n = self.newWindow%s" % (s))
-                self.createNewWindow.emit(windowType)
-                return n
-        else:
-            if win.closed:
-                global win
-                if not self.parent() == None:
-                    exec("win = TabBrowser(self)")
-                else:
-                    exec("win = TabBrowser()")
-                exec("n = win")
-            else:
-                if not self.parent() == None:
-                    exec("self.newWindow%s = TabBrowser(self)" % (s))
-                else:
-                    exec("self.newWindow%s = TabBrowser()" % (s))
-                exec("n = self.newWindow%s" % (s))
-            n.show()
-            return n.tabs.widget(n.tabs.currentIndex()).webView
-
 def undoCloseWindow():
     try:
         global app_windows
@@ -1687,31 +1112,54 @@ class Browser(QtGui.QMainWindow):
         self.pb = pb
         self.findText = ""
         self.initUI(url)
+
+    def swapWebView(self, webView):
+        try: self.webView
+        except: do_nothing()
+        else:
+            if self.webView != None:
+                self.webView.deleteLater()
+                del self.webView
+        self.webView = webView
+        if self.pb != True and self.webView.pb != True:
+            self.webView.setCookieJar(app_cookiejar)
+        self.webView.setSettingsManager(settingsManager)
+        self.webView.saveCookies.connect(saveCookies)
+        self.updateSettings()
+        self.webView.setParent(self)
+        self.mainLayout.addWidget(self.webView, 1, 0)
+        if not self.pb and not self.webView.pb:
+            self.webView.urlChanged.connect(browserHistory.reload)
+            self.webView.titleChanged.connect(browserHistory.reload)
+            self.webView.urlChanged.connect(browserHistory.append)
+            self.webView.titleChanged.connect(browserHistory.updateTitles)
+        self.webInspector.setPage(self.webView.page())
+        self.webView.settings().setIconDatabasePath(qstring(app_profile))
+        self.webView.page().linkHovered.connect(self.updateStatusMessage)
+        self.webView.loadFinished.connect(self.progressBar.hide)
+        self.webView.loadProgress.connect(self.progressBar.setValue)
+        self.webView.loadProgress.connect(self.progressBar.show)
+        self.webView.undoCloseWindowRequest.connect(undoCloseWindow)
+        bookmarksManager.userLinksChanged.connect(self.webView.setUserLinks)
+
     def initUI(self, url):
 
         self.centralWidget = QtGui.QWidget()
         self.mainLayout = QtGui.QGridLayout()
         self.centralWidget.setLayout(self.mainLayout)
         self.setCentralWidget(self.centralWidget)
-    
-        self.webView = RWebView(self, self.pb)
-        self.updateSettings()
-
-        if not self.pb:
-            self.webView.urlChanged.connect(browserHistory.reload)
-            self.webView.titleChanged.connect(browserHistory.reload)
-            self.webView.urlChanged.connect(browserHistory.append)
-            self.webView.titleChanged.connect(browserHistory.updateTitles)
 
         self.webInspector = QtWebKit.QWebInspector(self)
-        self.webInspector.setPage(self.webView.page())
         self.webInspectorDock = QtGui.QDockWidget(tr('webInspector'))
-#        if app_use_ambiance:
-#            self.webInspectorDock.setStyleSheet(dw_stylesheet)
         self.webInspectorDock.setFeatures(QtGui.QDockWidget.DockWidgetClosable)
         self.webInspectorDock.setWidget(self.webInspector)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.webInspectorDock)
         self.webInspectorDock.hide()
+
+        self.progressBar = QtGui.QProgressBar(self)
+
+        webView = RWebView(self, self.pb, app_profile, searchManager)
+        self.swapWebView(webView)
 
         self.mainLayout.setSpacing(0);
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
@@ -1722,8 +1170,6 @@ class Browser(QtGui.QMainWindow):
         self.addAction(historySearchAction)
 
         self.mainLayout.addWidget(self.webView, 1, 0)
-        self.webView.settings().setIconDatabasePath(qstring(app_profile))
-        self.webView.page().linkHovered.connect(self.updateStatusMessage)
 
         # Status bar
         self.statusBarBorder = QtGui.QWidget(self)
@@ -1757,11 +1203,7 @@ class Browser(QtGui.QMainWindow):
         }
         """)
         self.statusBarLayout.addWidget(self.statusMessage)
-        self.progressBar = QtGui.QProgressBar(self)
         self.progressBar.hide()
-        self.webView.loadFinished.connect(self.progressBar.hide)
-        self.webView.loadProgress.connect(self.progressBar.setValue)
-        self.webView.loadProgress.connect(self.progressBar.show)
         self.progressBar.setStyleSheet("""
         min-height: 1em;
         max-height: 1em;
@@ -2237,6 +1679,7 @@ class CDialog(QtGui.QMainWindow):
         if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
         self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
+        aboutDialog.updateUserAgent()
         f = open(app_default_profile_file, "w")
         if self.profileList.currentItem() == None:
             self.profileList.setCurrentRow(0)
@@ -2323,7 +1766,7 @@ self.origY + ev.globalY() - self.mouseY)
                 if not "://" in item and not "about:" in item and not item == "":
                     item = "http://%s" % (item)
                 if not item == "":
-                    self.newTab(item)
+                    self.newTab(None, item)
         if self.closed:
             self.urlCheckTimer.stop()
 
@@ -3065,19 +2508,19 @@ self.origY + ev.globalY() - self.mouseY)
                         sys.argv[arg - 1]
                     except:
                         if not sys.argv[arg] == "-P":
-                            self.newTab(sys.argv[arg])
+                            self.newTab(None, sys.argv[arg])
                     else:
                         if not (sys.argv[arg - 1] == "-P") and not sys.argv[arg] == "-P":
-                            self.newTab(sys.argv[arg])
+                            self.newTab(None, sys.argv[arg])
                 else:
                     try:
                         sys.argv[arg - 1]
                     except:
                         if not sys.argv[arg] == "-P" and not sys.argv[arg] == "--pb" and not sys.argv[arg] == "-pb":
-                            self.newpbTab(sys.argv[arg])
+                            self.newpbTab(None, sys.argv[arg])
                     else:
                         if not (sys.argv[arg - 1] == "-P") and not sys.argv[arg] == "-P" and not sys.argv[arg] == "--pb" and not sys.argv[arg] == "-pb":
-                            self.newpbTab(sys.argv[arg])
+                            self.newpbTab(None, sys.argv[arg])
             for arg in range(1, len(sys.argv)):
                 del sys.argv[1]
             if self.tabs.count() == 0:
@@ -3222,9 +2665,9 @@ self.origY + ev.globalY() - self.mouseY)
         except:
             do_nothing()
 
-    def newTab(self, url=False):
+    def newTab(self, webView = None, url=False):
         if cDialog.settings['privateBrowsing']:
-            self.newpbTab(url)
+            self.newpbTab(webView, url)
         else:
             self.tabCount += 1
             s = str(self.tabCount)
@@ -3235,6 +2678,9 @@ self.origY + ev.globalY() - self.mouseY)
                     exec("tab" + s + " = Browser(self, \"" + url + "\")")
             else:
                 exec("tab%s = Browser(self)" % (s))
+            if webView != None and webView:
+                exec("tab%s.swapWebView(webView)" % (s))
+            exec("tab%s.webView.openNewTab.connect(self.newTab)" % (s))
             exec("tab%s.webView.titleChanged.connect(self.updateTitles)" % (s))
             exec("tab%s.webView.urlChanged.connect(self.reloadHistory)" % (s))
             exec("tab%s.webView.titleChanged.connect(self.reloadHistory)" % (s))
@@ -3249,13 +2695,16 @@ self.origY + ev.globalY() - self.mouseY)
             if url != False:
                 self.currentWebView().load(QtCore.QUrl(metaunquote(url)))
 
-    def newpbTab(self, url=False):
+    def newpbTab(self, webView=None, url=False):
         self.tabCount += 1
         s = str(self.tabCount)
         if url != False:
             exec("tab" + s + " = Browser(self, '" + metaunquote(url) + "', True)")
         else:
             exec("tab" + s + " = Browser(self, 'about:blank', True)")
+        if webView != None and webView:
+            exec("tab%s.swapWebView(webView)" % (s))
+        exec("tab%s.webView.openNewTab.connect(self.newTab)" % (s))
         exec("tab" + s + ".webView.titleChanged.connect(self.updateTitles)")
         exec("tab" + s + ".webView.urlChanged.connect(self.reloadHistory)")
         exec("tab" + s + ".webView.titleChanged.connect(self.reloadHistory)")
@@ -3276,9 +2725,9 @@ self.origY + ev.globalY() - self.mouseY)
 
     def openHistoryItem(self, item):
         if self.searchOn == False:
-            self.newTab(browserHistory.history[self.historyList.row(item)]['url'])
+            self.newTab(None, browserHistory.history[self.historyList.row(item)]['url'])
         else:
-            self.newTab(self.tempHistory[self.historyList.row(item)]['url'])
+            self.newTab(None, self.tempHistory[self.historyList.row(item)]['url'])
 
     def reloadHistory(self):
         try:

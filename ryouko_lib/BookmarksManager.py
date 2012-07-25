@@ -3,27 +3,9 @@
 import os, sys
 from PyQt4 import QtCore
 
-def reload_user_links(app_links):
-    links = []
-    if os.path.isdir(app_links):
-        l = os.listdir(app_links)
-        links = []
-        for fname in l:
-            f = os.path.join(app_links, fname)
-            fi = open(f, "r")
-            contents = fi.read()
-            fi.close()
-            contents = contents.rstrip("\n")
-            links.append([contents, fname.rstrip(".txt")])
-        links.sort()
-        global user_links
-        user_links = ""
-        for link in links:
-            user_links = "%s<a href=\"%s\">%s</a> \n" % (user_links, link[0], link[1])
-        return user_links
-
 class BookmarksManager(QtCore.QObject):
     bookmarksChanged = QtCore.pyqtSignal()
+    userLinksChanged = QtCore.pyqtSignal(str)
     def __init__(self, app_links, parent=None):
         super(BookmarksManager, self).__init__()
         self.parent = parent
@@ -32,6 +14,26 @@ class BookmarksManager(QtCore.QObject):
         self.reload_()
     def setDirectory(self, app_links):
         self.app_links = app_links
+    def reload_user_links(app_links):
+        links = []
+        if os.path.isdir(app_links):
+            l = os.listdir(app_links)
+            links = []
+            for fname in l:
+                f = os.path.join(app_links, fname)
+                fi = open(f, "r")
+                contents = fi.read()
+                fi.close()
+                contents = contents.rstrip("\n")
+                links.append([contents, fname.rstrip(".txt")])
+            links.sort()
+            global user_links
+            user_links = ""
+            for link in links:
+                user_links = "%s<a href=\"%s\">%s</a> \n" % (user_links, link[0], link[1])
+            self.bookmarksChanged.emit()
+            self.userLinks.emit(user_links)
+            return user_links
     def reload_(self):
         self.bookmarks = []
         if not os.path.isdir(self.app_links):
@@ -61,4 +63,5 @@ class BookmarksManager(QtCore.QObject):
         if os.path.exists(path + ".txt"):
             os.remove(path + ".txt")
         self.reload_()
+        self.reload_user_links()
         self.bookmarksChanged.emit()
