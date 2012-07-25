@@ -283,12 +283,6 @@ class RWebView(QtWebKit.QWebView):
             self.autoSaveInterval = 0
 
     def closeEvent(self, ev):
-        if self.isWindow == True:
-            global app_windows
-            if self in app_windows:
-                del app_windows[app_windows.index(self)]
-            global app_closed_windows
-            app_closed_windows.append(self)
         return QtGui.QMainWindow.closeEvent(self, ev)
 
     def showInspector(self):
