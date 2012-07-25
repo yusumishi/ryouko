@@ -2484,10 +2484,16 @@ self.origY + ev.globalY() - self.mouseY)
                         sys.argv[arg - 1]
                     except:
                         if not sys.argv[arg] == "-P" and not sys.argv[arg] == "--pb" and not sys.argv[arg] == "-pb":
-                            self.newpbTab(None, sys.argv[arg])
+                            a = sys.argv[arg]
+                            if not "://" in a:
+                                a = "http://" + a
+                            self.newpbTab(None, a)
                     else:
                         if not (sys.argv[arg - 1] == "-P") and not sys.argv[arg] == "-P" and not sys.argv[arg] == "--pb" and not sys.argv[arg] == "-pb":
-                            self.newpbTab(None, sys.argv[arg])
+                            a = sys.argv[arg]
+                            if not "://" in a:
+                                a = "http://" + a
+                            self.newpbTab(None, a)
             for arg in range(1, len(sys.argv)):
                 del sys.argv[1]
             if self.tabs.count() == 0:
