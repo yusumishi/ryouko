@@ -53,6 +53,7 @@
 "enableAB": "Enable &ad-blocking (warning: experimental!)",
 "enableGDViewer": "Use Google Docs &viewer to load content where applicable",
 "enableJS": "Enable &JavaScript",
+"enableJava": "Enable Ja&va",
 "enablePB": "Enable &private browsing mode",
 "enablePlugins": "Enable &plugins",
 "enableStorage": "Enable offline &storage",

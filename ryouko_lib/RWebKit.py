@@ -414,6 +414,11 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                 print("", end = "")
             else:
                 self.settings().setAttribute(QtWebKit.QWebSettings.JavascriptEnabled, self.settingsManager.settings['jsEnabled'])
+            try: self.settingsManager.settings['javaEnabled']
+            except: 
+                print("", end = "")
+            else:
+                self.settings().setAttribute(QtWebKit.QWebSettings.JavaEnabled, self.settingsManager.settings['javaEnabled'])
             try: self.settingsManager.settings['customUserAgent']
             except:
                 doNothing()

@@ -1369,6 +1369,8 @@ class CDialog(QtGui.QMainWindow):
         self.cLayout.addWidget(self.imagesBox)
         self.jsBox = QtGui.QCheckBox(tr('enableJS'))
         self.cLayout.addWidget(self.jsBox)
+        self.javaBox = QtGui.QCheckBox(tr('enableJava'))
+        self.cLayout.addWidget(self.javaBox)
         self.storageBox = QtGui.QCheckBox(tr('enableStorage'))
         self.cLayout.addWidget(self.storageBox)
         self.pluginsBox = QtGui.QCheckBox(tr('enablePlugins'))
@@ -1531,6 +1533,11 @@ class CDialog(QtGui.QMainWindow):
             self.jsBox.setChecked(True)
         else:
             self.jsBox.setChecked(self.settings['jsEnabled'])
+        try: self.settings['javaEnabled']
+        except: 
+            self.javaBox.setChecked(True)
+        else:
+            self.javaBox.setChecked(self.settings['javaEnabled'])
         try: self.settings['storageEnabled']
         except: 
             self.storageBox.setChecked(True)
@@ -1648,7 +1655,7 @@ class CDialog(QtGui.QMainWindow):
     def saveSettings(self):
         if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
         aboutDialog.updateUserAgent()
         f = open(app_default_profile_file, "w")
         if self.profileList.currentItem() == None:
