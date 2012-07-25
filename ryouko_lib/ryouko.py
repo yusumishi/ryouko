@@ -299,7 +299,8 @@ def acopy(f1, f2):
         shutil.copyfile(f1, f2)
 
 def syncData():
-    if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None":
+    sfile = os.path.join(app_profile, "app_sync.conf")
+    if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None" and os.path.exists(sfile):
         remote = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles")
         remote_profile = os.path.join(remote, app_profile_name)
         if not os.path.exists(remote_profile):
@@ -327,10 +328,32 @@ def syncData():
                         print("Equal")
                     else:
                         print("Not Equal")
-            elif os.path.exists(l):                
+            elif os.path.exists(l):         
                 acopy(l, r)
             elif os.path.exists(r):
                 acopy(r, l)
+
+    elif settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None" and not os.path.exists(sfile):
+        remote = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles")
+        remote_profile = os.path.join(remote, app_profile_name)
+        if os.path.isdir(remote_profile):
+            shutil.rmtree(app_profile)
+            shutil.copytree(remote_profile, app_profile)
+            f = open(sfile, "w")
+            f.write("")
+            f.close()
+
+        else:
+            if not os.path.exists(remote):
+                os.makedirs(remote)
+            shutil.copytree(app_profile, remote_profile)
+            f = open(sfile, "w")
+            f.write("")
+            f.close()
+
+    elif settingsManager.settings['cloudService'] == "No" or settingsManager.settings['cloudService'] == "None":
+        if os.path.exists(sfile) and not os.path.isdir(sfile):
+            os.remove(sfile)
 
 def touch(fname):
     f = open(fname, "w")
