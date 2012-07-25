@@ -558,8 +558,8 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             doNothing()
         else:
             if len(self.parent2.parent.closedTabsList) > 0:
-                html = html + "<td style='border-right: 1px solid; padding-right: 4px;'><b>" + tr('rCTabs') + "</b><br/>"
-                html = html + "<object type=\"application/x-qt-plugin\" classid=\"ctl\"></object>"
+                html = html + "<td style='border-right: 1px solid; padding-right: 4px;' width=\"49%\"><b>" + tr('rCTabs') + "</b><br/>"
+                html = html + "<object type=\"application/x-qt-plugin\" classid=\"ctl\" style=\"width: 100%; height: 85%;\"></object>"
             if not len(self.parent2.parent.closedTabsList) > 0:
                 h = h.replace("style='padding-left: 4px;'", "")
         html = html + h + "</tr></body></html>"
