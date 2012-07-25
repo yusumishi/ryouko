@@ -286,10 +286,10 @@ class RWebView(QtWebKit.QWebView):
         return QtGui.QMainWindow.closeEvent(self, ev)
 
     def showInspector(self):
-        if self.parent().webInspectorDock:
-            self.parent().webInspectorDock.show()
-        if self.parent().webInspector:
-            self.parent().webInspector.show()
+        if self.parent2.webInspectorDock:
+            self.parent2.webInspectorDock.show()
+        if self.parent2.webInspector:
+            self.parent2.webInspector.show()
 
     def enableControls(self):
         self.loadFinished.connect(self.loadControls)
