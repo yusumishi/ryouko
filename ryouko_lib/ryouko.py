@@ -1169,7 +1169,7 @@ class Browser(QtGui.QMainWindow):
 
         self.progressBar = QtGui.QProgressBar(self)
 
-        webView = RWebView(self, self.pb, app_profile, searchManager, user_links, downloadManagerGUI)
+        webView = RWebView(self, settingsManager, self.pb, app_profile, searchManager, user_links, downloadManagerGUI)
         self.swapWebView(webView)
 
         self.mainLayout.setSpacing(0);
@@ -2348,8 +2348,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addSeparator()
 
         toggleBTAction = QtGui.QAction(tr("bookmarksToolBarToggle"), self)
-        toggleBTAction.triggered.connect(cDialog.showBTBox.click)
-        toggleBTAction.triggered.connect(cDialog.saveSettings)
+        toggleBTAction.triggered.connect(self.toggleBookmarksToolBar)
         self.mainMenu.addAction(toggleBTAction)
 
         self.mainMenu.addAction(manageBookmarksAction)
@@ -2509,6 +2508,9 @@ self.origY + ev.globalY() - self.mouseY)
         #self.mainToolBar.setStyleSheet("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
         #self.tabs.setStyleSheet("QTabWidget::pane { margin-top: -" + str(self.tabs.nuTabBar.height()) + "px; padding-top: 0; }")
         #print("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
+
+    def toggleBookmarksToolBar(self):
+        cDialog.showBTBox.click(); cDialog.saveSettings()
 
     def toggleFullScreen(self):
         if self.windowState() == QtCore.Qt.WindowFullScreen:
@@ -2682,6 +2684,7 @@ self.origY + ev.globalY() - self.mouseY)
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
             if url != False:
                 self.currentWebView().load(QtCore.QUrl(metaunquote(url)))
+            self.currentWebView().loadLinks()
 
     def newpbTab(self, webView=None, url=False):
         self.tabCount += 1
@@ -2707,6 +2710,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
         if url != False:
             self.currentWebView().load(QtCore.QUrl(metaunquote(url)))
+        self.currentWebView().loadLinks()
 
     def newWindow(self):
         nwin = TabBrowser(self)

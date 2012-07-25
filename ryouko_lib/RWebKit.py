@@ -96,8 +96,9 @@ class RWebView(QtWebKit.QWebView):
     newWindowRequest = QtCore.pyqtSignal(QtWebKit.QWebView)
     undoCloseWindowRequest = QtCore.pyqtSignal()
     downloadStarted = QtCore.pyqtSignal()
-    def __init__(self, parent=False, pb=False, app_profile=os.path.expanduser("~"), sm=None, user_links="", downloadManager=None):
+    def __init__(self, parent=False, settingsManager=None, pb=False, app_profile=os.path.expanduser("~"), sm=None, user_links="", downloadManager=None):
         QtWebKit.QWebView.__init__(self, parent)
+        self.settingsManager = settingsManager
         self.user_links = user_links
         self.searchManager = sm
         self.downloadManager = downloadManager
@@ -218,7 +219,6 @@ class RWebView(QtWebKit.QWebView):
             self.loadFinished.connect(self.replaceAV)
         self.updateSettings()
         self.establishPBMode(pb)
-        self.loadFinished.connect(self.loadLinks)
         self.loadFinished.connect(self.setLoadingFalse)
         self.loadProgress.connect(self.setLoadingTrue)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == ""):
@@ -232,6 +232,7 @@ class RWebView(QtWebKit.QWebView):
 #            app_windows.append(self)
         else:
             self.isWindow = False
+        self.loadFinished.connect(self.loadLinks)
 
     def setUserLinks(self, user_links):
         self.user_links = user_links
@@ -296,7 +297,7 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.loadControls)
 
     def loadLinks(self):
-        if self.settingsManager.settings["showBookmarksToolBar"] == True:
+        if self.settingsManager.settings["showBookmarksToolBar"]:
             if not self.user_links == "":
                 if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
                     self.buildToolBar()
@@ -631,12 +632,12 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
     def createWindow(self, windowType):
         s = str(len(self.newWindows))
         if self.settingsManager.settings['openInTabs']:
-            webView = RWebView(self, self.pb, self.app_profile, self.searchManager, self.user_links, self.downloadManager)
+            webView = RWebView(self, self.settingsManager, self.pb, self.app_profile, self.searchManager, self.user_links, self.downloadManager)
             self.createNewWindow.emit(windowType)
             self.newTabRequest.emit(webView)
             return webView
         else:
-            webView = RWebView(self, self.pb, self.app_profile, self.searchManager, self.user_links, self.downloadManager)
+            webView = RWebView(self, self.settingsManager,self.pb, self.app_profile, self.searchManager, self.user_links, self.downloadManager)
             self.createNewWindow.emit(windowType)
             self.newWindowRequest.emit(webView)
             return webView
