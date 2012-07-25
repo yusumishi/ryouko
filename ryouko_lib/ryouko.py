@@ -684,15 +684,17 @@ class ClearHistoryDialog(QtGui.QMainWindow):
             saveTime = time.time()
             browserHistory.reload()
             print(browserHistory.history)
+            newHistory = []
             for item in browserHistory.history:
                 try:
                     difference = saveTime - int(item['time'])
                 except:
                     print("Error!")
                 else:
-                    print(int(round(difference*100)), int(timeRange*100))
-                    if int(round(difference*100)) <= int(timeRange*100):
-                        del browserHistory.history[browserHistory.history.index(item)]
+#                    print(int(round(difference*100)), int(timeRange*100))
+                    if int(round(difference*100)) > int(timeRange*100):
+                        newHistory.append(item)
+            browserHistory.history = newHistory
             browserHistory.save()
             for win in app_windows:
                 try:
