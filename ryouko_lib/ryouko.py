@@ -92,7 +92,7 @@ from Python23Compat import *
 from QStringFunctions import *
 from SystemTerminal import *
 from SettingsManager import *
-from RWebPage import *
+from RWebKit import *
 from DownloaderThread import *
 from DialogFunctions import *
 from MovableTabWidget import *
