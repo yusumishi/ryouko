@@ -1638,7 +1638,7 @@ class CDialog(QtGui.QMainWindow):
     def saveSettings(self):
         if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'showBookmarksToolBar', self.showBTBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'showBookmarksToolBar': self.showBTBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
         aboutDialog.updateUserAgent()
         f = open(app_default_profile_file, "w")
         if self.profileList.currentItem() == None:
@@ -2349,7 +2349,6 @@ self.origY + ev.globalY() - self.mouseY)
 
         toggleBTAction = QtGui.QAction(tr("bookmarksToolBarToggle"), self)
         toggleBTAction.triggered.connect(cDialog.showBTBox.click)
-
         self.mainMenu.addAction(toggleBTAction)
 
         self.mainMenu.addAction(manageBookmarksAction)

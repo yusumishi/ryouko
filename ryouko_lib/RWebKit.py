@@ -296,7 +296,7 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.loadControls)
 
     def loadLinks(self):
-        if self.settingsManager["showBookmarksToolBar"] == True:
+        if self.settingsManager.settings["showBookmarksToolBar"] == True:
             if not self.user_links == "":
                 if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
                     self.buildToolBar()
