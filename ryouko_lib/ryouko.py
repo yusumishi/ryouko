@@ -288,14 +288,15 @@ def prepareQuit():
     except: doNothing()
     else:
         syncData()
-
     sys.exit()
 
 def acopy(f1, f2):
     if os.path.isdir(f1):
+        if os.path.exists(f2):
+            shutil.rmtree(f2)
         shutil.copytree(f1, f2)
-    else:
-        shutil.copy2(f1, f2)
+    elif os.path.exists(f1):
+        shutil.copyfile(f1, f2)
 
 def syncData():
     if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None":
@@ -303,22 +304,33 @@ def syncData():
         remote_profile = os.path.join(remote, app_profile_name)
         if not os.path.exists(remote_profile):
             os.makedirs(remote_profile)
-            shutil.copytree(app_profile, os.path.join(remote, app_profile_name))
-        else:
-            for fname in os.path.listdir(remote_profile):
-                r = os.path.join(remote_profile, fname)
-                l = os.path.join(app_profile, fname)
-                if os.path.exists(r) and os.path.exists(l):
-                    rt = os.stat(r).st_mtime
-                    lt = os.stat(r).st_mtime
-                    if rt > lt:
-                        acopy(r, l)
-                    elif lt < rt:
-                        acopy(l, r)
-                elif os.path.exists(r):
+        d = os.listdir(app_profile)
+        print(d)
+        for fname in d:
+            r = os.path.join(remote_profile, fname)
+            print("r", r)
+            l = os.path.join(app_profile, fname)
+            print("l", l)
+            if not os.path.exists(r) and os.path.exists(l):
+                acopy(l, r)
+            elif not os.path.exists(l) and os.path.exists(r):
+                acopy(r, l)
+            if os.path.exists(r) and os.path.exists(l):
+                rt = int(float(os.stat(r).st_mtime)*100)
+                lt = int(float(os.stat(l).st_mtime)*100)
+                if (lt >= rt) == False:
                     acopy(r, l)
-                elif os.path.exists(l):
+                elif (rt >= lt) == False:
                     acopy(l, r)
+                else:
+                    if rt == lt:
+                        print("Equal")
+                    else:
+                        print("Not Equal")
+            elif os.path.exists(l):                
+                acopy(l, r)
+            elif os.path.exists(r):
+                acopy(r, l)
 
 def touch(fname):
     f = open(fname, "w")
