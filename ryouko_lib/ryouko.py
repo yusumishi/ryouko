@@ -82,7 +82,6 @@ except: __file__ = sys.executable
 app_lib = os.path.dirname(os.path.realpath(__file__))
 app_locale = locale.getdefaultlocale()[0]
 sys.path.append(app_lib)
-app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
 app_default_useragent = "Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/534.34 (KHTML, like Gecko) Qt/4.8.1 Safari/534.34"
 app_webview_default_icon = QtGui.QIcon()
 

@@ -12,6 +12,7 @@ from Python23Compat import *
 from DialogFunctions import *
 from TranslationManager import *
 
+app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
 app_locale = locale.getdefaultlocale()[0]
 app_info = os.path.join(app_lib, "info.txt")
 app_version = "N/A"
