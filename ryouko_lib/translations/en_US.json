@@ -173,6 +173,7 @@
 "url": "URL",
 "userAgent": "User Agent",
 "user": "User",
+"username": "Username",
 "viewAdvHistory": "Show Detailed History",
 "viewBookmarks": "Manage &Bookmarks",
 "viewHistoryBtnTT": "<b>View History</b><br>Ctrl+H",

@@ -1,13 +1,28 @@
 #! /usr/bin/env python
 
-import sys
+import os.path, sys
 from PyQt4 import QtCore, QtGui, QtWebKit
+try: __file__
+except: __file__ == sys.executable
+app_lib = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(app_lib)
+
+from DialogFunctions import *
+from TranslationManager import *
 
 class RWebPage(QtWebKit.QWebPage):
     def __init__(self, parent=None):
         super(RWebPage, self).__init__()
         self.setParent(parent)
         self.userAgent = False
+        self.networkAccessManager().authenticationRequired.connect(self.provideAuthentication)
+    def provideAuthentication(self, reply, auth):
+        uname = QtGui.QInputDialog.getText(None, tr('query'), tr('username'), QtGui.QLineEdit.Normal)
+        if uname:
+            auth.setUser(uname[0])
+            pword = QtGui.QInputDialog.getText(None, tr('query'), tr('password'), QtGui.QLineEdit.Password)
+            if pword:
+                auth.setPassword(pword[0])
     def userAgentForUrl(self, url):
         if self.userAgent == False:
             return QtWebKit.QWebPage.userAgentForUrl(self, url)

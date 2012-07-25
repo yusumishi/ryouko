@@ -77,10 +77,8 @@ except ImportError:
 else:
     import urllib.request
 
-try:
-    __file__
-except:
-    __file__ = sys.executable
+try: __file__
+except: __file__ = sys.executable
 app_lib = os.path.dirname(os.path.realpath(__file__))
 app_locale = locale.getdefaultlocale()[0]
 sys.path.append(app_lib)
