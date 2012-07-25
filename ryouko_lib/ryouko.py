@@ -306,7 +306,7 @@ def syncData():
         if not os.path.exists(remote_profile):
             os.makedirs(remote_profile)
         d = os.listdir(app_profile)
-        print(d)
+        #print(d)
         for fname in d:
             r = os.path.join(remote_profile, fname)
             #print("r", r)
