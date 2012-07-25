@@ -1622,7 +1622,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
 
     def createWindow(self, windowType):
         s = str(len(self.newWindows))
-        if settingsManager.settings['oldSchoolWindows'] or settingsManager.settings['openInTabs']:
+        if settingsManager.settings['openInTabs']:
             if settingsManager.settings['openInTabs']:
                 if win.closed:
                     exec("win.show()")
@@ -1908,11 +1908,7 @@ class CDialog(QtGui.QMainWindow):
         newWindowBox = QtGui.QLabel(tr('newWindowOption0'))
         self.gLayout.addWidget(newWindowBox)
         self.openTabsBox = QtGui.QCheckBox(tr('newWindowOption'))
-        self.openTabsBox.stateChanged.connect(self.checkOSWBox)
         self.gLayout.addWidget(self.openTabsBox)
-        self.oswBox = QtGui.QCheckBox(tr('newWindowOption2'))
-        self.oswBox.stateChanged.connect(self.checkOTabsBox)
-        self.gLayout.addWidget(self.oswBox)
         uCloseLabel = QtGui.QLabel(tr('maxUndoCloseTab') + ":")
         self.gLayout.addWidget(uCloseLabel)
         self.undoCloseTabCount = QtGui.QLineEdit()
@@ -2088,11 +2084,6 @@ class CDialog(QtGui.QMainWindow):
             self.openTabsBox.setChecked(True)
         else:
             self.openTabsBox.setChecked(self.settings['openInTabs'])
-        try: self.settings['oldSchoolWindows']
-        except:
-            self.oswBox.setChecked(False)
-        else:
-            self.oswBox.setChecked(self.settings['oldSchoolWindows'])
         try: self.settings['loadImages']
         except: 
             self.imagesBox.setChecked(True)
@@ -2245,7 +2236,7 @@ class CDialog(QtGui.QMainWindow):
     def saveSettings(self):
         if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'oldSchoolWindows' : self.oswBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
         f = open(app_default_profile_file, "w")
         if self.profileList.currentItem() == None:
             self.profileList.setCurrentRow(0)
@@ -3280,11 +3271,8 @@ self.origY + ev.globalY() - self.mouseY)
             self.currentWebView().load(QtCore.QUrl(metaunquote(url)))
 
     def newWindow(self):
-        if settingsManager.settings['oldSchoolWindows']:
-            self.tabs.widget(self.tabs.currentIndex()).webView.newWindow()
-        else:
-            nwin = TabBrowser(self)
-            nwin.show()
+        nwin = TabBrowser(self)
+        nwin.show()
 
     def openHistoryItem(self, item):
         if self.searchOn == False:
