@@ -2469,10 +2469,16 @@ self.origY + ev.globalY() - self.mouseY)
                         sys.argv[arg - 1]
                     except:
                         if not sys.argv[arg] == "-P":
-                            self.newTab(None, sys.argv[arg])
+                            a = sys.argv[arg]
+                            if not "://" in a:
+                                a = "http://" + a
+                            self.newTab(None, a)
                     else:
                         if not (sys.argv[arg - 1] == "-P") and not sys.argv[arg] == "-P":
-                            self.newTab(None, sys.argv[arg])
+                            a = sys.argv[arg]
+                            if not "://" in a:
+                                a = "http://" + a
+                            self.newTab(None, a)
                 else:
                     try:
                         sys.argv[arg - 1]
