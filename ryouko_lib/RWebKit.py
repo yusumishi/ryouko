@@ -25,6 +25,9 @@ if os.path.exists(app_info):
 def doNothing():
     return
 
+def do_nothing():
+    return
+
 class RWebPage(QtWebKit.QWebPage):
     def __init__(self, parent=None):
         super(RWebPage, self).__init__()
