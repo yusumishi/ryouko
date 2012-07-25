@@ -296,15 +296,16 @@ class RWebView(QtWebKit.QWebView):
         self.loadFinished.connect(self.loadControls)
 
     def loadLinks(self):
-        if not self.user_links == "":
-            if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
-                self.buildToolBar()
-            if self.page().mainFrame().findFirstElement("#ryouko-link-bar").isNull():
-                self.page().mainFrame().findFirstElement("#ryouko-link-bar-container").appendInside("<span id=\"ryouko-link-bar\"></span>")
-                if not self.user_links == "":
-                    self.page().mainFrame().findFirstElement("#ryouko-link-bar").appendInside(self.user_links)
-                else:
-                    self.evaluateJavaScript("link = document.createElement('a');\nlink.innerHTML = '%s';\ndocument.getElementById('ryouko-link-bar').appendChild(link);" % (tr("noExtensions")))
+        if self.settingsManager["showBookmarksToolBar"] == True:
+            if not self.user_links == "":
+                if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:
+                    self.buildToolBar()
+                if self.page().mainFrame().findFirstElement("#ryouko-link-bar").isNull():
+                    self.page().mainFrame().findFirstElement("#ryouko-link-bar-container").appendInside("<span id=\"ryouko-link-bar\"></span>")
+                    if not self.user_links == "":
+                        self.page().mainFrame().findFirstElement("#ryouko-link-bar").appendInside(self.user_links)
+                    else:
+                        self.evaluateJavaScript("link = document.createElement('a');\nlink.innerHTML = '%s';\ndocument.getElementById('ryouko-link-bar').appendChild(link);" % (tr("noExtensions")))
 
     def buildToolBar(self):
         if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull() == True:

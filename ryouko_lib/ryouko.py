@@ -1353,6 +1353,8 @@ class CDialog(QtGui.QMainWindow):
         self.pWidget.setLayout(self.pLayout)
         self.tabs.addTab(self.pWidget, tr('browsing'))
 
+        self.showBTBox = QtGui.QCheckBox(tr('bookmarksToolBarShow'))
+        self.gLayout.addWidget(self.showBTBox)
         newWindowBox = QtGui.QLabel(tr('newWindowOption0'))
         self.gLayout.addWidget(newWindowBox)
         self.openTabsBox = QtGui.QCheckBox(tr('newWindowOption'))
@@ -1518,69 +1520,51 @@ class CDialog(QtGui.QMainWindow):
         settingsManager.loadSettings()
         self.settings = settingsManager.settings
         try: self.settings['openInTabs']
-        except:
-            self.openTabsBox.setChecked(True)
-        else:
-            self.openTabsBox.setChecked(self.settings['openInTabs'])
+        except: self.openTabsBox.setChecked(True)
+        else: self.openTabsBox.setChecked(self.settings['openInTabs'])
         try: self.settings['loadImages']
-        except: 
-            self.imagesBox.setChecked(True)
-        else:
-            self.imagesBox.setChecked(self.settings['loadImages'])
+        except: self.imagesBox.setChecked(True)
+        else: self.imagesBox.setChecked(self.settings['loadImages'])
         try: self.settings['jsEnabled']
-        except: 
-            self.jsBox.setChecked(True)
-        else:
-            self.jsBox.setChecked(self.settings['jsEnabled'])
+        except: self.jsBox.setChecked(True)
+        else: self.jsBox.setChecked(self.settings['jsEnabled'])
+        try: self.settings['showBookmarksToolBar']
+        except: self.showBTBox.setChecked(True)
+        else: self.showBTBox.setChecked(self.settings['showBookmarksToolBar'])
         try: self.settings['javaEnabled']
-        except: 
-            self.javaBox.setChecked(True)
-        else:
-            self.javaBox.setChecked(self.settings['javaEnabled'])
+        except: self.javaBox.setChecked(True)
+        else: self.javaBox.setChecked(self.settings['javaEnabled'])
         try: self.settings['storageEnabled']
-        except: 
-            self.storageBox.setChecked(True)
-        else:
-            self.storageBox.setChecked(self.settings['storageEnabled'])
+        except: self.storageBox.setChecked(True)
+        else: self.storageBox.setChecked(self.settings['storageEnabled'])
         try: self.settings['pluginsEnabled']
         except:
             if sys.platform.startswith("linux"):
                 self.pluginsBox.setChecked(False)
             else:
                 self.pluginsBox.setChecked(True)
-        else:
-            self.pluginsBox.setChecked(self.settings['pluginsEnabled'])
+        else: self.pluginsBox.setChecked(self.settings['pluginsEnabled'])
         try: self.settings['privateBrowsing']
-        except: 
-            self.pbBox.setChecked(False)
-        else:
-            self.pbBox.setChecked(self.settings['privateBrowsing'])
+        except: self.pbBox.setChecked(False)
+        else: self.pbBox.setChecked(self.settings['privateBrowsing'])
         try: self.settings['googleDocsViewerEnabled']
-        except: 
-            self.gDocsBox.setChecked(True)
-        else:
-            self.gDocsBox.setChecked(self.settings['googleDocsViewerEnabled'])
+        except: self.gDocsBox.setChecked(True)
+        else: self.gDocsBox.setChecked(self.settings['googleDocsViewerEnabled'])
         try: self.settings['adBlock']
-        except: 
-            self.aBBox.setChecked(False)
-        else:
-            self.aBBox.setChecked(self.settings['adBlock'])
+        except: self.aBBox.setChecked(False)
+        else: self.aBBox.setChecked(self.settings['adBlock'])
         try: self.settings['customUserAgent']
-        except:
-            doNothing()
-        else:
-            self.uABox.setText(self.settings['customUserAgent'])
+        except: doNothing()
+        else: self.uABox.setText(self.settings['customUserAgent'])
         try: self.settings['maxUndoCloseTab']
-        except:
-            self.undoCloseTabCount.setText("-1")
+        except: self.undoCloseTabCount.setText("-1")
         else:
             try:
                 self.undoCloseTabCount.setText(str(self.settings['maxUndoCloseTab']))
             except:
                 self.undoCloseTabCount.setText("-1")
         try: self.settings['proxy']
-        except:
-            doNothing()
+        except: doNothing()
         else:
             pr = self.settings['proxy']
             if pr['type']:
@@ -2362,6 +2346,11 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(newpbTabAction)
 #        self.mainMenu.addAction(closeTabForeverAction)
         self.mainMenu.addSeparator()
+
+        toggleBTAction = QtGui.QAction(tr("bookmarksToolBarToggle"), self)
+        toggleBTAction.triggered.connect(cDialog.showBTBox.click)
+
+        self.mainMenu.addAction(toggleBTAction)
 
         self.mainMenu.addAction(manageBookmarksAction)
         self.mainMenu.addSeparator()
