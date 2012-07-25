@@ -2349,6 +2349,7 @@ self.origY + ev.globalY() - self.mouseY)
 
         toggleBTAction = QtGui.QAction(tr("bookmarksToolBarToggle"), self)
         toggleBTAction.triggered.connect(cDialog.showBTBox.click)
+        toggleBTAction.triggered.connect(cDialog.saveSettings)
         self.mainMenu.addAction(toggleBTAction)
 
         self.mainMenu.addAction(manageBookmarksAction)
