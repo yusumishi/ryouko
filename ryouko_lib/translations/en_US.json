@@ -51,7 +51,7 @@
 "downloadStarted": "Downloading file; will notify you when complete.",
 "editSearchTT": "<b>Edit Search Engines...</b><br>Ctrl+Shift+K",
 "enableAB": "Enable &ad-blocking (warning: experimental!)",
-"enableGDViewer": "Use Google Docs &viewer to load content where applicable",
+"enableGDViewer": "Use Google &Docs viewer to load content where applicable",
 "enableJS": "Enable &JavaScript",
 "enableJava": "Enable Ja&va",
 "enablePB": "Enable &private browsing mode",
