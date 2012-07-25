@@ -226,6 +226,7 @@ class RWebView(QtWebKit.QWebView):
 
     def setUserLinks(self, user_links):
         self.user_links = user_links
+#        print(user_links)
 
     def setSettingsManager(self, settingsManager):
         self.settingsManager = settingsManager

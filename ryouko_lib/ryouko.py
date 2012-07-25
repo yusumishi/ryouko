@@ -248,6 +248,7 @@ def rebuild_bookmarks_toolbar():
 bookmarksManager.bookmarksChanged.connect(rebuild_bookmarks_toolbar)
 
 bookmarksManager.setDirectory(app_links)
+user_links = bookmarksManager.reload_user_links(bookmarksManager.app_links)
 
 reset = False
 
@@ -1158,7 +1159,7 @@ class Browser(QtGui.QMainWindow):
 
         self.progressBar = QtGui.QProgressBar(self)
 
-        webView = RWebView(self, self.pb, app_profile, searchManager)
+        webView = RWebView(self, self.pb, app_profile, searchManager, user_links)
         self.swapWebView(webView)
 
         self.mainLayout.setSpacing(0);

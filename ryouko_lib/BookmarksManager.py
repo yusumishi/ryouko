@@ -14,7 +14,7 @@ class BookmarksManager(QtCore.QObject):
         self.reload_()
     def setDirectory(self, app_links):
         self.app_links = app_links
-    def reload_user_links(app_links):
+    def reload_user_links(self, app_links):
         links = []
         if os.path.isdir(app_links):
             l = os.listdir(app_links)
@@ -31,8 +31,7 @@ class BookmarksManager(QtCore.QObject):
             user_links = ""
             for link in links:
                 user_links = "%s<a href=\"%s\">%s</a> \n" % (user_links, link[0], link[1])
-            self.bookmarksChanged.emit()
-            self.userLinks.emit(user_links)
+            self.userLinksChanged.emit(user_links)
             return user_links
     def reload_(self):
         self.bookmarks = []
@@ -63,5 +62,5 @@ class BookmarksManager(QtCore.QObject):
         if os.path.exists(path + ".txt"):
             os.remove(path + ".txt")
         self.reload_()
-        self.reload_user_links()
+        self.reload_user_links(self.app_links)
         self.bookmarksChanged.emit()
