@@ -2032,15 +2032,15 @@ class CDialog(QtGui.QMainWindow):
 
         cloudLabel = QtGui.QLabel(tr("cloudService"))
         cloudLabel.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
-        cloudLabel2 = QtGui.QLabel(tr("cloudService2"))
-        cloudLabel2.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
+        #cloudLabel2 = QtGui.QLabel(tr("cloudService2"))
+        #cloudLabel2.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         self.cloudBox = QtGui.QComboBox()
         self.cloudBox.addItem("No")
         self.cloudBox.addItem("Dropbox")
         self.cloudBox.addItem("Ubuntu One")
         self.aLayout.addWidget(cloudLabel)
         self.aLayout.addWidget(self.cloudBox)
-        self.aLayout.addWidget(cloudLabel2)
+        #self.aLayout.addWidget(cloudLabel2)
 
         self.aLayout.addWidget(RExpander())
 
