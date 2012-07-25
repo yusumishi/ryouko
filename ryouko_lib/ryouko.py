@@ -2214,7 +2214,6 @@ self.origY + ev.globalY() - self.mouseY)
         # Tabs
         self.tabs = MovableTabWidget(self)
         self.tabs.currentChanged.connect(self.hideInspectors)
-        self.tabs.currentChanged.connect(self.repaint)
         self.tabs.currentChanged.connect(self.enableDisableBF)
         self.tabs.currentChanged.connect(self.setIcon)
         self.tabs.currentChanged.connect(self.correctURLText)
