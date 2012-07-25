@@ -156,6 +156,7 @@
 "selectProfile": "Select a profile to use",
 "sourceOf1": "Source of ",
 "sourceOf2": "",
+"sslWarning": "Ryouko has encountered errors in the SSL encryption of your connection. Proceed anyway?",
 "stopBtnTT": "<b>Stop/Reset Location Bar</b><br>Esc",
 "tempFiles": "Temporary files",
 "time": "Time",

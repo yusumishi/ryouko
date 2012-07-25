@@ -156,6 +156,7 @@
 "selectProfile": "Seleccionar un perfil",
 "sourceOf1": "Código fuente de ",
 "sourceOf2": "",
+"sslWarning": "Ryouko se encuentra algos errores en la cifrado SSL de su conexión. ¿Continuar de todos modos?",
 "stopBtnTT": "<b>Detener</b><br>Esc",
 "tempFiles": "Archivas temporales",
 "time": "Tiempo",

@@ -18,6 +18,15 @@ class RWebPage(QtWebKit.QWebPage):
         self.bork = False
         self.replyURL = QtCore.QUrl("about:blank")
         self.networkAccessManager().authenticationRequired.connect(self.provideAuthentication)
+        self.networkAccessManager().sslErrors.connect(self.sslError)
+    def sslError(self, reply, errors):
+        q = QtGui.QMessageBox.warning(None, tr("warning"),
+    tr("sslWarning"), QtGui.QMessageBox.Yes | 
+    QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        if q == QtGui.QMessageBox.Yes:
+            reply.ignoreSslErrors()
+        else:
+            return
     def provideAuthentication(self, reply, auth):
         if self.bork == False:
             uname = QtGui.QInputDialog.getText(None, tr('query'), tr('username'), QtGui.QLineEdit.Normal)
