@@ -309,9 +309,9 @@ def syncData():
         print(d)
         for fname in d:
             r = os.path.join(remote_profile, fname)
-            print("r", r)
+            #print("r", r)
             l = os.path.join(app_profile, fname)
-            print("l", l)
+            #print("l", l)
             if not os.path.exists(r) and os.path.exists(l):
                 acopy(l, r)
             elif not os.path.exists(l) and os.path.exists(r):
@@ -323,11 +323,11 @@ def syncData():
                     acopy(r, l)
                 elif (rt >= lt) == False:
                     acopy(l, r)
-                else:
-                    if rt == lt:
-                        print("Equal")
-                    else:
-                        print("Not Equal")
+                #else:
+                    #if rt == lt:
+                        #print("Equal")
+                    #else:
+                        #print("Not Equal")
             elif os.path.exists(l):         
                 acopy(l, r)
             elif os.path.exists(r):
