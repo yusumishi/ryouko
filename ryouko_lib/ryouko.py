@@ -1129,9 +1129,9 @@ class Browser(QtGui.QMainWindow):
         self.updateSettings()
         self.webView.setParent(self)
         self.mainLayout.addWidget(self.webView, 1, 0)
+        self.webView.urlChanged.connect(browserHistory.reload)
+        self.webView.titleChanged.connect(browserHistory.reload)
         if not self.pb and not self.webView.pb:
-            self.webView.urlChanged.connect(browserHistory.reload)
-            self.webView.titleChanged.connect(browserHistory.reload)
             self.webView.urlChanged.connect(browserHistory.append)
             self.webView.titleChanged.connect(browserHistory.updateTitles)
         self.webInspector.setPage(self.webView.page())
@@ -2716,16 +2716,11 @@ self.origY + ev.globalY() - self.mouseY)
             self.newTab(None, self.tempHistory[self.historyList.row(item)]['url'])
 
     def reloadHistory(self):
-        try:
-            if self.searchOn == False:
-                self.historyList.clear()
-                browserHistory.reload()
-                for item in browserHistory.history:
-                    self.historyList.addItem(qstring(unicode(item['name'])))
-            else:
-                browserHistory.reload()
-        except:
-            browserHistory.reset()
+        self.searchHistoryField.clear()    
+        self.historyList.clear()
+        browserHistory.reload()
+        for item in browserHistory.history:
+           self.historyList.addItem(qstring(unicode(item['name'])))
     def searchHistory(self, string=""):
         string = unicode(string)
         if string != "":

@@ -92,6 +92,7 @@ class BrowserHistory(QtCore.QObject):
                 if item['url'].lower() == self.url.lower():
                     item['name'] = title
             self.save()
+            self.historyChanged.emit()
         except:
             self.reset()
     def removeByName(self, name=""):
@@ -101,6 +102,7 @@ class BrowserHistory(QtCore.QObject):
                 if item['name'] == name:
                     del self.history[self.history.index(item)]
             self.save()
+            self.historyChanged.emit()
         except:
             doNothing()
     def removeByUrl(self, url=""):
@@ -109,6 +111,7 @@ class BrowserHistory(QtCore.QObject):
             for item in self.history:
                 if item['url'] == url:
                     del self.history[self.history.index(item)]
+            self.historyChanged.emit()
             self.save()
         except:
             doNothing()
