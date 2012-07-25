@@ -117,7 +117,7 @@
 "newWindow": "New Window",
 "newWindowOption0": "Links opened in new windows should...",
 "newWindowOption2": "...open in &popups",
-"newWindowOption": "...open in &tabs",
+"newWindowOption": "...&open in tabs",
 "nextBtnTT": "<b>Next Page</b><br>Alt+Right",
 "next": "Next",
 "noPyQtError": "Ryouko requires PyQt4 to be installed. Please install PyQt4 and try again.",
