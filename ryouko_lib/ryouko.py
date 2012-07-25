@@ -1159,7 +1159,7 @@ class Browser(QtGui.QMainWindow):
 
         self.progressBar = QtGui.QProgressBar(self)
 
-        webView = RWebView(self, self.pb, app_profile, searchManager, user_links)
+        webView = RWebView(self, self.pb, app_profile, searchManager, user_links, downloadManagerGUI)
         self.swapWebView(webView)
 
         self.mainLayout.setSpacing(0);

@@ -89,10 +89,11 @@ class RWebView(QtWebKit.QWebView):
     newTabRequest = QtCore.pyqtSignal(QtWebKit.QWebView)
     newWindowRequest = QtCore.pyqtSignal(QtWebKit.QWebView)
     undoCloseWindowRequest = QtCore.pyqtSignal()
-    def __init__(self, parent=False, pb=False, app_profile=os.path.expanduser("~"), sm=None, user_links=""):
+    def __init__(self, parent=False, pb=False, app_profile=os.path.expanduser("~"), sm=None, user_links="", downloadManager=None):
         QtWebKit.QWebView.__init__(self, parent)
         self.user_links = user_links
         self.searchManager = sm
+        self.downloadManager = downloadManager
         self.app_profile = app_profile
         self.setCookieJar(QtNetwork.QNetworkCookieJar(None))
         self.parent2 = parent
@@ -525,29 +526,14 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         if not os.path.isdir(os.path.dirname(fname)):
             fname = saveDialog(os.path.split(unicode(request.url().toString()))[1])
         if fname:
-            if self.settingsManager.settings['backend'] == "qt":
-                nm = self.page().networkAccessManager()
-                if type(request) == QtNetwork.QNetworkReply:
-                    reply = nm.get(request.request())
-                else:
-                    reply = nm.get(request)
-                downloadManagerGUI.newReply(reply, fname)
-                global downloadStartTimer
-                downloadStartTimer.start(250)
+            nm = self.page().networkAccessManager()
+            if type(request) == QtNetwork.QNetworkReply:
+                reply = nm.get(request.request())
             else:
-                downloaderThread.setUrl(unicode(request.url().toString()))
-                downloaderThread.setDestination(fname)
-                username = False
-                password = False
-                if self.settingsManager.settings['loginToDownload'] == True:
-                    username = inputDialog("Enter a username", "Enter a username here [optional]:")
-                    if username.replace(" ", "") != "":
-                        password = inputDialog("Enter a username", "Enter a password here [optional]:")
-                    else:
-                        username = False
-                downloaderThread.username = username
-                downloaderThread.password = password
-                downloaderThread.start()
+                reply = nm.get(request)
+            self.downloadManager.newReply(reply, fname)
+            global downloadStartTimer
+            downloadStartTimer.start(250)
 
     def updateTitle(self):
         if self.title() != self.windowTitle():
@@ -638,12 +624,12 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
     def createWindow(self, windowType):
         s = str(len(self.newWindows))
         if self.settingsManager.settings['openInTabs']:
-            webView = RWebView(self, self.pb, self.app_profile, self.searchManager)
+            webView = RWebView(self, self.pb, self.app_profile, self.searchManager, self.user_links, self.downloadManager)
             self.createNewWindow.emit(windowType)
             self.newTabRequest.emit(webView)
             return webView
         else:
-            webView = RWebView(self, self.pb, self.app_profile, self.searchManager)
+            webView = RWebView(self, self.pb, self.app_profile, self.searchManager, self.user_links, self.downloadManager)
             self.createNewWindow.emit(windowType)
             self.newWindowRequest.emit(webView)
             return webView
