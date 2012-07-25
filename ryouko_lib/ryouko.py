@@ -683,7 +683,6 @@ class ClearHistoryDialog(QtGui.QMainWindow):
                 doNothing()
             saveTime = time.time()
             browserHistory.reload()
-            print(browserHistory.history)
             newHistory = []
             for item in browserHistory.history:
                 try:
