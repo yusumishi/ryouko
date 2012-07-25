@@ -1126,6 +1126,7 @@ class Browser(QtGui.QMainWindow):
             self.webView.setCookieJar(app_cookiejar)
         self.webView.setSettingsManager(settingsManager)
         self.webView.saveCookies.connect(saveCookies)
+        self.webView.downloadStarted.connect(self.downloadStarted)
         self.updateSettings()
         self.webView.setParent(self)
         self.mainLayout.addWidget(self.webView, 1, 0)
@@ -1142,6 +1143,9 @@ class Browser(QtGui.QMainWindow):
         self.webView.loadProgress.connect(self.progressBar.show)
         self.webView.undoCloseWindowRequest.connect(undoCloseWindow)
         bookmarksManager.userLinksChanged.connect(self.webView.setUserLinks)
+
+    def downloadStarted(self):
+        downloadStartTimer.start(250)
 
     def initUI(self, url):
 

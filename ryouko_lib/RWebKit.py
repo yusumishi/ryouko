@@ -89,6 +89,7 @@ class RWebView(QtWebKit.QWebView):
     newTabRequest = QtCore.pyqtSignal(QtWebKit.QWebView)
     newWindowRequest = QtCore.pyqtSignal(QtWebKit.QWebView)
     undoCloseWindowRequest = QtCore.pyqtSignal()
+    downloadStarted = QtCore.pyqtSignal()
     def __init__(self, parent=False, pb=False, app_profile=os.path.expanduser("~"), sm=None, user_links="", downloadManager=None):
         QtWebKit.QWebView.__init__(self, parent)
         self.user_links = user_links
@@ -532,8 +533,8 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             else:
                 reply = nm.get(request)
             self.downloadManager.newReply(reply, fname)
+            self.downloadStarted.emit()
             global downloadStartTimer
-            downloadStartTimer.start(250)
 
     def updateTitle(self):
         if self.title() != self.windowTitle():
