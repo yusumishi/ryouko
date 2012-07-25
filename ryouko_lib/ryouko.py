@@ -657,7 +657,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
         self.selectRange.addItem(tr('everything'))
         self.selectRange.addItem("----------------")
         self.selectRange.addItem(tr('cookies'))
-        self.selectRange.addItem(tr('localStorage'))
+        self.selectRange.addItem(tr('persistentStorage'))
         self.layout.addWidget(self.selectRange)
         self.toolBar = QtGui.QToolBar("")
         self.toolBar.setStyleSheet(blanktoolbarsheet)

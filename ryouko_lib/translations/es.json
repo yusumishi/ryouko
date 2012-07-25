@@ -128,6 +128,7 @@
 "openFile": "Abrir este archivo",
 "openFolder": "Abrir la carpeta que contiene",
 "password": "Contraseña",
+"persistentStorage": "Almacenamiento persistente",
 "port": "Puerto",
 "preferencesButton": "Prefere&ncias",
 "preferencesButtonTT": "<b>Preferencias</b><br>Ctrl+Shift+P",
