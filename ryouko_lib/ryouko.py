@@ -1342,12 +1342,6 @@ class CDialog(QtGui.QMainWindow):
         self.pWidget.setLayout(self.pLayout)
         self.tabs.addTab(self.pWidget, tr('browsing'))
 
-        # Download settings page
-        self.dWidget = QtGui.QWidget()
-        self.dLayout = QtGui.QVBoxLayout()
-        self.dWidget.setLayout(self.dLayout)
-        self.tabs.addTab(self.dWidget, tr('downloadsHKey'))
-
         newWindowBox = QtGui.QLabel(tr('newWindowOption0'))
         self.gLayout.addWidget(newWindowBox)
         self.openTabsBox = QtGui.QCheckBox(tr('newWindowOption'))
@@ -1385,18 +1379,6 @@ class CDialog(QtGui.QMainWindow):
         self.uALabel2 = QtGui.QLabel(tr("customUserAgent"))
         self.cLayout.addWidget(self.uALabel2)
         self.cLayout.addWidget(RExpander())
-        backendBox = QtGui.QLabel(tr('downloadBackend'))
-        backendBox.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
-        self.dLayout.addWidget(backendBox)
-        self.selectBackend = QtGui.QComboBox()
-        self.selectBackend.addItem('qt')
-        self.selectBackend.addItem('python')
-        self.selectBackend.addItem('aria2')
-        self.selectBackend.addItem('axel')
-        self.dLayout.addWidget(self.selectBackend)
-        self.lDBox = QtGui.QCheckBox(tr('loginToDownload'))
-        self.dLayout.addWidget(self.lDBox)
-        self.dLayout.addWidget(RExpander())
         self.editSearchButton = QtGui.QPushButton(tr('manageSearchEngines'), self)
         try: self.editSearchButton.clicked.connect(searchEditor.display)
         except:
@@ -1575,26 +1557,6 @@ class CDialog(QtGui.QMainWindow):
             doNothing()
         else:
             self.uABox.setText(self.settings['customUserAgent'])
-        try: self.settings['backend']
-        except:
-            doNothing()
-        else:
-            downloaderThread.backend = self.settings['backend']
-            for index in range(0, self.selectBackend.count()):
-                try: self.selectBackend.itemText(index)
-                except:
-                    doNothing()
-                else:
-                    if unicode(self.selectBackend.itemText(index)).lower() == self.settings['backend']:
-                        self.selectBackend.setCurrentIndex(index)
-                        break
-            qtb = os.path.join(app_profile, "qtbck.conf")
-            if not os.path.exists(qtb):
-                self.selectBackend.setCurrentIndex(0)
-                f = open(qtb, "w")
-                f.write("")
-                f.close()
-                self.saveSettings()
         try: self.settings['maxUndoCloseTab']
         except:
             self.undoCloseTabCount.setText("-1")
@@ -1679,7 +1641,7 @@ class CDialog(QtGui.QMainWindow):
     def saveSettings(self):
         if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : unicode(self.selectBackend.currentText()).lower(), 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
+        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : self.lDBox.isChecked(), 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
         aboutDialog.updateUserAgent()
         f = open(app_default_profile_file, "w")
         if self.profileList.currentItem() == None:
@@ -1690,7 +1652,7 @@ class CDialog(QtGui.QMainWindow):
         f.write(unicode(self.profileList.currentItem().text()))
         f.close()
         settingsManager.settings = self.settings
-        settingsManager.setBackend(unicode(self.selectBackend.currentText()).lower())
+        settingsManager.setBackend('qt')
         settingsManager.saveSettings()
         global app_windows
         for window in app_windows:
