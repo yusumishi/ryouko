@@ -50,10 +50,10 @@ class RWebPage(QtWebKit.QWebPage):
             return
     def provideAuthentication(self, reply, auth):
         if self.bork == False:
-            uname = QtGui.QInputDialog.getText(None, tr('query'), tr('username'), QtGui.QLineEdit.Normal)
+            uname = QtGui.QInputDialog.getText(None, tr('query'), tr('username') + ":", QtGui.QLineEdit.Normal)
             if uname[1]:
                 auth.setUser(uname[0])
-                pword = QtGui.QInputDialog.getText(None, tr('query'), tr('password'), QtGui.QLineEdit.Password)
+                pword = QtGui.QInputDialog.getText(None, tr('query'), tr('password') + ":", QtGui.QLineEdit.Password)
                 if pword[1]:
                     auth.setPassword(pword[0])
             if self.replyURL == reply.url():
