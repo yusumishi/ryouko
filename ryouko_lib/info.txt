@@ -1,4 +1,4 @@
-0.14.0
-Shiori
+1.0.0
+Takane
 
-Kanji: 栞
+Kanji: 傑音
