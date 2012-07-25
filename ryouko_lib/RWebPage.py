@@ -16,19 +16,24 @@ class RWebPage(QtWebKit.QWebPage):
         self.setParent(parent)
         self.userAgent = False
         self.bork = False
+        self.replyURL = QtCore.QUrl("about:blank")
         self.networkAccessManager().authenticationRequired.connect(self.provideAuthentication)
     def provideAuthentication(self, reply, auth):
         if self.bork == False:
             uname = QtGui.QInputDialog.getText(None, tr('query'), tr('username'), QtGui.QLineEdit.Normal)
-            if uname:
+            if uname[1]:
                 auth.setUser(uname[0])
                 pword = QtGui.QInputDialog.getText(None, tr('query'), tr('password'), QtGui.QLineEdit.Password)
-                if pword:
+                if pword[1]:
                     auth.setPassword(pword[0])
-            self.bork = True
+            if self.replyURL == reply.url():
+                self.bork = True
+            else:
+                self.replyURL = reply.url()
         else:
             reply.abort()
             self.bork = False
+            self.replyURL = QtCore.QUrl("about:blank")
     def userAgentForUrl(self, url):
         if self.userAgent == False:
             return QtWebKit.QWebPage.userAgentForUrl(self, url)
