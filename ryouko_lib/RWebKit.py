@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from __future__ import print_function
-import os.path, sys
+import os.path, sys, string
 from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 try: __file__
 except: __file__ == sys.executable
@@ -318,7 +318,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
     def evaluateJavaScript(self, script):
         self.page().mainFrame().evaluateJavaScript(script)
 
-    def runThroughFilters(url):
+    def runThroughFilters(self, url):
         remove = False
         invert = False
         for f in self.settingsManager.filters:
@@ -373,7 +373,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                 for element in elements:
                     for attribute in element.attributeNames():
                         e = unicode(element.attribute(attribute))
-                        delete = runThroughFilters(e)
+                        delete = self.runThroughFilters(e)
                         if delete:
                             element.removeFromDocument()
                             break
