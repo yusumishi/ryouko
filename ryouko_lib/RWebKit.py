@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from __future__ import print_function
-import os.path, sys, string
+import os.path, sys, string, locale
 from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 try: __file__
 except: __file__ == sys.executable
@@ -12,6 +12,7 @@ from Python23Compat import *
 from DialogFunctions import *
 from TranslationManager import *
 
+app_locale = locale.getdefaultlocale()[0]
 app_info = os.path.join(app_lib, "info.txt")
 app_version = "N/A"
 if os.path.exists(app_info):
