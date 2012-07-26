@@ -9,6 +9,7 @@ app_lib = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(app_lib)
 
 from Python23Compat import *
+from QStringFunctions import *
 from DialogFunctions import *
 from ViewSourceDialog import *
 from TranslationManager import *
@@ -407,6 +408,12 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             self.page().networkAccessManager().setCookieJar(cookies)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == "") and self.pb != None and self.pb != False:
             self.buildNewTabPage()
+
+    def disablePersistentStorage(self):
+        self.settings().setOfflineStoragePath(qstring(""))
+        self.settings().setLocalStoragePath(qstring(""))
+        self.settings().setOfflineWebApplicationCachePath(qstring(""))
+        self.settings().setIconDatabasePath(qstring(self.app_profile))
 
     def updateSettings(self):
         if self.settingsManager != None:

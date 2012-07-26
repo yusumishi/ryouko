@@ -346,10 +346,17 @@ def syncData():
         remote = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles")
         remote_profile = os.path.join(remote, app_profile_name)
         if os.path.isdir(remote_profile):
-            shutil.rmtree(app_profile)
-            shutil.copytree(remote_profile, app_profile)
-            settingsManager.loadSettings()
-            settingsManager.saveSettings()
+            try: shutil.rmtree(app_profile)
+            except:
+                try:
+                    for win in app_windows:
+                        for tab in range(win.tabs.count()):
+                            try: win.tabs.widget(tab).disablePersistentStorage()
+                            except: do_nothing()
+                    try: shutil.rmtree(app_profile)
+                    except: do_nothing()
+            try: shutil.copytree(remote_profile, app_profile)
+            except: do_nothing()
             f = open(sfile, "w")
             f.write("")
             f.close()
