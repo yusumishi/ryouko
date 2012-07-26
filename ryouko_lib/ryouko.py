@@ -348,20 +348,15 @@ def syncData():
         if os.path.isdir(remote_profile):
             try: shutil.rmtree(app_profile)
             except:
-                try:
-                    for win in app_windows:
-                        for tab in range(win.tabs.count()):
-                            try: win.tabs.widget(tab).disablePersistentStorage()
-                            except: do_nothing()
-                    try: shutil.rmtree(app_profile)
-                    except: do_nothing()
-                except: do_nothing()
-            else:
-                try: shutil.copytree(remote_profile, app_profile)
-                except: do_nothing()
-                f = open(sfile, "w")
-                f.write("")
-                f.close()
+                for win in app_windows:
+                    for tab in range(win.tabs.count()):
+                        win.tabs.widget(tab).webView.disablePersistentStorage()
+                        #except: do_nothing()
+                shutil.rmtree(app_profile)
+            shutil.copytree(remote_profile, app_profile)
+            f = open(sfile, "w")
+            f.write("")
+            f.close()
 
         else:
             if not os.path.exists(remote):
@@ -1752,14 +1747,6 @@ self.origY + ev.globalY() - self.mouseY)
             shred_directory(os.path.join(app_profile, "temp"))
 
     def quit(self):
-        m = os.path.join(app_profile, "maximized.conf")
-        if self.windowState() == QtCore.Qt.WindowMaximized:
-            f = open(m, "w")
-            f.write("")
-            f.close()
-        else:
-            if os.path.exists(m):
-                os.remove(m)
         confirmQuit()
 
     def closeEvent(self, ev):
@@ -1781,6 +1768,14 @@ self.origY + ev.globalY() - self.mouseY)
                     del app_closed_windows[0]
                 app_closed_windows.append(self)
             self.closed = True
+            m = os.path.join(app_profile, "maximized.conf")
+            if self.windowState() == QtCore.Qt.WindowMaximized:
+                f = open(m, "w")
+                f.write("")
+                f.close()
+            else:
+                if os.path.exists(m):
+                    os.remove(m)
             return QtGui.QMainWindow.closeEvent(self, ev)
         else:
             ev.ignore()
