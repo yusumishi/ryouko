@@ -348,6 +348,8 @@ def syncData():
         if os.path.isdir(remote_profile):
             shutil.rmtree(app_profile)
             shutil.copytree(remote_profile, app_profile)
+            settingsManager.loadSettings()
+            settingsManager.saveSettings()
             f = open(sfile, "w")
             f.write("")
             f.close()
