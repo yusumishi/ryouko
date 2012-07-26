@@ -1741,6 +1741,14 @@ self.origY + ev.globalY() - self.mouseY)
             shred_directory(os.path.join(app_profile, "temp"))
 
     def quit(self):
+        m = os.path.join(app_profile, "maximized.conf")
+        if self.windowState() == QtCore.Qt.WindowMaximized:
+            f = open(m, "w")
+            f.write("")
+            f.close()
+        else:
+            if os.path.exists(m):
+                os.remove(m)
         confirmQuit()
 
     def closeEvent(self, ev):
@@ -2503,8 +2511,15 @@ self.origY + ev.globalY() - self.mouseY)
                 self.newTab()
                 self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
 
-    #def show(self):
-        #self.setVisible(True)
+        m = os.path.join(app_profile, "maximized.conf")
+        if os.path.exists(m):
+            self.setWindowState(QtCore.Qt.WindowMaximized)
+
+    def show(self):
+        self.setVisible(True)
+        m = os.path.join(app_profile, "maximized.conf")
+        if os.path.exists(m):
+            self.setWindowState(QtCore.Qt.WindowMaximized)
         #self.mainToolBar.setStyleSheet("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
         #self.tabs.setStyleSheet("QTabWidget::pane { margin-top: -" + str(self.tabs.nuTabBar.height()) + "px; padding-top: 0; }")
         #print("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
