@@ -413,7 +413,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         self.settings().setOfflineStoragePath(qstring(""))
         self.settings().setLocalStoragePath(qstring(""))
         self.settings().setOfflineWebApplicationCachePath(qstring(""))
-        self.settings().setIconDatabasePath(qstring(self.app_profile))
+        self.settings().setIconDatabasePath(qstring(""))
 
     def updateSettings(self):
         if self.settingsManager != None:
