@@ -355,11 +355,13 @@ def syncData():
                             except: do_nothing()
                     try: shutil.rmtree(app_profile)
                     except: do_nothing()
-            try: shutil.copytree(remote_profile, app_profile)
-            except: do_nothing()
-            f = open(sfile, "w")
-            f.write("")
-            f.close()
+                except: do_nothing()
+            else:
+                try: shutil.copytree(remote_profile, app_profile)
+                except: do_nothing()
+                f = open(sfile, "w")
+                f.write("")
+                f.close()
 
         else:
             if not os.path.exists(remote):
