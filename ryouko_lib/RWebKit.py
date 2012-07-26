@@ -298,7 +298,7 @@ class RWebView(QtWebKit.QWebView):
 
     def loadLinks(self):
         try: self.settingsManager.settings["showBookmarksToolBar"]
-        except: a = False
+        except: a = True
         else: a = self.settingsManager.settings["showBookmarksToolBar"]
         if a:
             if not self.user_links == "":
