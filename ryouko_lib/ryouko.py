@@ -101,7 +101,6 @@ from HistoryCompletionList import *
 from BookmarksManager import *
 from ContextMenu import *
 from MenuPopupWindow import *
-from ViewSourceDialog import *
 from RExpander import *
 from SearchManager import *
 from RPrintPreviewDialog import *
@@ -1359,6 +1358,10 @@ class CDialog(QtGui.QMainWindow):
         self.pWidget.setLayout(self.pLayout)
         self.tabs.addTab(self.pWidget, tr('browsing'))
 
+        homePagesLabel = QtGui.QLabel(tr('homePages') + ":")
+        self.gLayout.addWidget(homePagesLabel)
+        self.homePagesField = QtGui.QTextEdit()
+        self.gLayout.addWidget(self.homePagesField)
         self.showBTBox = QtGui.QCheckBox(tr('bookmarksToolBarShow'))
         self.gLayout.addWidget(self.showBTBox)
         newWindowBox = QtGui.QLabel(tr('newWindowOption0'))
@@ -1498,6 +1501,7 @@ class CDialog(QtGui.QMainWindow):
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.cToolBar)
         self.loadSettings()
         settingsManager.saveSettings()
+        self.loadSettings()
 
     def showHistoryDialog(self):
         clearHistoryDialog.display()    
@@ -1525,6 +1529,9 @@ class CDialog(QtGui.QMainWindow):
             os.makedirs(app_profile)
         settingsManager.loadSettings()
         self.settings = settingsManager.settings
+        try: self.settings['homePages']
+        except: self.homePagesField.setText("http://www.sourceforge.net/projects/ryouko")
+        else: self.homePagesField.setText(qstring(self.settings['homePages']))
         try: self.settings['openInTabs']
         except: self.openTabsBox.setChecked(True)
         else: self.openTabsBox.setChecked(self.settings['openInTabs'])
@@ -1644,7 +1651,7 @@ class CDialog(QtGui.QMainWindow):
     def saveSettings(self):
         if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
-        self.settings = {'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'showBookmarksToolBar': self.showBTBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
+        self.settings = {'homePages': unicode(self.homePagesField.toPlainText()), 'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'showBookmarksToolBar': self.showBTBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
         aboutDialog.updateUserAgent()
         f = open(app_default_profile_file, "w")
         if self.profileList.currentItem() == None:
@@ -2477,8 +2484,14 @@ self.origY + ev.globalY() - self.mouseY)
         #self.tabsToolBar.addWidget(self.cornerWidgets)
         #self.tabsToolBar.addWidget(self.tabs.cornerWidget(QtCore.Qt.TopRightCorner))
         if len(sys.argv) == 1:
-            self.newTab()
-            self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
+            try: h = settingsManager.settings['homePages'].split("\n")
+            except: self.newTab()
+            else:
+                if len(h) == 0:
+                    self.newTab()
+                else:
+                    for u in h:
+                        self.newTab(None, u)
         elif len(sys.argv) > 1:
             for arg in range(1, len(sys.argv)):
                 if not "--pb" in sys.argv and not "-pb" in sys.argv:
