@@ -618,6 +618,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
         super(ClearHistoryDialog, self).__init__()
         self.parent = parent
 
+        self.setWindowFlags(QtCore.Qt.Dialog)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
 
         self.setWindowTitle(tr('clearHistory'))
@@ -1058,12 +1059,13 @@ class RAboutDialog(QtWebKit.QWebView):
     def __init__(self, parent=None):
         super(RAboutDialog, self).__init__()
         self.parent = parent
+
+        self.setWindowFlags(QtCore.Qt.Dialog)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
         page = RWebPage(self)
         self.setPage(page)
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
-#        self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.closeWindowAction = QtGui.QAction(self)
         self.closeWindowAction.setShortcuts(["Ctrl+W", "Esc", "Enter"])
@@ -1319,6 +1321,7 @@ class CDialog(QtGui.QMainWindow):
         super(CDialog, self).__init__()
         self.parent = parent
         self.settings = {}
+        self.setWindowFlags(QtCore.Qt.Dialog)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.initUI()
         self.filterListCount = 0
