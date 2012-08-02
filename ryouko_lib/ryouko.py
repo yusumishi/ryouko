@@ -1673,12 +1673,7 @@ class CDialog(QtGui.QMainWindow):
                 window.updateSettings()
             except:
                 doNothing()
-        local_app_profile = os.path.join(app_profile_folder, app_profile_name)
-        if settingsManager.settings['cloudService'] == "No" or settingsManager.settings['cloudService'] == "None":
-            if os.path.exists(os.path.join(local_app_profile, "settings.json")):
-                os.remove(os.path.join(local_app_profile, "settings.json"))
-            try: shutil.copy(os.path.join(app_profile, "settings.json"), local_app_profile)
-            except: do_nothing()
+        
 
 cDialog = None
 
