@@ -1198,12 +1198,18 @@ class Browser(QtGui.QMainWindow):
         self.statusBarBorder.setMinimumHeight(1)
         self.mainLayout.addWidget(self.statusBarBorder, 2, 0)
         self.statusBar = QtGui.QFrame(self)
-        self.statusBar.setStyleSheet("""
-        QFrame {
-        background: palette(window);
-        border: 0;
-        }
-        """)
+        if not sys.platform.startswith("win"):
+            self.statusBar.setStyleSheet("""
+            QFrame {
+            background: palette(window);
+            border: 0;
+            }
+            """)
+        else:
+            self.statusBar.setStyleSheet("""
+            background-color: #e1e6f6;
+            border: 0;
+            """)
         self.mainLayout.addWidget(self.statusBar, 3, 0)
         self.statusBarLayout = QtGui.QHBoxLayout(self)
         self.statusBarLayout.setContentsMargins(0,0,0,0)        
@@ -1693,6 +1699,20 @@ class TabBrowser(QtGui.QMainWindow):
         self.tempHistory = []
         self.searchOn = False
         self.tempHistory = []
+
+        if sys.platform.startswith("win"):
+            self.setStyleSheet("""
+        QMainWindow {
+            background-image: url(""" + os.path.join(app_lib, "images", "win-toolbar.png") + """);
+            background-color: #e1e6f6;
+            background-repeat: repeat-x;
+            }
+
+            QToolBar {
+            border: 0;
+            background: transparent;
+            }
+            """)
 
         self.urlCheckTimer = QtCore.QTimer()
         self.urlCheckTimer.timeout.connect(self.checkForURLs)
