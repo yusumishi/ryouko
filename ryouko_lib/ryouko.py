@@ -1694,19 +1694,6 @@ class TabBrowser(QtGui.QMainWindow):
         self.searchOn = False
         self.tempHistory = []
 
-        print("""
-            QMainWindow {
-            background-image: url(\"""" + os.path.join(app_lib, "images", "win-toolbar.png").replace("\\", "/") + """\");
-            background-color: #e1e6f6;
-            background-repeat: repeat-x;
-            }
-
-            QToolBar {
-            border: 0;
-            background: transparent;
-            }
-            """)
-
         if sys.platform.startswith("win"):
             self.setStyleSheet("""
             QMainWindow {
