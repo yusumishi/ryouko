@@ -5,4 +5,4 @@ echo 1) Python 2 is installed to C:\Python27.
 echo 2) PyQt4 is installed.
 echo 3) cx_Freeze is installed.
 PAUSE
-C:\Python27\Scripts\cxfreeze.bat "ryouko" --target-dir="." --base-name="Win32GUI" --include-modules="PyQt4.QtCore,PyQt4.QtGui,PyQt4.QtWebKit,PyQt4.QtNetwork,json,string,shutil,urllib,time,datetime,os,sys,subprocess,HTMLParser,xml.sax.saxutils,platform,win32api,win32con,win32pipe" --exclude-modules="ryouko_lib,PyQt4.uic" --icon="ryouko_lib\icons\ryouko.ico" && C:\Python27\python.exe "do-finish-compile-windows.py" && echo Compilation successful! && PAUSE
+C:\Python27\Scripts\cxfreeze.bat "ryouko" --target-dir="." --base-name="Win32GUI" --include-modules="PyQt4.QtCore,PyQt4.QtGui,PyQt4.QtWebKit,PyQt4.QtNetwork,json,string,shutil,urllib,time,datetime,os,sys,subprocess,HTMLParser,xml.sax.saxutils,platform" --exclude-modules="ryouko_lib,PyQt4.uic" --icon="ryouko_lib\icons\ryouko.ico" && C:\Python27\python.exe "do-finish-compile-windows.py" && echo Compilation successful! && PAUSE
