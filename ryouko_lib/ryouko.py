@@ -46,12 +46,6 @@ except:
     root.mainloop()
     sys.exit()
 
-app_vista = False
-if sys.platform.startswith("win"):
-    import platform
-    if platform.release() == "7" or platform.release() == "Vista":
-        app_vista = True
-
 use_unity_launcher = False
 try:
     from gi.repository import Unity, Gio, GObject, Dbusmenu
@@ -72,6 +66,12 @@ else:
 import os, sys, json, time, datetime, string, shutil
 if sys.platform.startswith("linux"):
     import commands
+
+app_vista = False
+if sys.platform.startswith("win"):
+    import platform
+    if platform.release() == "7" or platform.release() == "Vista":
+        app_vista = True
 
 try: from urllib.request import urlretrieve
 except ImportError:
