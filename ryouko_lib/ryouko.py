@@ -46,6 +46,12 @@ except:
     root.mainloop()
     sys.exit()
 
+app_vista = False
+if sys.platform.startswith("win"):
+    import platform
+    if platform.release() == "7" or platform.release() == "Vista":
+        app_vista = True
+
 use_unity_launcher = False
 try:
     from gi.repository import Unity, Gio, GObject, Dbusmenu
@@ -1694,22 +1700,19 @@ class TabBrowser(QtGui.QMainWindow):
         self.searchOn = False
         self.tempHistory = []
 
-        if sys.platform.startswith("win"):
-            import platform
-            print(platform.release())
-            if not platform.release() == "XP" and not platform.release() == "2000":
-                self.setStyleSheet("""
-                QMainWindow {
-                background-image: url(\"""" + os.path.join(app_lib, "images", "win-toolbar.png").replace("\\", "/") + """\");
-                background-color: #e1e6f6;
-                background-repeat: repeat-x;
-                }
+        if app_vista == True:
+            self.setStyleSheet("""
+            QMainWindow {
+            background-image: url(\"""" + os.path.join(app_lib, "images", "win-toolbar.png").replace("\\", "/") + """\");
+            background-color: #e1e6f6;
+            background-repeat: repeat-x;
+            }
 
-                QToolBar {
-                border: 0;
-                background: transparent;
-                }
-                """)
+            QToolBar {
+            border: 0;
+            background: transparent;
+            }
+            """)
 
         self.urlCheckTimer = QtCore.QTimer()
         self.urlCheckTimer.timeout.connect(self.checkForURLs)
