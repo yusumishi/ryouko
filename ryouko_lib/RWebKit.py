@@ -251,6 +251,8 @@ class RWebView(QtWebKit.QWebView):
         if type(url) == QtGui.QListWidgetItem:
             url = QtCore.QUrl(url.text())
         b = unicode(url.toString()).replace("file://", "")
+        if b == "\\" and sys.platform.startswith("win"):
+            return
         if os.path.isdir(b):
             self.load(QtCore.QUrl("about:blank"))
             self.setHtml("<!DOCTYPE html><html><head><style type=\"text/css\">*{margin:0;padding:0;}.rbox{display: none; visibility: collapse; position: fixed; max-width: 0; max-height: 0; top: -1px; left: -1px;}</style><title>" + b + "</title></head><body></body><span id=\"ryouko-toolbar\" class=\"rbox\"><span id=\"ryouko-link-bar-container\" class=\"rbox\"></span></span><object type=\"application/x-qt-plugin\" data=\"file://" + b + "\" classid=\"fileview\" style=\"position: fixed; width: 100%; height: 100%;\"></object></body></html>")
