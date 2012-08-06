@@ -388,7 +388,9 @@ class ListMenu(MenuPopupWindow):
     itemClicked = QtCore.pyqtSignal(QtGui.QListWidgetItem)
     def __init__(self, parent=None):
         MenuPopupWindow.__init__(self, parent)
+        self.setStyleSheet("ListMenu { border: 1px solid palette(shadow); } ")
         self.list = QtGui.QListWidget()
+        self.list.setStyleSheet("QListWidget { border: 1px solid transparent; background: transparent; color: palette(window-text); } ")
         self.list.setWordWrap(True)
         self.list.currentRowChanged.connect(self.currentRowChanged.emit)
         self.list.itemActivated.connect(self.itemActivated.emit)
