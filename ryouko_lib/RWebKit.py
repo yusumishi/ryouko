@@ -15,6 +15,7 @@ from ViewSourceDialog import *
 from TranslationManager import *
 
 app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
+app_zoho_extensions = [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".pps", ".xls", ".xlsx", ".odt", ".ods", ".odp", ".sxw", ".sxc", ".sxi", ".wpd", ".rtf", ".csv", ".tsv", ".txt", ".html"]
 app_locale = locale.getdefaultlocale()[0]
 app_info = os.path.join(app_lib, "info.txt")
 app_version = "N/A"
@@ -497,11 +498,22 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             d = True
         else:
             d = self.settingsManager.settings['googleDocsViewerEnabled']
+        try: self.settingsManager.settings['zohoViewerEnabled']
+        except:
+            z = True
+        else:
+            z = self.settingsManager.settings['zohoViewerEnabled']
         if d == True and not "file://" in url:
             for ext in app_google_docs_extensions:
                 if url.split("?")[0].lower().endswith(ext):
                     self.stop()
                     self.load(QtCore.QUrl("https://docs.google.com/viewer?embedded=true&url=" + url))
+                    return
+        if z == True and not "file://" in url:
+            for ext in app_zoho_extensions:
+                if url.split("?")[0].lower().endswith(ext):
+                    self.stop()
+                    self.load(QtCore.QUrl("https://viewer.zoho.com/docs/urlview.do?url=" + url))
                     return
         self.downloadFile(reply.request())
 

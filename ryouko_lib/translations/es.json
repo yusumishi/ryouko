@@ -60,6 +60,7 @@
 "enablePB": "Siempre usar el modo de &navegación privada",
 "enablePlugins": "Permitir los &plug-ins",
 "enableStorage": "Permitir el &almacenamiento persistente",
+"enableZohoViewer":: "Utilizar Zoho &Viewer para ver contenido cuando sea aplicable",
 "enterKeyword": "Entre un palabra clave aquí (opcional):",
 "enterName": "Entre un nombre aquí:",
 "enterProfileName": "Entre un nombre por el perfil aquí:",

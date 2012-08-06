@@ -60,6 +60,7 @@
 "enablePB": "Enable &private browsing mode",
 "enablePlugins": "Enable &plugins",
 "enableStorage": "Enable persistent &storage",
+"enableZohoViewer": "Use &Zoho viewer to load content where applicable",
 "enterKeyword": "Enter a keyword here (optional):",
 "enterName": "Enter a name here:",
 "enterProfileName": "Enter a profile name here:",
