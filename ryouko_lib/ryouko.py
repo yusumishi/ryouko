@@ -1335,6 +1335,7 @@ class CDialog(QtGui.QMainWindow):
         self.initUI()
         self.filterListCount = 0
         self.resize(400, 400)
+
     def initUI(self):
         closeWindowAction = QtGui.QAction(self)
         closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+P", "Esc"])
@@ -1413,7 +1414,16 @@ class CDialog(QtGui.QMainWindow):
         self.cLayout.addWidget(self.aBBox)
         self.uALabel1 = QtGui.QLabel(tr("userAgent") + ":")
         self.cLayout.addWidget(self.uALabel1)
-        self.uABox = QtGui.QLineEdit()
+        self.uABox = QtGui.QComboBox()
+        self.uABox.setMaximumWidth(400)
+        self.uABox.addItem("Mozilla/4.0 (compatible; MSIE 6.1; Windows XP)")
+        self.uABox.addItem("Mozilla/4.0 (Windows; U; MSIE 7.0; Windows NT 6.0; en-US)")
+        self.uABox.addItem("Mozilla/5.0 (Windows; U; MSIE 9.0; WIndows NT 9.0; en-US))")
+        self.uABox.addItem("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:14.0) Gecko/20100101 Firefox/14.0.1")
+        self.uABox.addItem("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/534.55.3 (KHTML, like Gecko) Version/5.1.3 Safari/534.53.10")
+        self.uABox.addItem("Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.35 (KHTML, like Gecko) Ubuntu/10.10 Chromium/13.0.764.0 Chrome/13.0.764.0 Safari/534.35")
+        self.uABox.addItem("Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1")
+        self.uABox.setEditable(True)
         self.cLayout.addWidget(self.uABox)
         self.uALabel2 = QtGui.QLabel(tr("customUserAgent"))
         self.cLayout.addWidget(self.uALabel2)
@@ -1586,7 +1596,7 @@ class CDialog(QtGui.QMainWindow):
         else: self.aBBox.setChecked(self.settings['adBlock'])
         try: self.settings['customUserAgent']
         except: doNothing()
-        else: self.uABox.setText(self.settings['customUserAgent'])
+        else: self.uABox.setEditText(self.settings['customUserAgent'])
         try: self.settings['maxUndoCloseTab']
         except: self.undoCloseTabCount.setText("-1")
         else:
@@ -1669,7 +1679,7 @@ class CDialog(QtGui.QMainWindow):
     def saveSettings(self):
         if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
-        self.settings = {'homePages': unicode(self.homePagesField.toPlainText()), 'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'showBookmarksToolBar': self.showBTBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'zohoViewerEnabled': self.zohoBox.isChecked(), 'customUserAgent' : unicode(self.uABox.text())}
+        self.settings = {'homePages': unicode(self.homePagesField.toPlainText()), 'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'showBookmarksToolBar': self.showBTBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'zohoViewerEnabled': self.zohoBox.isChecked(), 'customUserAgent' : unicode(self.uABox.currentText())}
         aboutDialog.updateUserAgent()
         f = open(app_default_profile_file, "w")
         if self.profileList.currentItem() == None:

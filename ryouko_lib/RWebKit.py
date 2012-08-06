@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from __future__ import print_function
-import os.path, sys, string, locale
+import os, sys, string, locale
 from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 try: __file__
 except: __file__ == sys.executable
@@ -43,6 +43,7 @@ class RWebPage(QtWebKit.QWebPage):
         self.replyURL = QtCore.QUrl("about:blank")
         self.networkAccessManager().authenticationRequired.connect(self.provideAuthentication)
         self.networkAccessManager().sslErrors.connect(self.sslError)
+
     def sslError(self, reply, errors):
         q = QtGui.QMessageBox.warning(None, tr("warning"),
     tr("sslWarning"), QtGui.QMessageBox.Yes | 
@@ -51,6 +52,7 @@ class RWebPage(QtWebKit.QWebPage):
             reply.ignoreSslErrors()
         else:
             return
+
     def provideAuthentication(self, reply, auth):
         if self.bork == False:
             uname = QtGui.QInputDialog.getText(None, tr('query'), tr('username') + ":", QtGui.QLineEdit.Normal)
@@ -86,11 +88,25 @@ class RWebPage(QtWebKit.QWebPage):
             try:
                 for tab in self.parent().parent().parent.closedTabsList:
                     v.addItem(tab["title"])
+                v.itemActivated.connect(self.parent().parent().parent.undoCloseTabInThisTab)
                 v.itemClicked.connect(self.parent().parent().parent.undoCloseTabInThisTab)
             except: do_nothing()
             else:
                 return v
-#        elif classid == "webview":
+        elif classid == "fileview":
+            f = QtGui.QListWidget(self.view())
+            try:
+                u = unicode(url.toString()).replace("file://", "")
+                f.addItem(os.path.dirname(u))
+                if os.path.isdir(u):
+                    l = os.listdir(u)
+                    l.sort()
+                    for fname in l:
+                        f.addItem(os.path.join(u, fname))
+                f.itemClicked.connect(self.parent().load)
+                f.itemActivated.connect(self.parent().load)
+            except: do_nothing()
+            else: return f
         return
 
 class RWebView(QtWebKit.QWebView):
@@ -227,16 +243,19 @@ class RWebView(QtWebKit.QWebView):
         self.loadProgress.connect(self.setLoadingTrue)
         if (unicode(self.url().toString()) == "about:blank" or unicode(self.url().toString()) == ""):
             self.buildNewTabPage()
-#            if not type(self.parent()) == Browser:
-#                self.loadControls()
-            self.updateTitle()
-#        if not type(self.parent()) == Browser:
-#            self.isWindow = True
-#            global app_windows
-#            app_windows.append(self)
         else:
             self.isWindow = False
         self.loadFinished.connect(self.loadLinks)
+
+    def load(self, url):
+        if type(url) == QtGui.QListWidgetItem:
+            url = QtCore.QUrl(url.text())
+        b = unicode(url.toString()).replace("file://", "")
+        if os.path.isdir(b):
+            self.load(QtCore.QUrl("about:blank"))
+            self.setHtml("<!DOCTYPE html><html><head><style type=\"text/css\">*{margin:0;padding:0;}.rbox{display: none; visibility: collapse; position: fixed; max-width: 0; max-height: 0; top: -1px; left: -1px;}</style><title>" + b + "</title></head><body></body><span id=\"ryouko-toolbar\" class=\"rbox\"><span id=\"ryouko-link-bar-container\" class=\"rbox\"></span></span><object type=\"application/x-qt-plugin\" data=\"file://" + b + "\" classid=\"fileview\" style=\"position: fixed; width: 100%; height: 100%;\"></object></body></html>")
+        else:
+            QtWebKit.QWebView.load(self, url)
 
     def setUserLinks(self, user_links):
         self.user_links = user_links
