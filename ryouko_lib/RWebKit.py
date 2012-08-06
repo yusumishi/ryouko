@@ -66,6 +66,7 @@ class RWebPage(QtWebKit.QWebPage):
             reply.abort()
             self.bork = False
             self.replyURL = QtCore.QUrl("about:blank")
+
     def userAgentForUrl(self, url):
         if self.userAgent == False:
             return QtWebKit.QWebPage.userAgentForUrl(self, url)
@@ -74,6 +75,7 @@ class RWebPage(QtWebKit.QWebPage):
                 return QtCore.QString(self.userAgent)
             else:
                 return str(self.userAgent)
+
     def setUserAgent(self, string):
         self.userAgent = string
         

@@ -382,13 +382,14 @@ def touch(fname):
 
 searchManager = SearchManager(app_profile)
 
-class ClosedTabsListGUI(MenuPopupWindow):
+class ListMenu(MenuPopupWindow):
     currentRowChanged = QtCore.pyqtSignal(int)
     itemActivated = QtCore.pyqtSignal(QtGui.QListWidgetItem)
     itemClicked = QtCore.pyqtSignal(QtGui.QListWidgetItem)
     def __init__(self, parent=None):
         MenuPopupWindow.__init__(self, parent)
         self.list = QtGui.QListWidget()
+        self.list.setWordWrap(True)
         self.list.currentRowChanged.connect(self.currentRowChanged.emit)
         self.list.itemActivated.connect(self.itemActivated.emit)
         self.list.itemClicked.connect(self.itemClicked.emit)
@@ -1816,9 +1817,39 @@ self.origY + ev.globalY() - self.mouseY)
         self.currentWebView().back()
         self.setIcon()
 
+    def showBackList(self):
+        self.backList.clear()
+        h = self.currentWebView().history()
+        for item in h.backItems(h.count()):
+            self.backList.addItem(item.title())
+        self.backList.show()
+        self.backList.display(True, self.backListBtn.mapToGlobal(QtCore.QPoint(0,0)).x(), self.backListBtn.mapToGlobal(QtCore.QPoint(0,0)).y(),
+        self.backList.width(),
+        self.backListBtn.height())
+        self.backList.list.setFocus()
+
+    def backFromList(self, item):
+        h = self.currentWebView().history()
+        h.goToItem(h.backItems(h.count())[self.backList.row(item)])
+
     def forward(self):
         self.currentWebView().forward()
         self.setIcon()
+
+    def showNextList(self):
+        self.nextList.clear()
+        h = self.currentWebView().history()
+        for item in h.forwardItems(h.count()):
+            self.nextList.addItem(item.title())
+        self.nextList.show()
+        self.nextList.display(True, self.nextListBtn.mapToGlobal(QtCore.QPoint(0,0)).x(), self.nextListBtn.mapToGlobal(QtCore.QPoint(0,0)).y(),
+        self.nextList.width(),
+        self.nextListBtn.height())
+        self.nextList.list.setFocus()
+
+    def nextFromList(self, item):
+        h = self.currentWebView().history()
+        h.goToItem(h.forwardItems(h.count())[self.nextList.row(item)])
 
     def reload(self):
         self.currentWebView().reload()
@@ -2040,7 +2071,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.historyDock)
         self.historyDock.hide()
 
-        self.closedTabsListGUI = ClosedTabsListGUI()
+        self.closedTabsListGUI = ListMenu()
         self.closedTabsListGUI.itemClicked.connect(self.undoCloseTab)
         self.closedTabsListGUI.itemActivated.connect(self.undoCloseTab)
 
@@ -2102,6 +2133,17 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainToolBar.addAction(self.backAction)
         self.mainToolBar.widgetForAction(self.backAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
+        self.backList = ListMenu()
+        self.backList.itemClicked.connect(self.backFromList)
+        self.backList.itemActivated.connect(self.backFromList)
+
+        self.backListBtn = QtGui.QToolButton(self)
+        self.backListBtn.setArrowType(QtCore.Qt.DownArrow)
+        self.backListBtn.setStyleSheet("QToolButton { max-width: 16px; }")
+        self.backListBtn.clicked.connect(self.showBackList)
+        self.backListBtn.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.mainToolBar.addWidget(self.backListBtn)
+
         self.nextAction = QtGui.QAction(self)
         self.nextAction.setToolTip(tr("nextBtnTT"))
         self.nextAction.triggered.connect(self.forward)
@@ -2109,6 +2151,17 @@ self.origY + ev.globalY() - self.mouseY)
         self.nextAction.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_icons, 'next.png'))))
         self.mainToolBar.addAction(self.nextAction)
         self.mainToolBar.widgetForAction(self.nextAction).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        self.nextList = ListMenu()
+        self.nextList.itemClicked.connect(self.nextFromList)
+        self.nextList.itemActivated.connect(self.nextFromList)
+
+        self.nextListBtn = QtGui.QToolButton(self)
+        self.nextListBtn.setArrowType(QtCore.Qt.DownArrow)
+        self.nextListBtn.setStyleSheet("QToolButton { max-width: 16px; }")
+        self.nextListBtn.clicked.connect(self.showNextList)
+        self.nextListBtn.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.mainToolBar.addWidget(self.nextListBtn)
 
         self.reloadAction = QtGui.QAction(self)
         self.reloadAction.triggered.connect(self.reload)
@@ -2212,7 +2265,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.searchEditButtonContainerLayout.setContentsMargins(0, 0, 0, 0)
         self.searchEditButtonContainer.setLayout(self.searchEditButtonContainerLayout)
         self.searchEditButton = QtGui.QToolButton(self)
-        self.searchEditButton.setStyleSheet("QToolButton { max-width: 20px; }")
+        self.searchEditButton.setStyleSheet("QToolButton { max-width: 16px; }")
         self.searchEditButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.searchEditButton.setToolTip(tr("searchBtnTT"))
         self.searchEditButton.clicked.connect(self.editSearch)
@@ -2318,7 +2371,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.cornerWidgetsToolBar.addAction(self.tabsContextMenuButton)
         self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setArrowType(QtCore.Qt.DownArrow)
         self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
-        self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setStyleSheet("QToolButton { max-width: 20px; }")
+        self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setStyleSheet("QToolButton { max-width: 16px; }")
 
         # New window button
         newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_icons, 'newwindow.png'))), tr("newWindowBtn"), self)
@@ -2827,7 +2880,7 @@ self.origY + ev.globalY() - self.mouseY)
                 self.tabs.widget(index).deleteLater()
             else:
                 self.closedTabsList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
-                self.tabs.widget(index).webView.load(QtCore.QUrl("about:blank"))
+                self.tabs.widget(index).webView.setHtml("<!DOCTYPE html><html><head><title>" + unicode(self.tabs.widget(index).webView.title()) + "</title></head><body></body></html>")
             self.tabs.removeTab(index)
             try: settingsManager.settings['maxUndoCloseTab']
             except:
@@ -2872,8 +2925,7 @@ self.origY + ev.globalY() - self.mouseY)
             del self.closedTabsList[index]
             self.updateTitles()
             self.tabs.setCurrentIndex(i)
-            if self.tabs.widget(self.tabs.currentIndex()).webView.url().toString() == "about:blank":
-                self.tabs.widget(self.tabs.currentIndex()).webView.back()
+            self.tabs.widget(self.tabs.currentIndex()).webView.reload()
         self.reloadClosedTabsListGUI()
 
     def undoCloseTab(self, index=False):
@@ -2886,8 +2938,7 @@ self.origY + ev.globalY() - self.mouseY)
             del self.closedTabsList[index]
             self.updateTitles()
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
-            if self.tabs.widget(self.tabs.currentIndex()).webView.url().toString() == "about:blank":
-                self.tabs.widget(self.tabs.currentIndex()).webView.back()
+            self.tabs.widget(self.tabs.currentIndex()).webView.reload()
         self.reloadClosedTabsListGUI()
 
     def updateIcons(self):
