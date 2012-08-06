@@ -250,7 +250,7 @@ class RWebView(QtWebKit.QWebView):
     def load(self, url):
         if type(url) == QtGui.QListWidgetItem:
             url = QtCore.QUrl(url.text())
-        elif url = QtCore.QUrl(unicode("file:")):
+        elif url == QtCore.QUrl(unicode("file:")):
             return
         b = unicode(url.toString()).replace("file://", "")
         if os.path.isdir(b):
