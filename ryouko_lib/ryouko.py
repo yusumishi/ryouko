@@ -2880,7 +2880,9 @@ self.origY + ev.globalY() - self.mouseY)
                 self.tabs.widget(index).deleteLater()
             else:
                 self.closedTabsList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
-                self.tabs.widget(index).webView.setHtml("<!DOCTYPE html><html><head><title>" + unicode(self.tabs.widget(index).webView.title()) + "</title></head><body></body></html>")
+                qba = QtCore.QByteArray()
+                qba.append("<!DOCTYPE html><html><head><title>" + unicode(self.tabs.widget(index).webView.title()) + "</title></head><body></body></html>")
+                self.tabs.widget(index).webView.setContent(qba)
             self.tabs.removeTab(index)
             try: settingsManager.settings['maxUndoCloseTab']
             except:
@@ -2925,7 +2927,14 @@ self.origY + ev.globalY() - self.mouseY)
             del self.closedTabsList[index]
             self.updateTitles()
             self.tabs.setCurrentIndex(i)
-            self.tabs.widget(self.tabs.currentIndex()).webView.reload()
+            if self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoForward():
+                self.tabs.widget(self.tabs.currentIndex()).webView.forward()
+                self.tabs.widget(self.tabs.currentIndex()).webView.back()
+            elif self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoBack():
+                self.tabs.widget(self.tabs.currentIndex()).webView.back()
+                self.tabs.widget(self.tabs.currentIndex()).webView.forward()
+            else:
+                self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
         self.reloadClosedTabsListGUI()
 
     def undoCloseTab(self, index=False):
@@ -2938,7 +2947,14 @@ self.origY + ev.globalY() - self.mouseY)
             del self.closedTabsList[index]
             self.updateTitles()
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
-            self.tabs.widget(self.tabs.currentIndex()).webView.reload()
+            if self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoForward():
+                self.tabs.widget(self.tabs.currentIndex()).webView.forward()
+                self.tabs.widget(self.tabs.currentIndex()).webView.back()
+            elif self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoBack():
+                self.tabs.widget(self.tabs.currentIndex()).webView.back()
+                self.tabs.widget(self.tabs.currentIndex()).webView.forward()
+            else:
+                self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
         self.reloadClosedTabsListGUI()
 
     def updateIcons(self):
