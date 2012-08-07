@@ -1099,10 +1099,6 @@ class RAboutDialog(QtGui.QMainWindow):
         page2 = RWebPage(self)
         self.licensePage.setPage(page2)
         self.licensePage.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        h = os.path.join(app_lib, "LICENSE.html").replace("\\", "/")
-        if sys.platform.startswith("win"):
-            h = h.replace(h[0:2], "")
-        self.licensePage.load(QtCore.QUrl("file://" + h))
 
         self.tabs.addTab(self.licensePage, tr("licenseHKey"))
 
@@ -1123,7 +1119,11 @@ class RAboutDialog(QtGui.QMainWindow):
         h = self.licensePage.history()
         for item in h.backItems(h.count()):
             self.licensePage.back()
-        self.licensePage.load(QtCore.QUrl("file://%" + os.path.join(app_lib, "LICENSE.html")))
+        h = os.path.join(app_lib, "LICENSE.html").replace("\\", "/")
+        if sys.platform.startswith("win"):
+            h = h.replace(h[0:2], "")
+        self.licensePage.load(QtCore.QUrl("file://" + h))
+
 
 aboutDialog = None
 
