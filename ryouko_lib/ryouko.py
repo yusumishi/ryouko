@@ -396,6 +396,8 @@ class ListMenu(MenuPopupWindow):
         self.list.currentRowChanged.connect(self.currentRowChanged.emit)
         self.list.itemActivated.connect(self.itemActivated.emit)
         self.list.itemClicked.connect(self.itemClicked.emit)
+        self.list.itemActivated.connect(self.hide)
+        self.list.itemClicked.connect(self.hide)
         self.setCentralWidget(self.list)
     def row(self, item):
         return self.list.row(item)
@@ -492,7 +494,8 @@ class SearchEditor(MenuPopupWindow):
                 notificationMessage(tr('searchError'))
             else:
                 searchManager.change(unicode(item.text()).split("\n")[0])
-        self.searchChanged.emit(qstring(unicode(item.text()).split("\n")[0]))
+        if item != None:
+            self.searchChanged.emit(qstring(unicode(item.text()).split("\n")[0]))
 
     def takeSearch(self):
         searchManager.remove(unicode(self.engineList.currentItem().text()).split("\n")[0])
