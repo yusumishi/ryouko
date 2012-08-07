@@ -149,6 +149,10 @@ class RSystemOpenView(QtWebKit.QWebView):
     def __init__(self, parent=None):
         QtWebKit.QWebView.__init__(self, parent)
         self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
+        self.settings().setAttribute(QtWebKit.QWebSettings.JavascriptEnabled, False)
+        self.settings().setAttribute(QtWebKit.QWebSettings.AutoLoadImages, False)
+        self.settings().setAttribute(QtWebKit.QWebSettings.PluginsEnabled, False)
+        self.settings().setAttribute(QtWebKit.QWebSettings.JavaEnabled, False)
         self.page().setForwardUnsupportedContent(True)
         self.page().unsupportedContent.connect(self.openFile)
         self.urlChanged.connect(self.loadSupportedFile)
