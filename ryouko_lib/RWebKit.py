@@ -134,11 +134,31 @@ class RAboutPageView(QtWebKit.QWebView):
         QtWebKit.QWebView.__init__(self, parent)
         page = RWebPage(self)
         self.setPage(page)
+        self.systemOpenView = RSystemOpenView(self)
+        self.systemOpenView.hide()
         self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
         self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
         self.page().linkClicked.connect(self.openLink)
     def openLink(self, url):
         u = unicode(url.toString())
+        system_open(u)
+    def createWindow(self, windowType):
+        return self.systemOpenView
+
+class RSystemOpenView(QtWebKit.QWebView):
+    def __init__(self, parent=None):
+        QtWebKit.QWebView.__init__(self, parent)
+        self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
+        self.page().setForwardUnsupportedContent(True)
+        self.page().unsupportedContent.connect(self.openFile)
+        self.urlChanged.connect(self.loadSupportedFile)
+    def loadSupportedFile(self, url):
+        system_open(unicode(self.url().toString()))
+        self.back()
+    def load(self, url):
+        system_open(unicode(url().toString()))
+    def openFile(self, reply):
+        u = unicode(reply.url().toString())
         system_open(u)
 
 class RWebView(QtWebKit.QWebView):
