@@ -84,7 +84,7 @@ class RWebPage(QtWebKit.QWebPage):
         self.userAgent = string
         
     def createPlugin(self, classid, url, paramNames, paramValues):
-        if classid == "ctl":
+        if unicode(classid).lower() == "ctl" or unicode(classid).lower() == "closedtabslist":
             v = QtGui.QListWidget(self.view())
             try:
                 for tab in self.parent().parent().parent.closedTabsList:
@@ -94,7 +94,7 @@ class RWebPage(QtWebKit.QWebPage):
             except: do_nothing()
             else:
                 return v
-        elif classid == "fileview":
+        elif unicode(classid).lower() == "fileview":
             f = QtGui.QListWidget(self.view())
             try:
                 u = unicode(url.toString()).replace("file://", "")
@@ -108,7 +108,7 @@ class RWebPage(QtWebKit.QWebPage):
                 f.itemActivated.connect(self.parent().load)
             except: do_nothing()
             else: return f
-        elif classid == "aboutQt":
+        elif unicode(classid).lower() == "aboutqt":
             b = QtGui.QPushButton(self.view())
             b.setText(tr("aboutQt"))
             b.clicked.connect(QtGui.QApplication.aboutQt)
@@ -316,7 +316,7 @@ class RWebView(QtWebKit.QWebView):
         b = unicode(url.toString()).replace("file://", "")
         if os.path.isdir(b):
             self.load(QtCore.QUrl("about:blank"))
-            self.setHtml("<!DOCTYPE html><html><head><style type=\"text/css\">*{margin:0;padding:0;}.rbox{display: none; visibility: collapse; position: fixed; max-width: 0; max-height: 0; top: -1px; left: -1px;}</style><title>" + b + "</title></head><body></body><span id=\"ryouko-toolbar\" class=\"rbox\"><span id=\"ryouko-link-bar-container\" class=\"rbox\"></span></span><object type=\"application/x-qt-plugin\" data=\"file://" + b + "\" classid=\"fileview\" style=\"position: fixed; width: 100%; height: 100%;\"></object></body></html>")
+            self.setHtml("<!DOCTYPE html><html><head><style type=\"text/css\">*{margin:0;padding:0;}.rbox{display: none; visibility: collapse; position: fixed; max-width: 0; max-height: 0; top: -1px; left: -1px;}</style><title>" + b + "</title></head><body></body><span id=\"ryouko-toolbar\" class=\"rbox\"><span id=\"ryouko-link-bar-container\" class=\"rbox\"></span></span><object type=\"application/x-qt-plugin\" data=\"file://" + b + "\" classid=\"fileView\" style=\"position: fixed; width: 100%; height: 100%;\"></object></body></html>")
         else:
             QtWebKit.QWebView.load(self, url)
 
