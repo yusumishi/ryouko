@@ -113,20 +113,6 @@ class RWebPage(QtWebKit.QWebPage):
             b.setText(tr("aboutQt"))
             b.clicked.connect(QtGui.QApplication.aboutQt)
             return b
-        elif classid == "QTabWidget":
-            t = QtGui.QTabWidget(self.view())
-            try:
-                u = unicode(url.toString()).replace("file://", "").strip("http://")
-                ul = u.split("|")
-                for url in ul:
-                    w = QtGui.QWebView()
-                    w.load(QtCore.QUrl(url))
-                    block = ""
-                    if len(ul) > 20:
-                        block = "..."
-                    t.addTab(w, ul[0:20] + block)
-            except: do_nothing()
-            else: return t
         return
 
 class RAboutPageView(QtWebKit.QWebView):
