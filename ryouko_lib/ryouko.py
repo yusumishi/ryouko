@@ -96,7 +96,7 @@ from RUrlBar import *
 from RSearchBar import *
 from Python23Compat import *
 from QStringFunctions import *
-from SystemTerminal import *
+from SystemFunctions import *
 from SettingsManager import *
 from RWebKit import *
 from DownloaderThread import *
@@ -1086,19 +1086,13 @@ class RAboutDialog(QtGui.QMainWindow):
         self.closeWindowAction.triggered.connect(self.close)
         self.addAction(self.closeWindowAction)
 
-        self.aboutPage = QtWebKit.QWebView()
-        self.aboutPage.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
-        page = RWebPage(self)
-        self.aboutPage.setPage(page)
+        self.aboutPage = RAboutPageView()
 
         showAboutPage(self.aboutPage)
 
         self.tabs.addTab(self.aboutPage, tr("aboutRyoukoHKey"))
 
-        self.licensePage = QtWebKit.QWebView()
-        self.licensePage.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
-        page2 = RWebPage(self)
-        self.licensePage.setPage(page2)
+        self.licensePage = RAboutPageView()
 
         self.tabs.addTab(self.licensePage, tr("licenseHKey"))
 
@@ -1108,10 +1102,10 @@ class RAboutDialog(QtGui.QMainWindow):
             doNothing()
         else:
             if settingsManager.settings['customUserAgent'].replace(" ", "") != "":
-                self.page().userAgent = settingsManager.settings['customUserAgent']
+                self.aboutPage.page().userAgent = settingsManager.settings['customUserAgent']
             else:
-                self.page().userAgent = app_default_useragent
-        showAboutPage(self)
+                self.aboutPage.page().userAgent = app_default_useragent
+        showAboutPage(self.aboutPage)
 
     def show(self):
         self.setVisible(True)
@@ -1709,7 +1703,7 @@ class CDialog(QtGui.QMainWindow):
         if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
         self.settings = {'homePages': unicode(self.homePagesField.toPlainText()), 'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'showBookmarksToolBar': self.showBTBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'zohoViewerEnabled': self.zohoBox.isChecked(), 'customUserAgent' : unicode(self.uABox.currentText())}
-        aboutDialog.aboutPage.updateUserAgent()
+        aboutDialog.updateUserAgent()
         f = open(app_default_profile_file, "w")
         if self.profileList.currentItem() == None:
             self.profileList.setCurrentRow(0)

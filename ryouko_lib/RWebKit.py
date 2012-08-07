@@ -13,6 +13,7 @@ from QStringFunctions import *
 from DialogFunctions import *
 from ViewSourceDialog import *
 from TranslationManager import *
+from SystemFunctions import *
 
 app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
 app_zoho_extensions = [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".pps", ".xls", ".xlsx", ".odt", ".ods", ".odp", ".sxw", ".sxc", ".sxi", ".wpd", ".rtf", ".csv", ".tsv", ".txt", ".html"]
@@ -127,6 +128,18 @@ class RWebPage(QtWebKit.QWebPage):
             except: do_nothing()
             else: return t
         return
+
+class RAboutPageView(QtWebKit.QWebView):
+    def __init__(self, parent=None):
+        QtWebKit.QWebView.__init__(self, parent)
+        page = RWebPage(self)
+        self.setPage(page)
+        self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
+        self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
+        self.page().linkClicked.connect(self.openLink)
+    def openLink(self, url):
+        u = unicode(url.toString())
+        system_open(u)
 
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)

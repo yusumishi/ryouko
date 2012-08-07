@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import os
+import os, sys
 from subprocess import Popen, PIPE
 
 terminals=[ ["terminator",      "-x "],
@@ -12,6 +12,8 @@ terminals=[ ["terminator",      "-x "],
             ["idle3",           "-r "],
             ["xterm",           ""],
             ["konsole",         "-e="] ]
+
+open_commands=["kde-open", "mate-open", "gnome-open", "xdg-open"]
 
 def readTerminalOutput(command):
     return read_terminal_output(command)
@@ -33,3 +35,20 @@ def system_terminal(command):
             break
     if not location:
         os.system(command)
+
+def system_open(location):
+    if sys.platform.startswith("linux"):
+        a=False
+        for app in open_commands:
+            a=Popen(["which", app], stdout=PIPE).communicate()[0]
+            if a:
+                expression = app + " \"" + unicode(location) + "\" & echo \"\" >> /dev/null"
+                break
+    elif sys.platform.startswith("win"):
+        expression = "start " + unicode(location)
+    elif "darwin" in sys.platform:
+        expression = "open \"" + unicode(location) + "\" & echo \"\" >> /dev/null"
+    else:
+        expression = ""
+    print(expression)
+    os.system(expression)

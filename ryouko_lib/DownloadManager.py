@@ -11,6 +11,7 @@ sys.path.append(app_lib)
 
 app_icons = os.path.join(app_lib, "icons")
 from Python23Compat import *
+from SystemFunctions import *
 from QStringFunctions import *
 from TranslationManager import *
 from RExpander import *
@@ -113,15 +114,7 @@ class DownloadProgressWidget(QtGui.QWidget):
         self.progress = [0, 0]
 
     def openFile(self):
-        if sys.platform.startswith("linux"):
-            expression = "xdg-open \"" + unicode(self.destination) + "\" & echo \"\" >> /dev/null"
-        elif sys.platform.startswith("win"):
-            expression = "start " + unicode(self.destination)
-        elif "darwin" in sys.platform:
-            expression = "open \"" + unicode(self.destination) + "\" & echo \"\" >> /dev/null"
-        else:
-            expression = ""
-        os.system(expression)
+        system_open(self.destination)
 
     def openDestination(self):
         if sys.platform.startswith("linux"):

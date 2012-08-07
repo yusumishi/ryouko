@@ -15,7 +15,7 @@ from PyQt4 import QtCore
 app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(app_lib)
 from Python23Compat import *
-from SystemTerminal import *
+from SystemFunctions import *
 
 def urlretrieve_adv(url, filename=None, reporthook=None, data=None, username="", password=""):
     if sys.version_info[0] < 3:
