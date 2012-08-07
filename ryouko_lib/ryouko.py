@@ -1089,7 +1089,6 @@ class RAboutDialog(QtGui.QMainWindow):
         self.aboutPage = QtWebKit.QWebView()
         page = RWebPage(self)
         self.aboutPage.setPage(page)
-        self.aboutPage.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 
         showAboutPage(self.aboutPage)
 
@@ -1098,7 +1097,6 @@ class RAboutDialog(QtGui.QMainWindow):
         self.licensePage = QtWebKit.QWebView()
         page2 = RWebPage(self)
         self.licensePage.setPage(page2)
-        self.licensePage.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 
         self.tabs.addTab(self.licensePage, tr("licenseHKey"))
 
