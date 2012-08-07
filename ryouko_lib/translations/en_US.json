@@ -1,6 +1,7 @@
 {
 "abort": "Abort",
 "abortAll": "Abort all",
+"aboutQt": "About Qt",
 "aboutQtHKey": "About &Qt",
 "aboutRyouko": "About Ryouko",
 "aboutRyoukoHKey": "&About Ryouko",
@@ -99,6 +100,7 @@
 "lastMin": "Last minute",
 "library": "Library",
 "license": "Licensing terms",
+"licenseHKey": "&Licensing terms",
 "localStorage": "Local storage",
 "locationBarTT": "<b>Location/Search Bar</b><br>Ctrl+L; Alt+D",
 "loginToDownload": "&Login to download? [does not work in axel]",

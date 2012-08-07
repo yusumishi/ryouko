@@ -1051,7 +1051,6 @@ def showAboutPage(webView):
         </style>
         </head>
         <body style='font-family: sans-serif; font-size: 11pt;'>
-        <span id='toolbar'><a style='font-family: sans-serif;' href='#about'>""" + tr('aboutRyouko') + """</a> <a style='font-family: sans-serif;' href='#licensing'>""" + tr('license') + """</a></span>
         <center>
         <div style=\"max-width: 640px;\">
         <a name='about'></a>
@@ -1066,28 +1065,44 @@ def showAboutPage(webView):
         <b>""" + tr("userAgent") + """:</b> <span id="userAgent">JavaScript must be enabled to display the user agent!</span><br/>
         <b>""" + tr("commandLine") + """:</b> """ + app_commandline + "<br/>\
         <b>" + tr('executablePath') + ":</b> " + os.path.realpath(__file__) + "<br/><center>\
-        <a name='licensing'></a>\
-        <h1>" + tr('license') + "</h1>\
-        <iframe style='border: 0; width: 100%; height: 640px;' src='file://%" + os.path.join(app_lib, "LICENSE.txt") + "'></iframe></center></div></div></center></body></html>")
+        </center></div></div></center></body></html>")
 
-class RAboutDialog(QtWebKit.QWebView):
+class RAboutDialog(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(RAboutDialog, self).__init__()
         self.parent = parent
 
         self.setWindowFlags(QtCore.Qt.Dialog)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
-        page = RWebPage(self)
-        self.setPage(page)
+        self.tabs = QtGui.QTabWidget()
+        self.setCentralWidget(self.tabs)
+
         if os.path.exists(app_logo):
             self.setWindowIcon(QtGui.QIcon(app_logo))
-        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.setWindowTitle(tr('aboutRyouko'))
+
         self.closeWindowAction = QtGui.QAction(self)
         self.closeWindowAction.setShortcuts(["Ctrl+W", "Esc", "Enter"])
         self.closeWindowAction.triggered.connect(self.close)
         self.addAction(self.closeWindowAction)
-        self.setWindowTitle(tr('aboutRyouko'))
-        showAboutPage(self)
+
+        self.aboutPage = QtWebKit.QWebView()
+        page = RWebPage(self)
+        self.aboutPage.setPage(page)
+        self.aboutPage.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+
+        showAboutPage(self.aboutPage)
+
+        self.tabs.addTab(self.aboutPage, tr("aboutRyoukoHKey"))
+
+        self.licensePage = QtWebKit.QWebView()
+        page2 = RWebPage(self)
+        self.licensePage.setPage(page2)
+        self.licensePage.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.licensePage.load(QtCore.QUrl("file://%" + os.path.join(app_lib, "LICENSE.html")))
+
+        self.tabs.addTab(self.licensePage, tr("licenseHKey"))
+
     def updateUserAgent(self):
         try: settingsManager.settings['customUserAgent']
         except:
@@ -1098,9 +1113,14 @@ class RAboutDialog(QtWebKit.QWebView):
             else:
                 self.page().userAgent = app_default_useragent
         showAboutPage(self)
+
     def show(self):
         self.setVisible(True)
         centerWidget(self)
+        h = self.licensePage.history()
+        for item in h.backItems(h.count()):
+            self.licensePage.back()
+        self.licensePage.load(QtCore.QUrl("file://%" + os.path.join(app_lib, "LICENSE.html")))
 
 aboutDialog = None
 
@@ -1686,7 +1706,7 @@ class CDialog(QtGui.QMainWindow):
         if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
         self.settings = {'homePages': unicode(self.homePagesField.toPlainText()), 'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'showBookmarksToolBar': self.showBTBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'zohoViewerEnabled': self.zohoBox.isChecked(), 'customUserAgent' : unicode(self.uABox.currentText())}
-        aboutDialog.updateUserAgent()
+        aboutDialog.aboutPage.updateUserAgent()
         f = open(app_default_profile_file, "w")
         if self.profileList.currentItem() == None:
             self.profileList.setCurrentRow(0)

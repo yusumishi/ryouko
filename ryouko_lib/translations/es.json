@@ -1,6 +1,7 @@
 {
 "abort": "Cancelar",
 "abortAll": "Cancelar todos",
+"aboutQt": "Sobre Qt",
 "aboutQtHKey": "Sobre &Qt",
 "aboutRyoukoHKey": "Sobre &Ryouko",
 "aboutRyouko": "Sobre Ryouko",
@@ -99,6 +100,7 @@
 "lastMin": "El minuto previo",
 "library": "Catálogo",
 "license": "Términos de la licencia",
+"licenseHKey": "&Términos de la licencia",
 "localStorage": "almacenamiento persistente",
 "locationBarTT": "<b>Ubucación</b><br>Ctrl+L; Alt+D",
 "loginToDownload": "¿Iniciar &sesión para descargar? [no functiona en axel]",
