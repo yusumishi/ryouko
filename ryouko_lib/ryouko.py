@@ -93,6 +93,7 @@ app_webview_default_icon = QtGui.QIcon()
 
 from ryouko_common import *
 from RUrlBar import *
+from RSearchBar import *
 from Python23Compat import *
 from QStringFunctions import *
 from SystemTerminal import *
@@ -408,6 +409,10 @@ class ListMenu(MenuPopupWindow):
         self.list.clear()
 
 class SearchEditor(MenuPopupWindow):
+    if sys.version_info[0] >= 3:
+        searchChanged = QtCore.pyqtSignal(str)
+    else:
+        searchChanged = QtCore.pyqtSignal(QtCore.QString)
     def __init__(self, parent=None):
         super(SearchEditor, self).__init__(parent)
         self.parent = parent
@@ -487,6 +492,7 @@ class SearchEditor(MenuPopupWindow):
                 notificationMessage(tr('searchError'))
             else:
                 searchManager.change(unicode(item.text()).split("\n")[0])
+        self.searchChanged.emit(qstring(unicode(item.text()).split("\n")[0]))
 
     def takeSearch(self):
         searchManager.remove(unicode(self.engineList.currentItem().text()).split("\n")[0])
@@ -1957,8 +1963,12 @@ self.origY + ev.globalY() - self.mouseY)
             self.urlBar.repaint()
             self.urlBar2.repaint()
 
+    def focusSearch(self):
+        self.searchBar.setFocus()
+        self.searchBar.selectAll()
+
     def searchWeb(self):
-        urlBar = self.urlBar.text()
+        urlBar = self.searchBar.text()
         url = QtCore.QUrl(searchManager.currentSearch.replace("%s", urlBar))
         self.currentWebView().load(url)
 
@@ -1985,6 +1995,7 @@ self.origY + ev.globalY() - self.mouseY)
             self.currentWebView().load(urlBar)
         else:
             if not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and " " in unicode(urlBar):
+                self.searchBar.setText(self.urlBar.text())
                 self.searchWeb()
             else:
                 if os.path.exists(unicode(urlBar)):
@@ -2247,7 +2258,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.urlBar2.textChanged.connect(self.searchHistoryFromPopup)
         searchAction = QtGui.QAction(self)
         searchAction.setShortcut("Ctrl+K")
-        searchAction.triggered.connect(self.searchWeb)
+        searchAction.triggered.connect(self.focusSearch)
         self.addAction(searchAction)
         self.historyCompletionBox.addAction(searchAction)        
 
@@ -2270,12 +2281,17 @@ self.origY + ev.globalY() - self.mouseY)
         self.goButton.setIconSize(QtCore.QSize(16, 16))
         self.mainToolBar.addWidget(self.goButton)
 
-        self.searchButton = QtGui.QPushButton(self)
-        self.searchButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.searchButton.clicked.connect(self.searchWeb)
-        self.searchButton.setText(tr("searchBtn"))
-        self.searchButton.setToolTip(tr("searchBtnTT"))
-        self.mainToolBar.addWidget(self.searchButton)
+        self.searchBar = RSearchBar(self)
+        searchEditor.searchChanged.connect(self.searchBar.setLabel)
+        self.searchBar.setStyleSheet("QLineEdit{max-width:200px;}")
+        self.searchBar.returnPressed.connect(self.searchWeb)
+        self.mainToolBar.addWidget(self.searchBar)
+        #self.searchButton = QtGui.QPushButton(self)
+        #self.searchButton.setFocusPolicy(QtCore.Qt.TabFocus)
+        #self.searchButton.clicked.connect(self.searchWeb)
+        #self.searchButton.setText(tr("searchBtn"))
+        #self.searchButton.setToolTip(tr("searchBtnTT"))
+        #self.mainToolBar.addWidget(self.searchButton)
 
         self.searchEditButtonContainer = QtGui.QWidget(self)
         self.searchEditButtonContainerLayout = QtGui.QVBoxLayout(self)
@@ -3091,6 +3107,7 @@ class Ryouko(QtGui.QWidget):
         searchEditor = SearchEditor()
         cDialog = CDialog(self)
         win = TabBrowser(self)
+        searchEditor.reload()
     def primeBrowser(self):
         global win
         win.show()
