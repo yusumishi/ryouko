@@ -13,7 +13,7 @@ terminals=[ ["terminator",      "-x "],
             ["xterm",           ""],
             ["konsole",         "-e="] ]
 
-open_commands=["kde-open", "mate-open", "gnome-open", "xdg-open"]
+open_commands=["xdg-open", "gnome-open", "kde-open", "mate-open"]
 
 def readTerminalOutput(command):
     return read_terminal_output(command)
