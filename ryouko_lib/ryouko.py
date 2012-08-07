@@ -1100,9 +1100,10 @@ class RAboutDialog(QtGui.QMainWindow):
         self.licensePage.setPage(page2)
         self.licensePage.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         h = os.path.join(app_lib, "LICENSE.html").replace("\\", "/")
-        print(h)
+        print(h[0:3])
         if sys.platform.startswith("win"):
             h = h.replace(h[0:3], "")
+        print(h)
         self.licensePage.load(QtCore.QUrl(h))
 
         self.tabs.addTab(self.licensePage, tr("licenseHKey"))
