@@ -206,6 +206,11 @@ class RWebView(QtWebKit.QWebView):
         self.findAction.setShortcut("Ctrl+F")
         self.addAction(self.findAction)
 
+        self.findPreviousAction = QtGui.QAction(self)
+        self.findPreviousAction.triggered.connect(self.findPrevious)
+        self.findPreviousAction.setShortcut("Ctrl+Shift+G")
+        self.addAction(self.findPreviousAction)
+
         self.findNextAction = QtGui.QAction(self)
         self.findNextAction.triggered.connect(self.findNext)
         self.findNextAction.setShortcuts(["Ctrl+G", "F3"])
@@ -634,6 +639,12 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         else:
             self.text = ""
         self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument)
+
+    def findPrevious(self):
+        if not self.text:
+            self.find()
+        else:
+            self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument | QtWebKit.QWebPage.FindBackward)
 
     def findNext(self):
         if not self.text:
