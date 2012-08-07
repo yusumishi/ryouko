@@ -1102,7 +1102,7 @@ class RAboutDialog(QtGui.QMainWindow):
         h = os.path.join(app_lib, "LICENSE.html").replace("\\", "/")
         if sys.platform.startswith("win"):
             h = h.replace(h[0:2], "")
-        self.licensePage.load(QtCore.QUrl(h))
+        self.licensePage.load(QtCore.QUrl("file://" + h))
 
         self.tabs.addTab(self.licensePage, tr("licenseHKey"))
 
