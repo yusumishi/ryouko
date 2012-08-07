@@ -444,7 +444,8 @@ class SearchEditor(MenuPopupWindow):
         self.entryBar.addWidget(self.addSearchButton)
 
         self.engineList = QtGui.QListWidget()
-        self.engineList.currentItemChanged.connect(self.applySearch)
+        self.engineList.itemClicked.connect(self.applySearch)
+        self.engineList.itemActivated.connect(self.applySearch)
         self.setCentralWidget(self.engineList)
 
         self.takeSearchAction = QtGui.QAction(self)
@@ -475,6 +476,7 @@ class SearchEditor(MenuPopupWindow):
         for item in range(0, self.engineList.count()):
             if searchManager.searchEngines[unicode(self.engineList.item(item).text()).split("\n")[0]]['expression'] == searchManager.currentSearch:
                 self.engineList.setCurrentItem(self.engineList.item(item))
+                self.searchChanged.emit(qstring(unicode(self.engineList.item(item).text()).split("\n")[0]))
                 break
 
     def addSearch(self):
@@ -2934,9 +2936,7 @@ self.origY + ev.globalY() - self.mouseY)
                 self.tabs.widget(index).deleteLater()
             else:
                 self.closedTabsList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
-                qba = QtCore.QByteArray()
-                qba.append("<!DOCTYPE html><html><head><title>" + unicode(self.tabs.widget(index).webView.title()) + "</title></head><body></body></html>")
-                self.tabs.widget(index).webView.setContent(qba)
+                self.tabs.widget(index).webView.setHtml("<!DOCTYPE html><html><head><title></title></head><body></body></html>")
             self.tabs.removeTab(index)
             try: settingsManager.settings['maxUndoCloseTab']
             except:
@@ -2978,7 +2978,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.closeTab(i, True, True)
         if len(self.closedTabsList) > 0:
             self.tabs.insertTab(i, self.closedTabsList[index]['widget'], self.closedTabsList[index]['widget'].webView.icon(), self.closedTabsList[index]['widget'].webView.title())
-            del self.closedTabsList[index]
             self.updateTitles()
             self.tabs.setCurrentIndex(i)
             if self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoForward():
@@ -2988,7 +2987,8 @@ self.origY + ev.globalY() - self.mouseY)
                 self.tabs.widget(self.tabs.currentIndex()).webView.back()
                 self.tabs.widget(self.tabs.currentIndex()).webView.forward()
             else:
-                self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
+                self.tabs.widget(self.tabs.currentIndex()).webView.load(QtCore.QUrl(self.closedTabsList[index]["url"]))
+            del self.closedTabsList[index]
         self.reloadClosedTabsListGUI()
 
     def undoCloseTab(self, index=False):
@@ -2998,7 +2998,6 @@ self.origY + ev.globalY() - self.mouseY)
             index = self.closedTabsListGUI.row(index)
         if len(self.closedTabsList) > 0:
             self.tabs.addTab(self.closedTabsList[index]['widget'], self.closedTabsList[index]['widget'].webView.icon(), self.closedTabsList[index]['widget'].webView.title())
-            del self.closedTabsList[index]
             self.updateTitles()
             self.tabs.setCurrentIndex(self.tabs.count() - 1)
             if self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoForward():
@@ -3008,7 +3007,8 @@ self.origY + ev.globalY() - self.mouseY)
                 self.tabs.widget(self.tabs.currentIndex()).webView.back()
                 self.tabs.widget(self.tabs.currentIndex()).webView.forward()
             else:
-                self.tabs.widget(self.tabs.currentIndex()).webView.buildNewTabPage()
+                self.tabs.widget(self.tabs.currentIndex()).webView.load(QtCore.QUrl(self.closedTabsList[index]["url"]))
+            del self.closedTabsList[index]
         self.reloadClosedTabsListGUI()
 
     def updateIcons(self):
@@ -3031,18 +3031,12 @@ self.origY + ev.globalY() - self.mouseY)
                     self.setWindowTitle("Ryouko")
                 self.tabs.setTabIcon(tab, app_webview_default_icon)                    
             else:
-                if len(unicode(self.tabs.widget(tab).webView.title())) > 20:
-                    title = ""
-                    chars = 0
-                    for char in unicode(self.tabs.widget(tab).webView.title()):
-                        title += char
-                        chars += 1
-                        if chars >= 19:
-                            title = "%s..." % (title)
-                            break
+                u = unicode(self.tabs.widget(tab).webView.title())
+                if len(u) > 20:
+                    title = u[0:10] + "..." + u[len(u)-10:len(u)]
                     title = qstring(title)
                 else:
-                    title = self.tabs.widget(tab).webView.title()
+                    title = u
                 if self.tabs.widget(tab).pb:
                     title = unicode(title)
                     title = "%s (PB)" % (title)
