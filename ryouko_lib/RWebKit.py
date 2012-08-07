@@ -579,7 +579,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         if not os.path.isdir(os.path.dirname(fname)):
             fname = saveDialog(os.path.split(unicode(request.url().toString()))[1])
         if fname:
-            nm = self.page().networkAccessManager()
+            nm = self.downloadManager.networkAccessManager
             if type(request) == QtNetwork.QNetworkReply:
                 reply = nm.get(request.request())
             else:
