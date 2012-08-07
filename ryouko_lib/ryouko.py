@@ -1072,9 +1072,9 @@ class RAboutDialog(QtGui.QMainWindow):
         super(RAboutDialog, self).__init__()
         self.parent = parent
 
-        self.setWindowFlags(QtCore.Qt.Dialog)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.tabs = QtGui.QTabWidget()
+        self.tabs.setDocumentMode(True)
         self.setCentralWidget(self.tabs)
 
         if os.path.exists(app_logo):
@@ -1087,6 +1087,7 @@ class RAboutDialog(QtGui.QMainWindow):
         self.addAction(self.closeWindowAction)
 
         self.aboutPage = QtWebKit.QWebView()
+        self.aboutPage.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
         page = RWebPage(self)
         self.aboutPage.setPage(page)
 
@@ -1095,6 +1096,7 @@ class RAboutDialog(QtGui.QMainWindow):
         self.tabs.addTab(self.aboutPage, tr("aboutRyoukoHKey"))
 
         self.licensePage = QtWebKit.QWebView()
+        self.licensePage.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
         page2 = RWebPage(self)
         self.licensePage.setPage(page2)
 
