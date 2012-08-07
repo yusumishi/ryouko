@@ -1904,6 +1904,8 @@ self.origY + ev.globalY() - self.mouseY)
     def stop(self):
         self.currentWebView().stop()
         self.urlBar2.setText(self.currentWebView().url().toString())
+        if self.findBar.hasFocus() and self.findToolBar.isVisible():
+            self.findToolBar.hide()
 
     def stopReload(self):
         if self.currentWebView().isLoading():
@@ -1921,10 +1923,19 @@ self.origY + ev.globalY() - self.mouseY)
             self.mainToolBar.widgetForAction(self.stopReloadAction).setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
 
     def find(self):
-        self.currentWebView().find()
+        if self.findToolBar.isVisible() and self.findBar.hasFocus():
+            self.findToolBar.hide()
+        else:
+            self.findToolBar.show()
+            self.findBar.setFocus()
+            self.findBar.selectAll()
+        #self.currentWebView().findText)(self.findBar.text())
 
     def findNext(self):
-        self.currentWebView().findNext()
+        self.currentWebView().findNextText(unicode(self.findBar.text()))
+
+    def findPrevious(self):
+        self.currentWebView().findPreviousText(unicode(self.findBar.text()))
 
     def translate(self):
         self.currentWebView().translate()
@@ -2234,9 +2245,16 @@ self.origY + ev.globalY() - self.mouseY)
 
         #self.mainToolBar.addSeparator()
 
+        self.findToolBar = QtGui.QToolBar()
+        self.findToolBar.setMovable(False)
+        self.findToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.addToolBar(QtCore.Qt.BottomToolBarArea, self.findToolBar)
+        self.findToolBar.hide()
+
         self.findAction = QtGui.QAction(self)
         self.findAction.triggered.connect(self.find)
-        self.findAction.setText("")
+        self.findAction.setShortcut("Ctrl+F")
+        self.findAction.setText(tr("findHKey"))
         self.findAction.setToolTip(tr("findBtnTT"))
         self.findAction.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_icons, 'find.png'))))
         self.mainToolBar.addAction(self.findAction)
@@ -2244,11 +2262,35 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.findNextAction = QtGui.QAction(self)
         self.findNextAction.triggered.connect(self.findNext)
-        self.findNextAction.setText("")
+        self.findNextAction.setShortcuts(["Ctrl+G", "F3"])
+        self.findNextAction.setText(tr("findNextHKey"))
         self.findNextAction.setToolTip(tr("findNextBtnTT"))
         self.findNextAction.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(os.path.join(app_icons, 'find-next.png'))))
-        self.mainToolBar.addAction(self.findNextAction)
-        self.mainToolBar.widgetForAction(self.findNextAction).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        self.findPreviousAction = QtGui.QAction(self)
+        self.findPreviousAction.triggered.connect(self.findPrevious)
+        self.findPreviousAction.setShortcut("Ctrl+Shift+G")
+        self.findPreviousAction.setText(tr("findPreviousHKey"))
+        self.findPreviousAction.setToolTip(tr("findPreviousBtnTT"))
+        self.findPreviousAction.setIcon(QtGui.QIcon().fromTheme("media-seek-backward", QtGui.QIcon(os.path.join(app_icons, 'find-previous.png'))))
+
+        self.findBar = QtGui.QLineEdit()
+        self.findBar.returnPressed.connect(self.findNext)
+
+        self.findToolBar.addWidget(self.findBar)
+        self.findToolBar.addAction(self.findPreviousAction)
+        self.findToolBar.addAction(self.findNextAction)
+
+        self.closeFindToolBarAction = QtGui.QAction(self)
+        self.closeFindToolBarAction.triggered.connect(self.findToolBar.hide)
+        self.closeFindToolBarAction.setIcon(QtGui.QIcon().fromTheme("window-close", QtGui.QIcon(os.path.join(app_icons, "close.png"))))
+
+        self.findToolBar.addAction(self.closeFindToolBarAction)
+
+        self.addAction(self.findPreviousAction)
+        self.addAction(self.findNextAction)
+
+        #self.mainToolBar.widgetForAction(self.findNextAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         #self.mainToolBar.addSeparator()
 
@@ -2262,8 +2304,20 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainToolBar.widgetForAction(self.translateAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
         # URL bar and history completion
+        self.splitter = QtGui.QSplitter()
+        self.splitter.setChildrenCollapsible(False)
+        self.mainToolBar.addWidget(self.splitter)
+
+        self.urlToolBar = QtGui.QToolBar()
+        self.urlToolBar.setStyleSheet(blanktoolbarsheet + " QToolBar{padding:0;margin:0;}")
+        self.splitter.addWidget(self.urlToolBar)
+
+        self.searchToolBar = QtGui.QToolBar()
+        self.searchToolBar.setStyleSheet(blanktoolbarsheet + " QToolBar{padding:0;margin:0;}")
+        self.splitter.addWidget(self.searchToolBar)
+
         self.urlBar = RUrlBar(QtGui.QIcon(), self)
-        self.mainToolBar.addWidget(self.urlBar)
+        self.urlToolBar.addWidget(self.urlBar)
 
         self.urlBar2 = RUrlBar()
         self.urlBar2.setIcon(QtGui.QIcon())
@@ -2282,7 +2336,7 @@ self.origY + ev.globalY() - self.mouseY)
         searchAction.setShortcut("Ctrl+K")
         searchAction.triggered.connect(self.focusSearch)
         self.addAction(searchAction)
-        self.historyCompletionBox.addAction(searchAction)        
+        self.historyCompletionBox.addAction(searchAction)
 
         self.addBookmarkButton = QtGui.QToolButton(self)
         self.addBookmarkButton.setFocusPolicy(QtCore.Qt.TabFocus)
@@ -2292,22 +2346,23 @@ self.origY + ev.globalY() - self.mouseY)
         self.addBookmarkButton.setShortcut("Ctrl+D")
         self.addBookmarkButton.setIcon(QtGui.QIcon().fromTheme("emblem-favorite", QtGui.QIcon(os.path.join(app_icons, 'heart.png'))))
         self.addBookmarkButton.setIconSize(QtCore.QSize(16, 16))
-        self.mainToolBar.addWidget(self.addBookmarkButton)
+        self.urlToolBar.addWidget(self.addBookmarkButton)
 
-        self.goButton = QtGui.QToolButton(self)
+        """self.goButton = QtGui.QToolButton(self)
         self.goButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.goButton.clicked.connect(self.updateWeb)
         self.goButton.setText("")
         self.goButton.setToolTip(tr("go"))
         self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(os.path.join(app_icons, 'go.png'))))
         self.goButton.setIconSize(QtCore.QSize(16, 16))
-        self.mainToolBar.addWidget(self.goButton)
+        self.urlToolBar.addWidget(self.goButton)"""
 
         self.searchBar = RSearchBar(self)
+        self.searchBar.setStyleSheet("QLineEdit{min-width:200px;}")
         searchEditor.searchChanged.connect(self.searchBar.setLabel)
-        self.searchBar.setStyleSheet("QLineEdit{max-width:200px;}")
         self.searchBar.returnPressed.connect(self.searchWeb)
-        self.mainToolBar.addWidget(self.searchBar)
+        self.searchToolBar.addWidget(self.searchBar)
+        self.splitter.setSizes([1920, 200])
         #self.searchButton = QtGui.QPushButton(self)
         #self.searchButton.setFocusPolicy(QtCore.Qt.TabFocus)
         #self.searchButton.clicked.connect(self.searchWeb)
@@ -2452,6 +2507,12 @@ self.origY + ev.globalY() - self.mouseY)
         printPreviewAction.triggered.connect(self.printPreview)
         self.mainMenu.addAction(printPreviewAction)
         self.addAction(printPreviewAction)
+
+        self.mainMenu.addSeparator()
+
+        self.mainMenu.addAction(self.findAction)
+        self.mainMenu.addAction(self.findNextAction)
+        self.mainMenu.addAction(self.findPreviousAction)
 
         self.mainMenu.addSeparator()
 
@@ -3160,4 +3221,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

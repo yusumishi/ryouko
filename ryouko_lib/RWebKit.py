@@ -243,7 +243,7 @@ class RWebView(QtWebKit.QWebView):
         self.locationEditAction.triggered.connect(self.locationEdit)
         self.addAction(self.locationEditAction)
 
-        self.findAction = QtGui.QAction(self)
+        """self.findAction = QtGui.QAction(self)
         self.findAction.triggered.connect(self.find)
         self.findAction.setShortcut("Ctrl+F")
         self.addAction(self.findAction)
@@ -256,7 +256,7 @@ class RWebView(QtWebKit.QWebView):
         self.findNextAction = QtGui.QAction(self)
         self.findNextAction.triggered.connect(self.findNext)
         self.findNextAction.setShortcuts(["Ctrl+G", "F3"])
-        self.addAction(self.findNextAction)
+        self.addAction(self.findNextAction)"""
 
         self.zoomInAction = QtGui.QAction(self)
         self.zoomInAction.triggered.connect(self.zoomIn)
@@ -682,10 +682,25 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             self.text = ""
         self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument)
 
+    def findText_(self, text):
+        find = text
+        if find:
+            self.text = find
+        else:
+            self.text = ""
+        self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument)
+
     def findPrevious(self):
         if not self.text:
             self.find()
         else:
+            self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument | QtWebKit.QWebPage.FindBackward)
+
+    def findPreviousText(self, text):
+        if not self.text:
+            self.findText_(text)
+        else:
+            self.text = text
             self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument | QtWebKit.QWebPage.FindBackward)
 
     def findNext(self):
@@ -693,6 +708,14 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             self.find()
         else:
             self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument)
+
+    def findNextText(self, text):
+        if not self.text:
+            self.findText_(text)
+        else:
+            self.text = text
+            self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument)
+
 
     def zoom(self, value=1.0):
         self.zoomFactor = value

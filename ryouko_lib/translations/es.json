@@ -77,6 +77,8 @@
 "findHKey": "&Buscar",
 "findNextBtnTT": "<b>Buscar siguiente</b><br>Ctrl+G",
 "findNextHKey": "Buscar si&guiente",
+"findPreviousBtnTT": "<b>Buscar previo</b><br>Ctrl+Shift+G",
+"findPreviousHKey": "Buscar pre&vio",
 "findReverse": "Buscar en sentido inverso",
 "general": "&General",
 "go": "Ir",
