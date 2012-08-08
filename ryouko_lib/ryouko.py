@@ -2491,17 +2491,18 @@ self.origY + ev.globalY() - self.mouseY)
         newTabAction.triggered.connect(self.newTab)
         self.addAction(newTabAction)
         self.newTabButton = QtGui.QToolButton()
+        self.newTabButton.setPopupMode(QtGui.QToolButton.MenuButtonPopup)
         self.newTabButton.setFocusPolicy(QtCore.Qt.TabFocus)
         self.newTabButton.setDefaultAction(newTabAction)
         self.cornerWidgetsToolBar.addWidget(self.newTabButton)
 
-        self.tabsContextMenuButton = QtGui.QAction(self)
-        self.tabsContextMenuButton.setShortcuts(["Alt+V", "Alt+W", "Alt+T"])
-        self.tabsContextMenuButton.triggered.connect(self.showTabsContextMenuAtCornerWidgets)
-        self.cornerWidgetsToolBar.addAction(self.tabsContextMenuButton)
-        self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setArrowType(QtCore.Qt.DownArrow)
-        self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
-        self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).setStyleSheet("QToolButton { max-width: 16px; }")
+        self.tabsContextMenuMenu = MenuPopupWindowMenu(self.showTabsContextMenuAtCornerWidgets)
+        self.newTabButton.setMenu(self.tabsContextMenuMenu)
+
+        self.showTabsContextMenuAction = QtGui.QAction(self)
+        self.showTabsContextMenuAction.setShortcuts(["Alt+V", "Alt+W", "Alt+T"])
+        self.showTabsContextMenuAction.triggered.connect(self.showTabsContextMenuAtCornerWidgets)
+        self.addAction(self.showTabsContextMenuAction)
 
         # New window button
         newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_icons, 'newwindow.png'))), tr("newWindowBtn"), self)
@@ -2824,11 +2825,11 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenu.move(x, y)
         self.tabsContextMenu.show2()
 
-    def showTabsContextMenuAtCornerWidgets(self):
-        x = self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).mapToGlobal(QtCore.QPoint(0,0)).x()
-        y = self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).mapToGlobal(QtCore.QPoint(0,0)).y()
-        width = self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).width()
-        height = self.cornerWidgetsToolBar.widgetForAction(self.tabsContextMenuButton).height()
+    def showTabsContextMenuAtCornerWidgets(self, dummy=None):
+        x = self.newTabButton.mapToGlobal(QtCore.QPoint(0,0)).x()
+        y = self.newTabButton.mapToGlobal(QtCore.QPoint(0,0)).y()
+        width = self.newTabButton.width()
+        height = self.newTabButton.height()
         self.tabsContextMenu.show()
         if x - self.tabsContextMenu.width() + width < 0:
             x = 0
