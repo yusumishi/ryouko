@@ -42,6 +42,7 @@ class RWebPage(QtWebKit.QWebPage):
         app_default_useragent = unicode(self.userAgentForUrl(QtCore.QUrl("about:blank"))).replace("Safari", "Ryouko/" + app_version + " Safari")
         self.bork = False
         self.replyURL = QtCore.QUrl("about:blank")
+        self.setNetworkAccessManager(RNetworkAccessManager(self.networkAccessManager()))
         self.networkAccessManager().authenticationRequired.connect(self.provideAuthentication)
         self.networkAccessManager().sslErrors.connect(self.sslError)
 
@@ -150,6 +151,25 @@ class RSystemOpenView(QtWebKit.QWebView):
     def openFile(self, reply):
         u = unicode(reply.url().toString())
         system_open(u)
+
+class RNetworkAccessManager(QtNetwork.QNetworkAccessManager):
+    def __init__(self, old_manager=QtNetwork.QNetworkAccessManager()):
+        QtNetwork.QNetworkAccessManager.__init__(self, old_manager.parent())
+        self.oldManager = old_manager
+        self.setCache(old_manager.cache())
+        self.setCookieJar(old_manager.cookieJar())
+        self.setProxy(old_manager.proxy())
+        self.setProxyFactory(old_manager.proxyFactory())
+    def createRequest(self, operation, request, data):
+        s = str(request.url().scheme())
+        if s != "apt":
+            return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
+        if operation == self.GetOperation:
+            if s == "apt":
+                biased_system_open(unicode(request.url().toString()))
+                return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
+        else:
+            return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
 
 class RWebView(QtWebKit.QWebView):
     createNewWindow = QtCore.pyqtSignal(QtWebKit.QWebPage.WebWindowType)

@@ -14,6 +14,7 @@ terminals=[ ["terminator",      "-x "],
             ["konsole",         "-e="] ]
 
 open_commands=["xdg-open", "gnome-open", "kde-open", "mate-open"]
+biased_open_commands=["gnome-open", "kde-open", "mate-open", "xdg-open"]
 
 def readTerminalOutput(command):
     return read_terminal_output(command)
@@ -36,10 +37,10 @@ def system_terminal(command):
     if not location:
         os.system(command)
 
-def system_open(location):
+def system_open(location, commands=open_commands):
     if sys.platform.startswith("linux"):
         a=False
-        for app in open_commands:
+        for app in commands:
             a=Popen(["which", app], stdout=PIPE).communicate()[0]
             if a:
                 expression = app + " \"" + unicode(location) + "\" & echo \"\" >> /dev/null"
@@ -52,3 +53,6 @@ def system_open(location):
         expression = ""
     print(expression)
     os.system(expression)
+
+def biased_system_open(location):
+    system_open(location, biased_open_commands)
