@@ -1749,7 +1749,7 @@ class TabBrowser(QtGui.QMainWindow):
 
         if app_vista == True:
             self.setStyleSheet("""
-            QMainWindow {
+            TabBrowser {
             background-image: url(\"""" + os.path.join(app_lib, "images", "win-toolbar.png").replace("\\", "/") + """\");
             background-color: #e1e6f6;
             background-repeat: repeat-x;
@@ -2308,6 +2308,18 @@ self.origY + ev.globalY() - self.mouseY)
         # URL bar and history completion
         self.splitter = QtGui.QSplitter()
         self.splitter.setChildrenCollapsible(False)
+        if sys.platform.startswith("win"):
+            self.splitter.setStyleSheet("""
+            QSplitter::handle {
+            image: url(\"""" + os.path.join(app_lib, "images", "win-splitter.png").replace("\\", "/") + """\");
+            }
+
+            QSplitter::handle:horizontal {
+            width: 2px;
+            padding-left: 3px;
+            padding-right: 2px;
+            }
+            """)
         self.mainToolBar.addWidget(self.splitter)
 
         self.urlToolBar = QtGui.QToolBar()
