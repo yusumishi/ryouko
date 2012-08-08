@@ -77,7 +77,7 @@
 "findHKey": "&Find",
 "findNextBtnTT": "<b>Find Next</b><br>Ctrl+G",
 "findNextHKey": "Find A&gain",
-"findPreviousBtnTT": "<b>Find Previous</b><br>Ctrl+G",
+"findPreviousBtnTT": "<b>Find Previous</b><br>Ctrl+Shift+G",
 "findPreviousHKey": "Find Pre&vious",
 "findReverse": "Find Backwards",
 "general": "&General",

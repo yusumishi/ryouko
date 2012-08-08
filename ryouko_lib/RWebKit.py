@@ -697,11 +697,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument | QtWebKit.QWebPage.FindBackward)
 
     def findPreviousText(self, text):
-        if not self.text:
-            self.findText_(text)
-        else:
-            self.text = text
-            self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument | QtWebKit.QWebPage.FindBackward)
+        self.findText(text, QtWebKit.QWebPage.FindWrapsAroundDocument | QtWebKit.QWebPage.FindBackward)
 
     def findNext(self):
         if not self.text:
@@ -710,11 +706,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument)
 
     def findNextText(self, text):
-        if not self.text:
-            self.findText_(text)
-        else:
-            self.text = text
-            self.findText(self.text, QtWebKit.QWebPage.FindWrapsAroundDocument)
+        self.findText(text, QtWebKit.QWebPage.FindWrapsAroundDocument)
 
 
     def zoom(self, value=1.0):

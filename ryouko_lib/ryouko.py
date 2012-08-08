@@ -1902,10 +1902,11 @@ self.origY + ev.globalY() - self.mouseY)
         self.setIcon()
 
     def stop(self):
-        self.currentWebView().stop()
-        self.urlBar2.setText(self.currentWebView().url().toString())
         if self.findBar.hasFocus() and self.findToolBar.isVisible():
             self.findToolBar.hide()
+        else:
+            self.currentWebView().stop()
+            self.urlBar2.setText(self.currentWebView().url().toString())
 
     def stopReload(self):
         if self.currentWebView().isLoading():
@@ -1926,6 +1927,7 @@ self.origY + ev.globalY() - self.mouseY)
         if self.findToolBar.isVisible() and self.findBar.hasFocus():
             self.findToolBar.hide()
         else:
+            self.currentWebView().parent2.addToolBar(self.findToolBar)
             self.findToolBar.show()
             self.findBar.setFocus()
             self.findBar.selectAll()
@@ -2363,6 +2365,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.searchBar.returnPressed.connect(self.searchWeb)
         self.searchToolBar.addWidget(self.searchBar)
         self.splitter.setSizes([1920, 200])
+        searchEditor.reload()
         #self.searchButton = QtGui.QPushButton(self)
         #self.searchButton.setFocusPolicy(QtCore.Qt.TabFocus)
         #self.searchButton.clicked.connect(self.searchWeb)
@@ -3182,7 +3185,6 @@ class Ryouko(QtGui.QWidget):
         searchEditor = SearchEditor()
         cDialog = CDialog(self)
         win = TabBrowser(self)
-        searchEditor.reload()
     def primeBrowser(self):
         global win
         win.show()
