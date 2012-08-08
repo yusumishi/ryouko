@@ -2390,7 +2390,7 @@ self.origY + ev.globalY() - self.mouseY)
         #self.mainToolBar.addWidget(self.searchButton)
 
         self.searchEditButtonContainer = QtGui.QWidget(self)
-        self.searchEditButtonContainerLayout = QtGui.QVBoxLayout(self)
+        self.searchEditButtonContainerLayout = QtGui.QVBoxLayout(self.searchEditButtonContainer)
         self.searchEditButtonContainerLayout.setSpacing(0);
         self.searchEditButtonContainerLayout.setContentsMargins(0, 0, 0, 0)
         self.searchEditButtonContainer.setLayout(self.searchEditButtonContainerLayout)
