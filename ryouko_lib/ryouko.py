@@ -2313,12 +2313,6 @@ self.origY + ev.globalY() - self.mouseY)
             QSplitter::handle {
             image: url(\"""" + os.path.join(app_lib, "images", "win-splitter.png").replace("\\", "/") + """\");
             }
-
-            QSplitter::handle:horizontal {
-            width: 2px;
-            padding-left: 3px;
-            padding-right: 2px;
-            }
             """)
         self.mainToolBar.addWidget(self.splitter)
 
