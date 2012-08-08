@@ -2248,6 +2248,8 @@ self.origY + ev.globalY() - self.mouseY)
         #self.mainToolBar.addSeparator()
 
         self.findToolBar = QtGui.QToolBar()
+        if sys.platform.startswith("win"):
+            self.findToolBar.setStyleSheet("QToolBar{background-color:palette(window);border:0;border-bottom:1px solid palette(shadow);}")
         self.findToolBar.setMovable(False)
         self.findToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.findToolBar)
