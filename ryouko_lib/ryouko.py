@@ -2310,12 +2310,12 @@ self.origY + ev.globalY() - self.mouseY)
         # URL bar and history completion
         self.splitter = QtGui.QSplitter()
         self.splitter.setChildrenCollapsible(False)
-        if sys.platform.startswith("win"):
+        """if sys.platform.startswith("win"):
             self.splitter.setStyleSheet("""
-            QSplitter::handle {
-            image: url(\"""" + os.path.join(app_lib, "images", "win-splitter.png").replace("\\", "/") + """\");
-            }
-            """)
+            #QSplitter::handle {
+            #image: url(\"""" + os.path.join(app_lib, "images", "win-splitter.png").replace("\\", "/") + """\");
+            #}
+            #""")
         self.mainToolBar.addWidget(self.splitter)
 
         self.urlToolBar = QtGui.QToolBar()
