@@ -1863,15 +1863,15 @@ self.origY + ev.globalY() - self.mouseY)
         self.currentWebView().back()
         self.setIcon()
 
-    def showBackList(self):
+    def showBackList(self, dummy=None):
         self.backList.clear()
         h = self.currentWebView().history()
         for item in h.backItems(h.count()):
             self.backList.addItem(item.title())
         self.backList.show()
-        self.backList.display(True, self.backListBtn.mapToGlobal(QtCore.QPoint(0,0)).x(), self.backListBtn.mapToGlobal(QtCore.QPoint(0,0)).y(),
+        self.backList.display(True, self.mainToolBar.widgetForAction(self.backAction).mapToGlobal(QtCore.QPoint(0,0)).x(), self.mainToolBar.widgetForAction(self.backAction).mapToGlobal(QtCore.QPoint(0,0)).y(),
         self.backList.width(),
-        self.backListBtn.height())
+        self.mainToolBar.widgetForAction(self.backAction).height())
         self.backList.list.setFocus()
 
     def backFromList(self, item):
@@ -1882,15 +1882,15 @@ self.origY + ev.globalY() - self.mouseY)
         self.currentWebView().forward()
         self.setIcon()
 
-    def showNextList(self):
+    def showNextList(self, dummy=None):
         self.nextList.clear()
         h = self.currentWebView().history()
         for item in h.forwardItems(h.count()):
             self.nextList.addItem(item.title())
         self.nextList.show()
-        self.nextList.display(True, self.nextListBtn.mapToGlobal(QtCore.QPoint(0,0)).x(), self.nextListBtn.mapToGlobal(QtCore.QPoint(0,0)).y(),
+        self.nextList.display(True, self.mainToolBar.widgetForAction(self.nextAction).mapToGlobal(QtCore.QPoint(0,0)).x(), self.mainToolBar.widgetForAction(self.nextAction).mapToGlobal(QtCore.QPoint(0,0)).y(),
         self.nextList.width(),
-        self.nextListBtn.height())
+        self.mainToolBar.widgetForAction(self.nextAction).height())
         self.nextList.list.setFocus()
 
     def nextFromList(self, item):
@@ -2196,17 +2196,21 @@ self.origY + ev.globalY() - self.mouseY)
         self.backAction.setIcon(QtGui.QIcon().fromTheme("go-previous", QtGui.QIcon(os.path.join(app_icons, 'back.png'))))
         self.mainToolBar.addAction(self.backAction)
         self.mainToolBar.widgetForAction(self.backAction).setFocusPolicy(QtCore.Qt.TabFocus)
+        self.mainToolBar.widgetForAction(self.backAction).setPopupMode(QtGui.QToolButton.MenuButtonPopup)
 
         self.backList = ListMenu()
         self.backList.itemClicked.connect(self.backFromList)
         self.backList.itemActivated.connect(self.backFromList)
 
-        self.backListBtn = QtGui.QToolButton(self)
-        self.backListBtn.setArrowType(QtCore.Qt.DownArrow)
-        self.backListBtn.setStyleSheet("QToolButton { max-width: 16px; }")
-        self.backListBtn.clicked.connect(self.showBackList)
-        self.backListBtn.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.mainToolBar.addWidget(self.backListBtn)
+        self.backListMenu = MenuPopupWindowMenu(self.showBackList)
+        self.mainToolBar.widgetForAction(self.backAction).setMenu(self.backListMenu)
+
+        #self.backListBtn = QtGui.QToolButton(self)
+        #self.backListBtn.setArrowType(QtCore.Qt.DownArrow)
+        #self.backListBtn.setStyleSheet("QToolButton { max-width: 16px; }")
+        #self.backListBtn.clicked.connect(self.showBackList)
+        #self.backListBtn.setFocusPolicy(QtCore.Qt.TabFocus)
+        #elf.mainToolBar.addWidget(self.backListBtn)
 
         self.nextAction = QtGui.QAction(self)
         self.nextAction.setToolTip(tr("nextBtnTT"))
@@ -2215,17 +2219,21 @@ self.origY + ev.globalY() - self.mouseY)
         self.nextAction.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_icons, 'next.png'))))
         self.mainToolBar.addAction(self.nextAction)
         self.mainToolBar.widgetForAction(self.nextAction).setFocusPolicy(QtCore.Qt.TabFocus)
+        self.mainToolBar.widgetForAction(self.nextAction).setPopupMode(QtGui.QToolButton.MenuButtonPopup)
 
         self.nextList = ListMenu()
         self.nextList.itemClicked.connect(self.nextFromList)
         self.nextList.itemActivated.connect(self.nextFromList)
 
-        self.nextListBtn = QtGui.QToolButton(self)
-        self.nextListBtn.setArrowType(QtCore.Qt.DownArrow)
-        self.nextListBtn.setStyleSheet("QToolButton { max-width: 16px; }")
-        self.nextListBtn.clicked.connect(self.showNextList)
-        self.nextListBtn.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.mainToolBar.addWidget(self.nextListBtn)
+        self.nextListMenu = MenuPopupWindowMenu(self.showNextList)
+        self.mainToolBar.widgetForAction(self.nextAction).setMenu(self.nextListMenu)
+
+        #self.nextListBtn = QtGui.QToolButton(self)
+        #self.nextListBtn.setArrowType(QtCore.Qt.DownArrow)
+        #self.nextListBtn.setStyleSheet("QToolButton { max-width: 16px; }")
+        #self.nextListBtn.clicked.connect(self.showNextList)
+        #self.nextListBtn.setFocusPolicy(QtCore.Qt.TabFocus)
+        #self.mainToolBar.addWidget(self.nextListBtn)
 
         self.reloadAction = QtGui.QAction(self)
         self.reloadAction.triggered.connect(self.reload)

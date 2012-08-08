@@ -2,6 +2,15 @@
 
 from PyQt4 import QtCore, QtGui
 
+class MenuPopupWindowMenu(QtGui.QMenu):
+    def __init__(self, show=None, parent=None):
+        QtGui.QMenu.__init__(self, parent)
+        self.show = show
+        self.aboutToShow.connect(self.show)
+    def setVisible(self, isVisible=True):
+        QtGui.QMenu.setVisible(self, isVisible)
+        QtGui.QMenu.setVisible(self, False)
+
 class MenuPopupWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(MenuPopupWindow, self).__init__(parent)
