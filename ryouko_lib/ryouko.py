@@ -1242,7 +1242,7 @@ class Browser(QtGui.QMainWindow):
         }
         """)
         self.mainLayout.addWidget(self.statusBar, 3, 0)
-        self.statusBarLayout = QtGui.QHBoxLayout(self)
+        self.statusBarLayout = QtGui.QHBoxLayout(self.statusBar)
         self.statusBarLayout.setContentsMargins(0,0,0,0)        
         self.statusBar.setLayout(self.statusBarLayout)
         self.statusMessage = QtGui.QLineEdit(self)
@@ -1285,7 +1285,7 @@ class Browser(QtGui.QMainWindow):
         }
         """)
         self.statusBarLayout.addWidget(self.zoomBar)
-        self.zoomBarLayout = QtGui.QHBoxLayout(self)
+        self.zoomBarLayout = QtGui.QHBoxLayout(self.zoomBar)
         self.zoomBarLayout.setContentsMargins(0,2,0,0)
         self.zoomBarLayout.setSpacing(0)
         self.zoomBar.setLayout(self.zoomBarLayout)
