@@ -1118,7 +1118,7 @@ class RAboutDialog(QtGui.QMainWindow):
         h = self.licensePage.history()
         for item in h.backItems(h.count()):
             self.licensePage.back()
-        h = os.path.join(app_lib, "LICENSE.html").replace("\\", "/")
+        h = os.path.join(app_lib, "license.html").replace("\\", "/")
         if sys.platform.startswith("win"):
             h = h.replace(h[0:2], "")
         self.licensePage.load(QtCore.QUrl("file://" + h))

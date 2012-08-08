@@ -156,17 +156,28 @@ class RNetworkAccessManager(QtNetwork.QNetworkAccessManager):
     def __init__(self, old_manager=QtNetwork.QNetworkAccessManager()):
         QtNetwork.QNetworkAccessManager.__init__(self, old_manager.parent())
         self.oldManager = old_manager
+        self.schemes = ["apt", "ryouko"]
         self.setCache(old_manager.cache())
         self.setCookieJar(old_manager.cookieJar())
         self.setProxy(old_manager.proxy())
         self.setProxyFactory(old_manager.proxyFactory())
     def createRequest(self, operation, request, data):
         s = str(request.url().scheme())
-        if s != "apt":
+        bork = False
+        for scheme in self.schemes:
+            if s == scheme:
+                bork = True
+                break
+        if not bork:
             return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
         if operation == self.GetOperation:
             if s == "apt":
                 biased_system_open(unicode(request.url().toString()))
+                return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
+            elif s == "ryouko":
+                r = unicode(request.url().toString()).split("/")[2]
+                u = unicode(request.url().toString()).replace("ryouko://" + r + "/", "")
+                request.setUrl(QtCore.QUrl(os.path.join(app_lib, u)))
                 return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
         else:
             return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
