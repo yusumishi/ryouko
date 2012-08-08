@@ -175,10 +175,12 @@ class RNetworkAccessManager(QtNetwork.QNetworkAccessManager):
                 biased_system_open(unicode(request.url().toString()))
                 return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
             elif s == "ryouko":
-                r = unicode(request.url().toString()).split("/")[2]
-                u = unicode(request.url().toString()).replace("ryouko://" + r + "/", "")
-                request.setUrl(QtCore.QUrl(os.path.join(app_lib, u)))
-                return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
+                try: r = unicode(request.url().toString()).split("/")[2]
+                except: return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
+                else:
+                    u = unicode(request.url().toString()).replace("ryouko://" + r + "/", "")
+                    request.setUrl(QtCore.QUrl(os.path.join(app_lib, u)))
+                    return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
         else:
             return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
 
