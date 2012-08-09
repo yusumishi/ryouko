@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import os, sys, json, time, datetime
-from PyQt4.QtCore import *
+from PyQt4 import QtCore
 try:
     __file__
 except:
@@ -11,8 +11,8 @@ app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(app_lib)
 from Python23Compat import *
 
-class BrowserHistory(QObject):
-    historyChanged = pyqtSignal()
+class BrowserHistory(QtCore.QObject):
+    historyChanged = QtCore.pyqtSignal()
     def __init__(self, app_profile, parent=None):
         super(BrowserHistory, self).__init__()
         self.parent = parent
