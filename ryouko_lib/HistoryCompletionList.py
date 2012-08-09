@@ -1,7 +1,8 @@
 #! /usr/bin/env python
 
 import os.path, sys
-from PyQt4 import QtCore, QtGui
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 
 try:
     __file__
@@ -12,11 +13,11 @@ sys.path.append(app_lib)
 
 from QStringFunctions import *
 
-class HistoryCompletionList(QtGui.QListWidget):
+class HistoryCompletionList(QListWidget):
     if sys.version_info[0] <= 2:
-        statusMessage = QtCore.pyqtSignal(QtCore.QString)
+        statusMessage = pyqtSignal(QString)
     else:
-        statusMessage = QtCore.pyqtSignal(str)
+        statusMessage = pyqtSignal(str)
     def __init__(self, parent=None):
         super(HistoryCompletionList, self).__init__()
         self.parent = parent
@@ -25,9 +26,9 @@ class HistoryCompletionList(QtGui.QListWidget):
     def sendStatusMessage(self, row):
         self.statusMessage.emit(self.parent.tempHistory[self.row(self.currentItem())]['url'])
     def mouseMoveEvent(self, ev):
-        try: self.statusMessage.emit(qstring(self.parent.tempHistory[self.row(self.itemAt(QtGui.QCursor().pos().x() - self.mapToGlobal(QtCore.QPoint(0,0)).x(), QtGui.QCursor().pos().y() - self.mapToGlobal(QtCore.QPoint(0,0)).y()))]['url']))
+        try: self.statusMessage.emit(qstring(self.parent.tempHistory[self.row(self.itemAt(QCursor().pos().x() - self.mapToGlobal(QPoint(0,0)).x(), QCursor().pos().y() - self.mapToGlobal(QPoint(0,0)).y()))]['url']))
         except:
-            try: self.statusMessage.emit(qstring(self.parent.tempHistory[self.row(self.itemAt(QtGui.QCursor().pos().x() - self.mapToGlobal(QtCore.QPoint(0,0)).x(), QtGui.QCursor().pos().y() - self.mapToGlobal(QtCore.QPoint(0,0)).y()))]['url']))
+            try: self.statusMessage.emit(qstring(self.parent.tempHistory[self.row(self.itemAt(QCursor().pos().x() - self.mapToGlobal(QPoint(0,0)).x(), QCursor().pos().y() - self.mapToGlobal(QPoint(0,0)).y()))]['url']))
             except:
                 self.statusMessage.emit(qstring(""))
 

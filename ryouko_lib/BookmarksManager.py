@@ -1,11 +1,11 @@
 #! /usr/bin/env python
 
 import os, sys
-from PyQt4 import QtCore
+from PyQt4.QtCore import *
 
-class BookmarksManager(QtCore.QObject):
-    bookmarksChanged = QtCore.pyqtSignal()
-    userLinksChanged = QtCore.pyqtSignal(str)
+class BookmarksManager(QObject):
+    bookmarksChanged = pyqtSignal()
+    userLinksChanged = pyqtSignal(str)
     def __init__(self, app_links, parent=None):
         super(BookmarksManager, self).__init__()
         self.parent = parent

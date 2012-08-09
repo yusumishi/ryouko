@@ -3,25 +3,24 @@
 import sys
 from PyQt4 import QtCore
 
-if sys.version_info[0] <= 2:
-    def QString(string=""):
-        return(QtCore.QString(string))
-else:
+if sys.version_info[0] >= 3:
     def QString(string=""):
         return(string)
+    def qstring(string=""):
+        return QString(string)
+else:
+    def qstring(string=""):
+        return QtCore.QString(string)
 
 if sys.version_info[0] <= 2:
     def QStringList(li=[]):
         t = QtCore.QStringList()
         for i in li:
-            t.append(QString(i))
+            t.append(QtCore.QString(i))
         return t
 else:
     def QStringList(li=[]):
         return li
-
-def qstring(string=""):
-    return QString(string)
 
 def qstringlist(li=[]):
     return QStringList(li)
