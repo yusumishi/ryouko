@@ -92,7 +92,6 @@ app_default_useragent = "Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/534.34 (KHT
 app_webview_default_icon = QtGui.QIcon()
 
 from ryouko_common import *
-from ryouko_about import *
 from RUrlBar import *
 from RSearchBar import *
 from Python23Compat import *
@@ -130,14 +129,27 @@ app_windows = []
 app_closed_windows = []
 app_info = os.path.join(app_lib, "info.txt")
 app_icons = os.path.join(app_lib, 'icons')
+app_version = "N/A"
+app_codename = "N/A"
+if os.path.exists(app_info):
+    readVersionFile = open(app_info)
+    metadata = readVersionFile.readlines()
+    readVersionFile.close()
+    if len(metadata) > 0:
+        app_version = metadata[0].rstrip("\n")
+        if len(metadata) > 1:
+            app_codename = metadata[1].rstrip("\n")
 app_gui = os.path.join(app_lib, "mainwindow.ui")
 app_home = os.path.expanduser(os.path.join("~", ".ryouko-data"))
 app_profile_name = "default"
 app_default_profile_file = os.path.join(app_home, "profiles.txt")
 app_profile_folder = os.path.join(app_home, "profiles")
+app_commandline = ""
 app_profile_exists = False
 app_kill_cookies = False
 app_kill_temp_files = False
+for arg in sys.argv:
+    app_commandline = "%s%s " % (app_commandline, arg)
 if sys.platform.startswith("win"):
     app_logo = os.path.join(app_icons, 'about-logo.png')
 else:
@@ -989,6 +1001,77 @@ library = ""
 
 browserHistory = BrowserHistory(app_profile)
 
+def showAboutPage(webView):
+    webView.load(QtCore.QUrl("about:blank"))
+    webView.setHtml("""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+        <html style='padding-bottom: 19.25pt;'>
+        <head>
+        <title>""" + tr('aboutRyouko') + """</title>
+        <script type='text/javascript'>
+        window.onload = function() {
+            document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;
+        }
+        </script>
+        <style type="text/css">
+        b, h1, h2 {
+        font-family: sans-serif;
+        }
+
+        *:not(b):not(h1):not(h2) {
+        font-family: monospace;
+        }
+
+        #toolbar {
+        overflow-y: auto;
+        height: 19.25pt;
+        width: 100%;
+        left: 0;
+        bottom: 0;
+        padding: 2px;
+        padding-left: 0;
+        padding-right:0;
+        background: ThreeDFace;
+        position: fixed;
+        visibility: visible;
+        z-index: 9001;
+        border-top: 1px solid ThreeDShadow;
+        }
+
+        #toolbar * {
+        font-family: sans-serif;
+        font-size: 11pt;
+        background: transparent;
+        padding: 0;
+        border: 0;
+        color: ButtonText;
+        text-decoration: none;
+        -webkit-appearance: none;
+        }
+
+        #toolbar a:hover,
+        #ryouko-toolbar input:hover {
+        text-decoration: underline;
+        }
+        </style>
+        </head>
+        <body style='font-family: sans-serif; font-size: 11pt;'>
+        <center>
+        <div style=\"max-width: 640px;\">
+        <a name='about'></a>
+        <h1 style='margin-bottom: 0;'>""" + tr('aboutRyouko') + """</h1>
+        <img src='file://%""" + os.path.join(app_icons, "about-logo.png") + """'></img><br/>
+        <div style=\"text-align: left;\">
+        <b>Ryouko:</b> """ + app_version + """<br/>
+        <b>""" + tr('codename') + """:</b> \"""" + app_codename + """\"<br/>
+        <b>OS:</b> """ + sys.platform + """<br/>
+        <b>Qt:</b> """ + str(QtCore.qVersion()) + """<br/>
+        <b>Python:</b> """ + str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2]) + """<br/>
+        <b>""" + tr("userAgent") + """:</b> <span id="userAgent">JavaScript must be enabled to display the user agent!</span><br/>
+        <b>""" + tr("commandLine") + """:</b> """ + app_commandline + "<br/>\
+        <b>" + tr('executablePath') + ":</b> " + os.path.realpath(__file__) + "<br/><center>\
+        </center></div></div></center></body></html>")
+
 class RAboutDialog(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(RAboutDialog, self).__init__()
@@ -1009,10 +1092,13 @@ class RAboutDialog(QtGui.QMainWindow):
         self.addAction(self.closeWindowAction)
 
         self.aboutPage = RAboutPageView()
-        self.aboutPage.load(QtCore.QUrl("ryouko://about"))
+
+        showAboutPage(self.aboutPage)
+
         self.tabs.addTab(self.aboutPage, tr("aboutRyoukoHKey"))
 
         self.licensePage = RAboutPageView()
+
         self.tabs.addTab(self.licensePage, tr("licenseHKey"))
 
     def updateUserAgent(self):
@@ -1032,7 +1118,10 @@ class RAboutDialog(QtGui.QMainWindow):
         h = self.licensePage.history()
         for item in h.backItems(h.count()):
             self.licensePage.back()
-        self.licensePage.load(QtCore.QUrl("ryouko://lib/LICENSE.html"))
+        h = os.path.join(app_lib, "LICENSE.html").replace("\\", "/")
+        if sys.platform.startswith("win"):
+            h = h.replace(h[0:2], "")
+        self.licensePage.load(QtCore.QUrl("file://" + h))
 
 
 aboutDialog = None

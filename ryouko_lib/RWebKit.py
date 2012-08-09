@@ -8,7 +8,6 @@ except: __file__ == sys.executable
 app_lib = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(app_lib)
 
-from ryouko_about import *
 from Python23Compat import *
 from QStringFunctions import *
 from DialogFunctions import *
@@ -16,7 +15,6 @@ from ViewSourceDialog import *
 from TranslationManager import *
 from SystemFunctions import *
 
-app_icons = os.path.join(app_lib, 'icons')
 app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
 app_zoho_extensions = [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".pps", ".xls", ".xlsx", ".odt", ".ods", ".odp", ".sxw", ".sxc", ".sxi", ".wpd", ".rtf", ".csv", ".tsv", ".txt", ".html"]
 app_locale = locale.getdefaultlocale()[0]
@@ -34,76 +32,6 @@ def doNothing():
 
 def do_nothing():
     return
-
-def showAboutPage(webView):
-    webView.setHtml("""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
-        "http://www.w3.org/TR/html4/strict.dtd">
-        <html style='padding-bottom: 19.25pt;'>
-        <head>
-        <title>""" + tr('aboutRyouko') + """</title>
-        <script type='text/javascript'>
-        window.onload = function() {
-            document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;
-        }
-        </script>
-        <style type="text/css">
-        b, h1, h2 {
-        font-family: sans-serif;
-        }
-
-        *:not(b):not(h1):not(h2) {
-        font-family: monospace;
-        }
-
-        #toolbar {
-        overflow-y: auto;
-        height: 19.25pt;
-        width: 100%;
-        left: 0;
-        bottom: 0;
-        padding: 2px;
-        padding-left: 0;
-        padding-right:0;
-        background: ThreeDFace;
-        position: fixed;
-        visibility: visible;
-        z-index: 9001;
-        border-top: 1px solid ThreeDShadow;
-        }
-
-        #toolbar * {
-        font-family: sans-serif;
-        font-size: 11pt;
-        background: transparent;
-        padding: 0;
-        border: 0;
-        color: ButtonText;
-        text-decoration: none;
-        -webkit-appearance: none;
-        }
-
-        #toolbar a:hover,
-        #ryouko-toolbar input:hover {
-        text-decoration: underline;
-        }
-        </style>
-        </head>
-        <body style='font-family: sans-serif; font-size: 11pt;'>
-        <center>
-        <div style=\"max-width: 640px;\">
-        <a name='about'></a>
-        <h1 style='margin-bottom: 0;'>""" + tr('aboutRyouko') + """</h1>
-        <img src='file://%""" + os.path.join(app_icons, "about-logo.png") + """'></img><br/>
-        <div style=\"text-align: left;\">
-        <b>Ryouko:</b> """ + app_version + """<br/>
-        <b>""" + tr('codename') + """:</b> \"""" + app_codename + """\"<br/>
-        <b>OS:</b> """ + sys.platform + """<br/>
-        <b>Qt:</b> """ + str(QtCore.qVersion()) + """<br/>
-        <b>Python:</b> """ + str(sys.version_info[0])+"."+str(sys.version_info[1])+"."+str(sys.version_info[2]) + """<br/>
-        <b>""" + tr("userAgent") + """:</b> <span id="userAgent">JavaScript must be enabled to display the user agent!</span><br/>
-        <b>""" + tr("commandLine") + """:</b> """ + app_commandline + "<br/>\
-        <b>" + tr('executablePath') + ":</b> " + os.path.realpath(__file__) + "<br/><center>\
-        </center></div></div></center></body></html>")
 
 class RWebPage(QtWebKit.QWebPage):
     def __init__(self, parent=None):
@@ -167,9 +95,6 @@ class RWebPage(QtWebKit.QWebPage):
             except: do_nothing()
             else:
                 return v
-        elif unicode(classid).lower() == "aboutryouko":
-            showAboutPage(self.mainFrame())
-            return
         elif unicode(classid).lower() == "fileview":
             f = QtGui.QListWidget(self.view())
             try:
@@ -231,40 +156,18 @@ class RNetworkAccessManager(QtNetwork.QNetworkAccessManager):
     def __init__(self, old_manager=QtNetwork.QNetworkAccessManager()):
         QtNetwork.QNetworkAccessManager.__init__(self, old_manager.parent())
         self.oldManager = old_manager
-        self.schemes = ["apt", "ryouko"]
         self.setCache(old_manager.cache())
         self.setCookieJar(old_manager.cookieJar())
         self.setProxy(old_manager.proxy())
         self.setProxyFactory(old_manager.proxyFactory())
     def createRequest(self, operation, request, data):
         s = str(request.url().scheme())
-        bork = False
-        for scheme in self.schemes:
-            if s == scheme:
-                bork = True
-                break
-        if not bork:
+        if s != "apt":
             return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
         if operation == self.GetOperation:
             if s == "apt":
                 biased_system_open(unicode(request.url().toString()))
                 return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
-            elif s == "ryouko":
-                try: r = unicode(request.url().toString()).split("/")[2]
-                except: return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
-                else:
-                    if r == "about":
-                        h = os.path.join(app_lib, "about.html")
-                        if sys.platform.startswith("win"):
-                            h = h.replace(h[0:2], "")
-                        request.setUrl(QtCore.QUrl(h))
-                    else:
-                        u = unicode(request.url().toString()).replace("ryouko://" + r + "/", "").replace("\\", "/")
-                        h = os.path.join(app_lib, u)
-                        if sys.platform.startswith("win"):
-                            h = h.replace(h[0:2], "")
-                        request.setUrl(QtCore.QUrl(h))
-                    return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
         else:
             return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
 
