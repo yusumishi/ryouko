@@ -3010,6 +3010,8 @@ self.origY + ev.globalY() - self.mouseY)
         self.closeTab(self.tabs.currentIndex())
 
     def closeTab(self, index=None, permanent=False, allowZeroTabs=False):
+        self.addToolBar(self.findToolBar)
+        self.findToolBar.hide()
         if index == None:
             index = self.tabs.currentIndex()
         if self.tabs.count() > 0:
