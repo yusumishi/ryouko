@@ -3,8 +3,7 @@
 from __future__ import print_function
 
 import os.path, sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4 import QtCore, QtGui
 try:
     __file__
 except:
@@ -15,52 +14,52 @@ from DialogFunctions import *
 from Python23Compat import *
 from TranslationManager import *
 
-class ViewSourceDialog(QMainWindow):
-    closed = pyqtSignal(QObject)
+class ViewSourceDialog(QtGui.QMainWindow):
+    closed = QtCore.pyqtSignal(QtCore.QObject)
     def __init__(self, reply=None, parent=None):
         super(ViewSourceDialog, self).__init__()
         self.setParent(parent)
-        self.menuBar = QMenuBar()
+        self.menuBar = QtGui.QMenuBar()
         self.setMenuBar(self.menuBar)
 
         self.text = ""
         self.findFlag = None
 
-        self.fileMenu = QMenu(tr("fileHKey"))
+        self.fileMenu = QtGui.QMenu(tr("fileHKey"))
         self.menuBar.addMenu(self.fileMenu)
 
-        self.saveAsAction = QAction(tr("saveAs"), self)
+        self.saveAsAction = QtGui.QAction(tr("saveAs"), self)
         self.saveAsAction.setShortcut("Ctrl+S")
         self.saveAsAction.triggered.connect(self.saveAs)
         self.addAction(self.saveAsAction)
         self.fileMenu.addAction(self.saveAsAction)
 
-        self.viewMenu = QMenu(tr("viewHKey"))
+        self.viewMenu = QtGui.QMenu(tr("viewHKey"))
         self.menuBar.addMenu(self.viewMenu)
 
-        self.findAction = QAction(tr("find"), self)
+        self.findAction = QtGui.QAction(tr("find"), self)
         self.findAction.setShortcut("Ctrl+F")
         self.findAction.triggered.connect(self.find)
         self.addAction(self.findAction)
         self.viewMenu.addAction(self.findAction)
 
-        self.findNextAction = QAction(tr("findNextHKey"), self)
+        self.findNextAction = QtGui.QAction(tr("findNextHKey"), self)
         self.findNextAction.setShortcut("Ctrl+G")
         self.findNextAction.triggered.connect(self.findNext)
         self.addAction(self.findNextAction)
         self.viewMenu.addAction(self.findNextAction)
 
-        self.findReverseAction = QAction(tr("findReverse"), self)
+        self.findReverseAction = QtGui.QAction(tr("findReverse"), self)
         self.findReverseAction.setShortcut("Ctrl+H")
         self.findReverseAction.setCheckable(True)
         self.findReverseAction.triggered.connect(self.setFindFlag)
         self.addAction(self.findReverseAction)
         self.viewMenu.addAction(self.findReverseAction)
 
-        self.sourceView = QTextEdit()
+        self.sourceView = QtGui.QTextEdit()
         self.sourceView.setReadOnly(True)
         self.setCentralWidget(self.sourceView)
-        closeWindowAction = QAction(self)
+        closeWindowAction = QtGui.QAction(self)
         closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+U"])
         closeWindowAction.triggered.connect(self.close)
         self.addAction(closeWindowAction)
@@ -99,7 +98,7 @@ class ViewSourceDialog(QMainWindow):
 
     def setFindFlag(self):
         if self.findReverseAction.isChecked():
-            self.findFlag = QTextDocument.FindBackward
+            self.findFlag = QtGui.QTextDocument.FindBackward
         else:
             self.findFlag = None
 

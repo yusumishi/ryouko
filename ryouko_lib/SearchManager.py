@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import os.path, sys, json
-from PyQt4.QtCore import *
+from PyQt4 import QtCore
 try:
     __file__
 except:
@@ -15,7 +15,7 @@ from DialogFunctions import message
 def doNothing():
     return
 
-class SearchManager(QObject):
+class SearchManager(QtCore.QObject):
     def __init__(self, app_profile=os.path.expanduser("~"), parent=None):
         super(SearchManager, self).__init__(parent)
         self.parent = parent

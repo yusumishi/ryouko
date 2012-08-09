@@ -2,9 +2,9 @@
 
 from __future__ import print_function
 
-from PyQt4.QtGui import *
+from PyQt4 import QtGui
 
-class MovableTabBar(QTabBar):
+class MovableTabBar(QtGui.QTabBar):
     def __init__(self, parent=None):
         super(MovableTabBar, self).__init__(parent)
         self.parent = parent

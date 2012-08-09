@@ -1,15 +1,14 @@
 #! /usr/bin/env python
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4 import QtCore, QtGui
 
-class ContextMenu(QMenu):
+class ContextMenu(QtGui.QMenu):
     def show2(self):
-        x = QPoint(QCursor.pos()).x()
-        if x + self.width() > QApplication.desktop().size().width():
+        x = QtCore.QPoint(QtGui.QCursor.pos()).x()
+        if x + self.width() > QtGui.QApplication.desktop().size().width():
             x = x - self.width()
-        y = QPoint(QCursor.pos()).y()
-        if y + self.height() > QApplication.desktop().size().height():
+        y = QtCore.QPoint(QtGui.QCursor.pos()).y()
+        if y + self.height() > QtGui.QApplication.desktop().size().height():
             y = y - self.height()
         self.move(x, y)
         self.setVisible(True)

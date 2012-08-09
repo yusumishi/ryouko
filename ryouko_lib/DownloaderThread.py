@@ -11,7 +11,7 @@ except ImportError:
         import urllib
 else:
     import urllib.request
-from PyQt4.QtCore import *
+from PyQt4 import QtCore
 app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(app_lib)
 from Python23Compat import *
@@ -28,10 +28,10 @@ def urlretrieve_adv(url, filename=None, reporthook=None, data=None, username="",
                 return username, password
     return OpenerWithAuth().retrieve(url, filename, reporthook, data)
 
-class DownloaderThread(QThread):
-    fileDownloaded = pyqtSignal()
+class DownloaderThread(QtCore.QThread):
+    fileDownloaded = QtCore.pyqtSignal()
     def __init__(self, parent=None):
-        QThread.__init__(self, parent)
+        QtCore.QThread.__init__(self, parent)
         self.url = ""
         self.destination = ""
         self.username = False

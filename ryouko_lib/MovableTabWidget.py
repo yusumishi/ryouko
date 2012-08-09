@@ -3,8 +3,7 @@
 import os.path, sys
 if sys.platform.startswith("linux"):
     import commands
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4 import QtCore, QtGui
 try:
     filename = __file__
 except:
@@ -21,7 +20,7 @@ def doNothing():
 
 win_stylesheet = ""
 
-class MovableTabWidget(QTabWidget):
+class MovableTabWidget(QtGui.QTabWidget):
     def __init__(self, parent=None, forcea=False):
         super(MovableTabWidget, self).__init__(parent)
 
@@ -41,7 +40,7 @@ class MovableTabWidget(QTabWidget):
             print("MovableTabWidget could not add new tab to self.parent!")
 
     def mousePressEvent(self, ev):
-        if ev.button() == Qt.RightButton:
+        if ev.button() == QtCore.Qt.RightButton:
             try:
                 doNothing()
             except:
