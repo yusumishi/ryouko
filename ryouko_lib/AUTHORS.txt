@@ -1,1 +1,5 @@
-foxhead128
+Ryouko, en_US, and es translations:
+    Daniel Sim
+
+zh_CN translation:
+    Jason Liu
