@@ -198,8 +198,8 @@ class RWebView(QtWebKit.QWebView):
         self.printer = None
         self.replies = []
         self.newWindows = [0]
-        self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
-        self.page().linkClicked.connect(self.openLink)
+        #self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
+        #self.page().linkClicked.connect(self.openLink)
         self.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
 #        if os.path.exists(app_logo):
 #            self.setWindowIcon(QtGui.QIcon(app_logo))
@@ -286,6 +286,8 @@ class RWebView(QtWebKit.QWebView):
         self.addAction(self.page().action(QtWebKit.QWebPage.InspectElement))
 
         self.page().setForwardUnsupportedContent(True)
+        self.hoveredUrl = "about:blank"
+        self.page().linkHovered.connect(self.setHoveredUrl)
         self.page().unsupportedContent.connect(self.downloadUnsupportedContent)
         self.page().downloadRequested.connect(self.downloadFile)
         self.loadFinished.connect(self.checkForAds)
@@ -301,22 +303,15 @@ class RWebView(QtWebKit.QWebView):
             self.isWindow = False
         self.loadFinished.connect(self.loadLinks)
 
-    def openLink(self, url):
-        if QtCore.QCoreApplication.instance().keyboardModifiers() == QtCore.Qt.ControlModifier or QtCore.QCoreApplication.instance().keyboardModifiers() == QtCore.Qt.ShiftModifier:
+    def setHoveredUrl(self, url, title, content):
+        self.hoveredUrl = QtCore.QUrl(url)
+
+    def mousePressEvent(self, ev):
+        if (QtCore.QCoreApplication.instance().keyboardModifiers() == QtCore.Qt.ControlModifier or QtCore.QCoreApplication.instance().keyboardModifiers() == QtCore.Qt.ShiftModifier) and unicode(self.hoveredUrl.toString()) != "":
             u = self.newWindow()
-            u.load(url)
+            u.load(self.hoveredUrl)
         else:
-            try: QtCore.Qt.LeftButton in QtCore.QCoreApplication.instance().mouseButtons()
-            except:
-                if QtCore.Qt.RightButton == QtCore.QCoreApplication.instance().mouseButtons():
-                    self.page().createStandardContextMenu()
-                else:
-                    self.load(url)
-            else:
-                if QtCore.Qt.RightButton in QtCore.QCoreApplication.instance().mouseButtons():
-                    self.page().createStandardContextMenu()
-                else:
-                    self.load(url)
+            return QtWebKit.QWebView.mousePressEvent(self, ev)
 
     def load(self, url):
         if type(url) == QtGui.QListWidgetItem:
