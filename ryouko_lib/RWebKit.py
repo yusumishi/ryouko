@@ -308,6 +308,7 @@ class RWebView(QtWebKit.QWebView):
 
     def mousePressEvent(self, ev):
         if ((QtCore.QCoreApplication.instance().keyboardModifiers() == QtCore.Qt.ControlModifier or QtCore.QCoreApplication.instance().keyboardModifiers() == QtCore.Qt.ShiftModifier) and unicode(self.hoveredUrl.toString()) != "" and not ev.button() == QtCore.Qt.RightButton) or ev.button() == QtCore.Qt.MidButton or ev.button() == QtCore.Qt.MiddleButton:
+            ev.ignore()
             u = self.newWindow()
             u.load(self.hoveredUrl)
         else:
