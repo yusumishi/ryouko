@@ -198,6 +198,8 @@ class RWebView(QtWebKit.QWebView):
         self.printer = None
         self.replies = []
         self.newWindows = [0]
+        self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
+        self.page().linkClicked.connect(self.openLink)
         self.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
 #        if os.path.exists(app_logo):
 #            self.setWindowIcon(QtGui.QIcon(app_logo))
@@ -263,21 +265,6 @@ class RWebView(QtWebKit.QWebView):
         self.locationEditAction.triggered.connect(self.locationEdit)
         self.addAction(self.locationEditAction)
 
-        """self.findAction = QtGui.QAction(self)
-        self.findAction.triggered.connect(self.find)
-        self.findAction.setShortcut("Ctrl+F")
-        self.addAction(self.findAction)
-
-        self.findPreviousAction = QtGui.QAction(self)
-        self.findPreviousAction.triggered.connect(self.findPrevious)
-        self.findPreviousAction.setShortcut("Ctrl+Shift+G")
-        self.addAction(self.findPreviousAction)
-
-        self.findNextAction = QtGui.QAction(self)
-        self.findNextAction.triggered.connect(self.findNext)
-        self.findNextAction.setShortcuts(["Ctrl+G", "F3"])
-        self.addAction(self.findNextAction)"""
-
         self.zoomInAction = QtGui.QAction(self)
         self.zoomInAction.triggered.connect(self.zoomIn)
         self.addAction(self.zoomInAction)
@@ -313,6 +300,23 @@ class RWebView(QtWebKit.QWebView):
         else:
             self.isWindow = False
         self.loadFinished.connect(self.loadLinks)
+
+    def openLink(self, url):
+        if QtCore.QCoreApplication.instance().keyboardModifiers() == QtCore.Qt.ControlModifier or QtCore.QCoreApplication.instance().keyboardModifiers() == QtCore.Qt.ShiftModifier:
+            u = self.newWindow()
+            u.load(url)
+        else:
+            try: QtCore.Qt.LeftButton in QtCore.QCoreApplication.instance().mouseButtons()
+            except:
+                if QtCore.Qt.RightButton == QtCore.QCoreApplication.instance().mouseButtons():
+                    self.page().createStandardContextMenu()
+                else:
+                    self.load(url)
+            else:
+                if QtCore.Qt.RightButton in QtCore.QCoreApplication.instance().mouseButtons():
+                    self.page().createStandardContextMenu()
+                else:
+                    self.load(url)
 
     def load(self, url):
         if type(url) == QtGui.QListWidgetItem:
@@ -748,7 +752,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         self.setZoomFactor(self.zoomFactor)
 
     def newWindow(self):
-       self.createWindow(QtWebKit.QWebPage.WebBrowserWindow)
+       return self.createWindow(QtWebKit.QWebPage.WebBrowserWindow)
 
     def applyShortcuts(self):
         self.closeWindowAction.setShortcut('Ctrl+W')

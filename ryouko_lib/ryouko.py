@@ -167,7 +167,8 @@ def loadCookies():
         cookieFile.close()
         cookies = []
         for cookie in c:
-            cookies.append(QtNetwork.QNetworkCookie().parseCookies(QtCore.QByteArray(cookie))[0])
+            try: cookies.append(QtNetwork.QNetworkCookie().parseCookies(QtCore.QByteArray(cookie))[0])
+            except: do_nothing()
         app_cookiejar.setAllCookies(cookies)
 
 def saveCookies():
