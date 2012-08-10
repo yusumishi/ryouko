@@ -2844,20 +2844,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenu.move(x, y)
 
     def showCornerWidgetsMenu(self):
-        x = self.mainToolBar.widgetForAction(self.mainMenuButton).mapToGlobal(QtCore.QPoint(0,0)).x()
-        y = self.mainToolBar.widgetForAction(self.mainMenuButton).mapToGlobal(QtCore.QPoint(0,0)).y()
-        width = self.mainToolBar.widgetForAction(self.mainMenuButton).width()
-        height = self.mainToolBar.widgetForAction(self.mainMenuButton).height()
-        self.mainMenu.show()
-        if x - self.mainMenu.width() + width < 0:
-            x = 0
-        else:
-            x = x - self.mainMenu.width() + width
-        if y + height + self.mainMenu.height() >= QtGui.QApplication.desktop().size().height():
-            y = y - self.mainMenu.height()
-        else:
-            y = y + height
-        self.mainMenu.move(x, y)
+        self.mainToolBar.widgetForAction(self.mainMenuButton).showMenu()
 
     def showSettings(self):
         cDialog.show()
