@@ -281,7 +281,7 @@ class RWebView(QtWebKit.QWebView):
         self.undoCloseWindowAction.triggered.connect(self.undoCloseWindowRequest.emit)
         self.addAction(self.undoCloseWindowAction)
 
-        self.page().action(QtWebKit.QWebPage.InspectElement).setShortcut("F12")
+        #self.page().action(QtWebKit.QWebPage.InspectElement).setShortcut("F12")
         self.page().action(QtWebKit.QWebPage.InspectElement).triggered.connect(self.showInspector)
         self.addAction(self.page().action(QtWebKit.QWebPage.InspectElement))
 
