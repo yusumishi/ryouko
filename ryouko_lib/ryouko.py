@@ -2430,6 +2430,8 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.mainToolBar.addAction(self.mainMenuButton)
         self.mainToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
+        self.mainToolBar.widgetForAction(self.mainMenuButton).setPopupMode(QtGui.QToolButton.InstantPopup)
+        self.mainToolBar.widgetForAction(self.mainMenuButton).setMenu(self.mainMenu)
 
         # Tabs
         self.tabs = MovableTabWidget(self)
