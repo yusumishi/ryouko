@@ -217,7 +217,7 @@ class RWebView(QtWebKit.QWebView):
         self.titleChanged.connect(self.updateTitle)
 
         self.viewSourceAction = QtGui.QAction(self)
-        self.viewSourceAction.setShortcut("Ctrl+Alt+U")
+        #self.viewSourceAction.setShortcut("Ctrl+Alt+U")
         self.viewSourceAction.triggered.connect(self.viewSource)
         self.addAction(self.viewSourceAction)
 

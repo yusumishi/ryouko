@@ -49,12 +49,19 @@ class ViewSourceDialog(QtGui.QMainWindow):
         self.addAction(self.findNextAction)
         self.viewMenu.addAction(self.findNextAction)
 
-        self.findReverseAction = QtGui.QAction(tr("findReverse"), self)
+        self.findPreviousAction = QtGui.QAction(tr("findPreviousHKey"), self)
+        self.findPreviousAction.setShortcut("Ctrl+Shift+G")
+        #self.findPreviousAction.setCheckable(True)
+        self.findPreviousAction.triggered.connect(self.findPrevious)
+        self.addAction(self.findPreviousAction)
+        self.viewMenu.addAction(self.findPreviousAction)
+
+        """self.findReverseAction = QtGui.QAction(tr("findReverse"), self)
         self.findReverseAction.setShortcut("Ctrl+H")
         self.findReverseAction.setCheckable(True)
         self.findReverseAction.triggered.connect(self.setFindFlag)
         self.addAction(self.findReverseAction)
-        self.viewMenu.addAction(self.findReverseAction)
+        self.viewMenu.addAction(self.findReverseAction)"""
 
         self.sourceView = QtGui.QTextEdit()
         self.sourceView.setReadOnly(True)
@@ -87,14 +94,18 @@ class ViewSourceDialog(QtGui.QMainWindow):
         else:
             self.sourceView.find(self.text)
 
-    def findNext(self):
+    def findNext(self, findFlag=None):
         if not self.text:
             self.find()
         else:
+            self.findFlag = findFlag
             if self.findFlag:
                 self.sourceView.find(self.text, self.findFlag)
             else:
                 self.sourceView.find(self.text)
+
+    def findPrevious(self):
+        self.findNext(QtGui.QTextDocument.FindBackward)
 
     def setFindFlag(self):
         if self.findReverseAction.isChecked():
