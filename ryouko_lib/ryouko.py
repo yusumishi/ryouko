@@ -64,8 +64,8 @@ else:
     use_linux_notifications = True
 
 import os, sys, json, time, datetime, string, shutil
-if sys.platform.startswith("linux"):
-    import commands
+#if sys.platform.startswith("linux"):
+    #import commands
 
 app_vista = False
 if sys.platform.startswith("win"):
