@@ -286,7 +286,7 @@ class RWebView(QtWebKit.QWebView):
         self.addAction(self.page().action(QtWebKit.QWebPage.InspectElement))
 
         self.page().setForwardUnsupportedContent(True)
-        self.hoveredUrl = "about:blank"
+        self.hoveredUrl = QtCore.QUrl("about:blank")
         self.page().linkHovered.connect(self.setHoveredUrl)
         self.page().unsupportedContent.connect(self.downloadUnsupportedContent)
         self.page().downloadRequested.connect(self.downloadFile)
@@ -307,7 +307,7 @@ class RWebView(QtWebKit.QWebView):
         self.hoveredUrl = QtCore.QUrl(url)
 
     def mousePressEvent(self, ev):
-        if (QtCore.QCoreApplication.instance().keyboardModifiers() == QtCore.Qt.ControlModifier or QtCore.QCoreApplication.instance().keyboardModifiers() == QtCore.Qt.ShiftModifier) and unicode(self.hoveredUrl.toString()) != "":
+        if (QtCore.QCoreApplication.instance().keyboardModifiers() == QtCore.Qt.ControlModifier or QtCore.QCoreApplication.instance().keyboardModifiers() == QtCore.Qt.ShiftModifier) and unicode(self.hoveredUrl.toString()) != "" and not ev.button() == QtCore.Qt.RightButton:
             u = self.newWindow()
             u.load(self.hoveredUrl)
         else:
