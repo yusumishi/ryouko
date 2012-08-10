@@ -77,7 +77,7 @@
 "findHKey": "查找(&F)",
 "findNextBtnTT": "<b>查找下一个</b><br>Ctrl+G",
 "findNextHKey": "再次查找(&G)",
-"findPreviousBtnTT": "<b>查找上一个</b><br>Ctrl+G",
+"findPreviousBtnTT": "<b>查找上一个</b><br>Ctrl+Shift+G",
 "findPreviousHKey": "查找上一个(&V)",
 "findReverse": "查找上一个",
 "general": "通用(&G)",
