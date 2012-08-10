@@ -1222,7 +1222,7 @@ class Browser(QtGui.QMainWindow):
 
         historySearchAction = QtGui.QAction(self)
         historySearchAction.triggered.connect(self.parent.focusHistorySearch)
-        historySearchAction.setShortcuts(["Alt+H"])
+        #historySearchAction.setShortcuts(["Alt+H"])
         self.addAction(historySearchAction)
 
         self.mainLayout.addWidget(self.webView, 1, 0)
@@ -2420,7 +2420,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenuButton = QtGui.QAction(self)
         self.mainMenuButton.setText(tr("menu"))
         self.mainMenuButton.setIcon(QtGui.QIcon.fromTheme("document-properties", QtGui.QIcon(os.path.join(app_icons, "preferences.png"))))
-        self.mainMenuButton.setShortcuts(["Alt+M", "Alt+F", "Alt+E"])
+        self.mainMenuButton.setShortcuts(["Alt+M"])
         self.mainMenuButton.triggered.connect(self.showCornerWidgetsMenu)
 #        self.mainMenuButton.setArrowType(QtCore.Qt.DownArrow)
         self.mainMenu = QtGui.QMenu(self)
@@ -2503,7 +2503,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.newTabButton.setMenu(self.tabsContextMenuMenu)
 
         self.showTabsContextMenuAction = QtGui.QAction(self)
-        self.showTabsContextMenuAction.setShortcuts(["Alt+V", "Alt+W", "Alt+T"])
+        self.showTabsContextMenuAction.setShortcuts(["Alt+W"])
         self.showTabsContextMenuAction.triggered.connect(self.showTabsContextMenuAtCornerWidgets)
         self.addAction(self.showTabsContextMenuAction)
 
@@ -2579,6 +2579,12 @@ self.origY + ev.globalY() - self.mouseY)
 #        self.mainMenu.addAction(closeTabForeverAction)
         self.mainMenu.addSeparator()
 
+        self.toggleMBAction = QtGui.QAction(tr("menuBarToggle"), self)
+        self.toggleMBAction.setCheckable(True)
+        self.toggleMBAction.setShortcut("Ctrl+Shift+M")
+        self.mainMenu.addAction(self.toggleMBAction)
+        self.toggleMBAction.triggered.connect(self.toggleMenuBar)
+
         toggleBTAction = QtGui.QAction(tr("bookmarksToolBarToggle"), self)
         toggleBTAction.triggered.connect(self.toggleBookmarksToolBar)
         self.mainMenu.addAction(toggleBTAction)
@@ -2614,10 +2620,9 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenu.addAction(undoCloseWindowAction)
 
         self.menuBar = QtGui.QMenuBar()
-        self.menuBar.addMenu(self.mainMenu)
-        self.menuBar.addMenu(self.tabsContextMenu)
         self.setMenuBar(self.menuBar)
-        self.menuBar.setVisible(False)
+        self.reverseToggleMenuBar()
+        #self.menuBar.setVisible(False)
 
         self.tabs.customContextMenuRequested.connect(self.tabsContextMenu.show2)
 
@@ -2681,6 +2686,61 @@ self.origY + ev.globalY() - self.mouseY)
         aboutAction = QtGui.QAction(tr('aboutRyoukoHKey'), self)
         aboutAction.triggered.connect(self.aboutRyoukoHKey)
         self.mainMenu.addAction(aboutAction)
+
+        self.fileMenu = QtGui.QMenu(tr("fileHKey"))
+        self.fileMenu.addAction(newTabAction)
+        self.fileMenu.addAction(newWindowAction)
+        self.fileMenu.addAction(newpbTabAction)
+        self.fileMenu.addSeparator()
+        self.fileMenu.addAction(savePageAction)
+        self.fileMenu.addSeparator()
+        self.fileMenu.addAction(printAction)
+        self.fileMenu.addAction(printPreviewAction)
+        self.fileMenu.addSeparator()
+        self.fileMenu.addAction(closeTabAction)
+        self.fileMenu.addAction(closeLeftTabsAction)
+        self.fileMenu.addAction(closeRightTabsAction)
+        self.fileMenu.addAction(closeTabForeverAction)
+        self.fileMenu.addSeparator()
+
+        self.editMenu = QtGui.QMenu(tr("editHKey"))
+        self.editMenu.addAction(self.findAction)
+        self.editMenu.addAction(self.findNextAction)
+        self.editMenu.addAction(self.findPreviousAction)
+        #self.editMenu.addSeparator()
+        #self.editMenu.addAction(configAction)
+
+        self.viewMenu = QtGui.QMenu(tr("viewHKey"))
+        self.viewMenu.addAction(self.toggleMBAction)
+        self.viewMenu.addAction(toggleBTAction)
+        self.viewMenu.addSeparator()
+        self.viewMenu.addAction(historyToggleAction)
+        self.viewMenu.addSeparator()
+        self.viewMenu.addAction(self.fullScreenAction)
+
+        self.historyMenu = QtGui.QMenu(tr("historyHKey"))
+        self.historyMenu.addAction(advHistoryAction)
+        self.historyMenu.addSeparator()
+        self.historyMenu.addAction(undoCloseTabAction)
+        self.historyMenu.addAction(undoCloseWindowAction)
+
+        self.bookmarksMenu = QtGui.QMenu(tr("bookmarks"))
+        self.bookmarksMenu.addAction(manageBookmarksAction)
+
+        #self.toolsMenu = QtGui.QMenu(tr("toolsHKey"))
+        #self.toolsMenu.addAction(viewSourceAction)
+
+        self.helpMenu = QtGui.QMenu(tr("helpHKey"))
+        self.helpMenu.addAction(aboutQtAction)
+        self.helpMenu.addAction(aboutAction)
+
+        self.menuBar.addMenu(self.fileMenu)
+        self.menuBar.addMenu(self.editMenu)
+        self.menuBar.addMenu(self.viewMenu)
+        self.menuBar.addMenu(self.historyMenu)
+        self.menuBar.addMenu(self.bookmarksMenu)
+        self.menuBar.addMenu(self.toolsMenu)
+        self.menuBar.addMenu(self.helpMenu)
 
         self.mainMenu.addSeparator()
 
@@ -2753,6 +2813,30 @@ self.origY + ev.globalY() - self.mouseY)
         #self.mainToolBar.setStyleSheet("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
         #self.tabs.setStyleSheet("QTabWidget::pane { margin-top: -" + str(self.tabs.nuTabBar.height()) + "px; padding-top: 0; }")
         #print("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
+
+    def reverseToggleMenuBar(self):
+        c = os.path.join(app_profile, "menubar_visible.conf")
+        if os.path.exists(c):
+            self.toggleMBAction.setChecked(True)
+            self.mainMenuButton.setVisible(False)
+        else:
+            self.toggleMBAction.setChecked(False)
+            self.menuBar.hide()
+
+    def toggleMenuBar(self):
+        c = os.path.join(app_profile, "menubar_visible.conf")
+        if os.path.exists(c):
+            os.remove(c)
+            self.toggleMBAction.setChecked(False)
+            self.mainMenuButton.setVisible(True)
+            self.menuBar.hide()
+        else:
+            f = open(c, "w")
+            f.write("")
+            f.close()
+            self.toggleMBAction.setChecked(True)
+            self.mainMenuButton.setVisible(False)
+            self.menuBar.show()
 
     def toggleBookmarksToolBar(self):
         cDialog.showBTBox.click(); cDialog.saveSettings()
