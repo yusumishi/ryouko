@@ -1212,6 +1212,8 @@ class Browser(QtGui.QMainWindow):
         self.webView.loadProgress.connect(self.progressBar.setValue)
         self.webView.loadProgress.connect(self.progressBar.show)
         self.webView.undoCloseWindowRequest.connect(undoCloseWindow)
+        self.webView.page().alertToolBar.connect(self.addToolBarBreak)
+        self.webView.page().alertToolBar.connect(self.addToolBar)
         bookmarksManager.userLinksChanged.connect(self.webView.setUserLinks)
 
     def downloadStarted(self):

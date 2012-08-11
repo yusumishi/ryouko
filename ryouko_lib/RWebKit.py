@@ -14,6 +14,7 @@ from DialogFunctions import *
 from ViewSourceDialog import *
 from TranslationManager import *
 from SystemFunctions import *
+from RExpander import *
 
 app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
 app_zoho_extensions = [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".pps", ".xls", ".xlsx", ".odt", ".ods", ".odp", ".sxw", ".sxc", ".sxi", ".wpd", ".rtf", ".csv", ".tsv", ".txt", ".html"]
@@ -34,6 +35,7 @@ def do_nothing():
     return
 
 class RWebPage(QtWebKit.QWebPage):
+    alertToolBar = QtCore.pyqtSignal(QtGui.QToolBar)
     def __init__(self, parent=None):
         super(RWebPage, self).__init__()
         self.setParent(parent)
@@ -54,6 +56,40 @@ class RWebPage(QtWebKit.QWebPage):
             reply.ignoreSslErrors()
         else:
             return
+
+    def createAlertToolBar(self, msg):
+        tb = QtGui.QToolBar()
+        tb.setStyleSheet("QToolBar{background-color: #FFBF00;border:0;border-bottom:1px solid #FF7F00;}QToolBar,QLabel{color:#1A1A1A;}")
+        tb.setMovable(False)
+        tb.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+
+        tb.addWidget(RExpander())
+
+        tb.text = QtGui.QLabel(msg, tb)
+        tb.text.setText(msg)
+        tb.text.setWordWrap(True)
+        tb.addWidget(tb.text)
+
+        tb.spacer = QtGui.QLabel()
+        tb.spacer.setStyleSheet("QLabel{min-width: 4px;max-width: 4px;}")
+        tb.addWidget(tb.spacer)
+
+        tb.button = QtGui.QPushButton(tb)
+        tb.button.setText(tr("OK"))
+        tb.button.clicked.connect(tb.deleteLater)
+        tb.addWidget(tb.button)
+
+        tb.addWidget(RExpander())
+
+        return tb
+
+    def javaScriptAlert(self, frame, msg):
+        pause = QtCore.QEventLoop()
+        tb = self.createAlertToolBar(msg)
+        self.alertToolBar.emit(tb)
+        tb.button.clicked.connect(pause.quit)
+        pause.exec_()
+        return
 
     def provideAuthentication(self, reply, auth):
         if self.bork == False:
