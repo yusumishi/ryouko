@@ -167,6 +167,8 @@
 "searchLabel": "Search",
 "search": "Search",
 "selectProfile": "Select a profile to use",
+"showMenuBar": "Show &Menubar",
+"showBookmarksToolBar": "Show &Bookmarks Toolbar",
 "sourceOf1": "Source of ",
 "sourceOf2": "",
 "sslWarning": "Ryouko has encountered errors in the SSL encryption of your connection. Proceed anyway?",

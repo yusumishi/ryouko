@@ -167,6 +167,8 @@
 "searchLabel": "搜索",
 "search": "搜索",
 "selectProfile": "选择使用的配置",
+"showMenuBar": "显示菜单栏(&M)",
+"showBookmarksToolBar": "显示书签工具条(&B)",
 "sourceOf1": "资源 ",
 "sourceOf2": "",
 "sslWarning": "Ryouko使用SSL加密连接时出错,继续吗?",
