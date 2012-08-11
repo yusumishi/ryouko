@@ -137,6 +137,7 @@
 "open": "打开",
 "openFile": "打开文件",
 "openFolder": "打开下级目录",
+"options": "参数(&O)",
 "password": "密码",
 "persistentStorage": "长期存储",
 "port": "端口",

@@ -1371,7 +1371,7 @@ class CDialog(QtGui.QMainWindow):
 
     def initUI(self):
         closeWindowAction = QtGui.QAction(self)
-        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Alt+P", "Esc"])
+        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+,", "Ctrl+Alt+P", "Esc"])
         closeWindowAction.triggered.connect(self.close)
         self.addAction(closeWindowAction)
 
@@ -2656,6 +2656,11 @@ self.origY + ev.globalY() - self.mouseY)
             self.addAction(numActions[action])
 
         # Config button
+        configAction2 = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(ryouko_icon('settings.png'))), tr('options'), self)
+        configAction2.setToolTip(tr('preferencesButtonTT'))
+        configAction2.setShortcuts(['Ctrl+,'])
+        configAction2.triggered.connect(self.showSettings)
+
         configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(ryouko_icon('settings.png'))), tr('preferencesButton'), self)
         configAction.setToolTip(tr('preferencesButtonTT'))
         configAction.setShortcuts(['Ctrl+Alt+P'])
@@ -2684,7 +2689,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(downloadsAction)
 
         self.toolsMenu.addAction(clearHistoryAction)
-        self.toolsMenu.addAction(configAction)
+        self.toolsMenu.addAction(configAction2)
         self.mainMenu.addSeparator()
 
         # About Actions
@@ -2724,8 +2729,8 @@ self.origY + ev.globalY() - self.mouseY)
         self.editMenu.addAction(self.findAction)
         self.editMenu.addAction(self.findNextAction)
         self.editMenu.addAction(self.findPreviousAction)
-        #self.editMenu.addSeparator()
-        #self.editMenu.addAction(configAction)
+        self.editMenu.addSeparator()
+        self.editMenu.addAction(configAction)
 
         self.viewMenu = QtGui.QMenu(tr("viewHKey"))
         self.viewMenu.addAction(self.toggleMBAction)
