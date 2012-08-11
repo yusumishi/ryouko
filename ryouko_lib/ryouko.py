@@ -1738,7 +1738,7 @@ class CDialog(QtGui.QMainWindow):
     def saveSettings(self):
         if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
-        self.settings = {'homePages': unicode(self.homePagesField.toPlainText()), 'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'showBookmarksToolBar': self.showBTBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'zohoViewerEnabled': self.zohoBox.isChecked(), 'customUserAgent' : unicode(self.uABox.currentText())}
+        self.settings = {'homePages': unicode(self.homePagesField.toPlainText()), 'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'showBookmarksToolBar': self.showBTBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'zohoViewerEnabled': self.zohoBox.isChecked(), 'customUserAgent' : unicode(self.uABox.currentText()), "relativeTabs" : True}
         f = open(app_default_profile_file, "w")
         if self.profileList.currentItem() == None:
             self.profileList.setCurrentRow(0)
@@ -3054,8 +3054,12 @@ self.origY + ev.globalY() - self.mouseY)
             exec("tab%s.webView.urlChanged.connect(self.correctURLText)" % (s))
             exec("tab%s.webView.loadProgress.connect(self.toggleStopReload)" % (s))
             exec("tab%s.webView.loadFinished.connect(self.toggleStopReload)" % (s))
-            exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
-            self.tabs.setCurrentIndex(self.tabs.count() - 1)
+            if settingsManager.settings["relativeTabs"] == False:
+                exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
+                self.tabs.setCurrentIndex(self.tabs.count() - 1)
+            else:
+                exec("self.tabs.insertTab(self.tabs.currentIndex() + 1, tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
+                self.tabs.setCurrentIndex(self.tabs.currentIndex() + 1)
             if url != False:
                 self.currentWebView().load(QtCore.QUrl(metaunquote(url)))
             self.currentWebView().loadLinks()
