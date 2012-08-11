@@ -137,6 +137,7 @@
 "open": "Open",
 "openFile": "Open file",
 "openFolder": "Open containing folder",
+"openTabsRelative": "Open tabs &relatively to current tab",
 "options": "Optio&ns",
 "password": "Password",
 "persistentStorage": "Persistent storage",

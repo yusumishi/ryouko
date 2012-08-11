@@ -137,6 +137,7 @@
 "openLocation": "Abrir un ubucación",
 "openFile": "Abrir este archivo",
 "openFolder": "Abrir la carpeta que contiene",
+"openTabsRelative": "Abrir pestañas con &respecto a la pestaña corriente",
 "options": "Prefere&ncias",
 "password": "Contraseña",
 "persistentStorage": "Almacenamiento persistente",

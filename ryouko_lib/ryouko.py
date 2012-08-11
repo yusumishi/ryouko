@@ -1425,6 +1425,8 @@ class CDialog(QtGui.QMainWindow):
         self.gLayout.addWidget(self.homePagesField)
         self.showBTBox = QtGui.QCheckBox(tr('bookmarksToolBarShow'))
         self.gLayout.addWidget(self.showBTBox)
+        self.rTabsBox = QtGui.QCheckBox(tr('openTabsRelative'))
+        self.gLayout.addWidget(self.rTabsBox)
         newWindowBox = QtGui.QLabel(tr('newWindowOption0'))
         self.gLayout.addWidget(newWindowBox)
         self.openTabsBox = QtGui.QCheckBox(tr('newWindowOption'))
