@@ -190,7 +190,7 @@ def saveCookies():
     else:
         if sys.platform.startswith("linux"):
             os.system("shred -v \"%s\"" % (app_cookies))
-        try: os.remove(app_cookies)
+        try: remove2(app_cookies)
         except:
             doNothing()
 
@@ -202,6 +202,14 @@ class RSettingsManager(SettingsManager):
         notificationMessage("Error!", "Backend %s could not be found!" % (backend))
 
 settingsManager = RSettingsManager()
+
+def remove2(fname):
+    os.remove(fname)
+    try: u = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", os.path.split(fname)[1])
+    except: return
+    else:
+        if os.path.exists(u):
+            os.remove(u)
 
 def changeProfile(profile, init = False):
     global app_profile_name; global app_profile; global app_links; global app_lock; global app_cookies; global app_instance2
@@ -302,7 +310,7 @@ def confirmQuit():
 
 def prepareQuit():
     if os.path.exists(app_lock) and not os.path.isdir(app_lock):
-        os.remove(app_lock)
+        remove2(app_lock)
     saveCookies()
     try: settingsManager.settings['cloudService']
     except: doNothing()
@@ -379,7 +387,7 @@ def syncData():
 
     elif settingsManager.settings['cloudService'] == "No" or settingsManager.settings['cloudService'] == "None":
         if os.path.exists(sfile) and not os.path.isdir(sfile):
-            os.remove(sfile)
+            remove2(sfile)
 
 def touch(fname):
     f = open(fname, "w")
@@ -709,7 +717,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
         if question == QtGui.QMessageBox.Yes:
             if sys.platform.startswith("linux"):
                 os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
-            try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
+            try: remove2(os.path.join(app_profile, "WebpageIcons.db"))
             except:
                 doNothing()
             saveTime = time.time()
@@ -764,7 +772,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
             if question == QtGui.QMessageBox.Yes:
                 if sys.platform.startswith("linux"):
                     os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
-                try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
+                try: remove2(os.path.join(app_profile, "WebpageIcons.db"))
                 except:
                     doNothing()
                 saveMonth = time.strftime("%m")
@@ -791,7 +799,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
             if question == QtGui.QMessageBox.Yes:
                 if sys.platform.startswith("linux"):
                     os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
-                try: os.remove(os.path.join(app_profile, "WebpageIcons.db"))
+                try: remove2(os.path.join(app_profile, "WebpageIcons.db"))
                 except:
                     doNothing()
                 browserHistory.history = []
@@ -1808,7 +1816,7 @@ self.origY + ev.globalY() - self.mouseY)
             f = open(app_instance2)
             i2contents = f.readlines()
             f.close()
-            os.remove(app_instance2)
+            remove2(app_instance2)
             for item in i2contents:
                 item = item.replace("\n", "")
                 if not "://" in item and not "about:" in item and not item == "":
@@ -1857,7 +1865,7 @@ self.origY + ev.globalY() - self.mouseY)
                 f.close()
             else:
                 if os.path.exists(m):
-                    os.remove(m)
+                    remove2(m)
             return QtGui.QMainWindow.closeEvent(self, ev)
         else:
             ev.ignore()
@@ -2853,7 +2861,7 @@ self.origY + ev.globalY() - self.mouseY)
     def toggleMenuBar(self):
         c = os.path.join(app_profile, "menubar_visible.conf")
         if os.path.exists(c):
-            os.remove(c)
+            remove2(c)
             self.toggleMBAction.setChecked(False)
             self.mainMenuButton.setVisible(True)
             self.menuBar.hide()
@@ -3269,7 +3277,7 @@ class Ryouko(QtGui.QWidget):
                 f.close()
             else:
                 if os.path.exists(app_lock):
-                    os.remove(app_lock)
+                    remove2(app_lock)
                 args = ""
                 for arg in sys.argv:
                     args = "%s%s " % (args, arg)
