@@ -2685,10 +2685,18 @@ self.origY + ev.globalY() - self.mouseY)
 
         # About Actions
         aboutQtAction = QtGui.QAction(tr('aboutQtHKey'), self)
+        if not sys.platform.startswith("win"):
+            aboutQtAction.setIcon(QtGui.QIcon(os.path.join(app_icons, "qt.svg")))
+        else:
+            aboutQtAction.setIcon(QtGui.QIcon(os.path.join(app_icons, "qt-16.png")))
         aboutQtAction.triggered.connect(QtGui.QApplication.aboutQt)
         self.mainMenu.addAction(aboutQtAction)
 
         aboutAction = QtGui.QAction(tr('aboutRyoukoHKey'), self)
+        if not sys.platform.startswith("win"):
+            aboutAction.setIcon(QtGui.QIcon(os.path.join(app_icons, "logo.svg")))
+        else:
+            aboutAction.setIcon(QtGui.QIcon(os.path.join(app_icons, "logo.png")))
         aboutAction.triggered.connect(self.aboutRyoukoHKey)
         self.mainMenu.addAction(aboutAction)
 
