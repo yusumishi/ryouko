@@ -82,7 +82,7 @@
 "findReverse": "查找上一个",
 "general": "通用(&G)",
 "go": "转到",
-"help": "ryouko [-h|--帮助] [-P <配置文件名称>] [-pb|--pb] [网址]\n\n-h 或 --help: 本帮助文件\n-pb 或 --pb: 打开[网址]用隐私浏览模式\n-P <配置文件名称>: 使用配置文件名称 <配置文件名称>代替缺省配置.",
+"help": "ryouko [-h|--帮助] [-pb|--pb] [网址]\n\n-h 或 --help: 本帮助文件\n-pb 或 --pb: 打开[网址]用隐私浏览模式",
 "helpHKey": "帮助(&H)",
 "historyError": "噢,糟糕!尝试存储或修改历史时出错! Ryouko现在清除历史尝试修正错误. =(",
 "history": "历史",

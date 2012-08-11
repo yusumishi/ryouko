@@ -82,7 +82,7 @@
 "findReverse": "Find Backwards",
 "general": "&General",
 "go": "Go",
-"help": "ryouko [-h|--help] [-P <profile name>] [-pb|--pb] [URLs]\n\n-h or --help: This help screen\n-pb or --pb: Opens [URLs] in private browsing mode\n-P <profile name>: Use a profile named <profile name> instead of the default profile.",
+"help": "ryouko [-h|--help] [-pb|--pb] [URLs]\n\n-h or --help: This help screen\n-pb or --pb: Opens [URLs] in private browsing mode",
 "helpHKey": "&Help",
 "historyError": "Oh, no! An error has occurred while trying to access or modify the history! Ryouko is now going to clear the history in an attempt to fix this. =(",
 "history": "History",

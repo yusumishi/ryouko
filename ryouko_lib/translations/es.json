@@ -82,7 +82,7 @@
 "findReverse": "Buscar en sentido inverso",
 "general": "&General",
 "go": "Ir",
-"help": "ryouko [-h|--help] [-P <nombre del configuración>] [-pb|--pb] [URLs]\n\n-h o --help: Este ayuda\n-pb o --pb: Abrir las [URLs] en el modo de navegación privada\n-P <nombre del configuración>: Usar un configuración nuevo se llama <nombre del configuración> en lugar del carpeta defecto. Si el configuración ya existe, Ryouko va a cargar el carpeta que existe previamente.",
+"help": "ryouko [-h|--help] [-pb|--pb] [URLs]\n\n-h o --help: Este ayuda\n-pb o --pb: Abrir las [URLs] en el modo de navegación privada",
 "helpHKey": "A&yuda",
 "historyError": "¡Oh, no! ¡Un error ha occurió mientras que accesso el historial del navegador! Ryouko va a borrar el historial para resolva la problema. =(",
 "history": "Historial",
