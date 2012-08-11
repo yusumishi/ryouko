@@ -129,6 +129,10 @@ app_windows = []
 app_closed_windows = []
 app_info = os.path.join(app_lib, "info.txt")
 app_icons = os.path.join(app_lib, 'icons')
+
+def ryouko_icon(name):
+    return os.path.join(app_icons, name)
+
 app_version = "N/A"
 app_codename = "N/A"
 if os.path.exists(app_info):
@@ -151,9 +155,9 @@ app_kill_temp_files = False
 for arg in sys.argv:
     app_commandline = "%s%s " % (app_commandline, arg)
 if sys.platform.startswith("win"):
-    app_logo = os.path.join(app_icons, 'about-logo.png')
+    app_logo = ryouko_icon('about-logo.png')
 else:
-    app_logo = os.path.join(app_icons, "logo.svg")
+    app_logo = ryouko_icon("logo.svg")
 user_links = ""
 
 def loadCookies():
@@ -836,7 +840,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         self.historyToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addToolBar(self.historyToolBar)
 
-        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(app_icons, "clear.png"))), tr('clearHistoryHKey'), self)
+        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(ryouko_icon("clear.png"))), tr('clearHistoryHKey'), self)
         clearHistoryAction.setToolTip(tr('clearHistoryTT'))
         clearHistoryAction.setShortcut("Ctrl+Shift+Del")
         clearHistoryAction.triggered.connect(clearHistoryDialog.show)
@@ -1061,7 +1065,7 @@ def showAboutPage(webView):
         <div style=\"max-width: 640px;\">
         <a name='about'></a>
         <h1 style='margin-bottom: 0;'>""" + tr('aboutRyouko') + """</h1>
-        <img src='file://%""" + os.path.join(app_icons, "about-logo.png") + """'></img><br/>
+        <img src='file://%""" + ryouko_icon("about-logo.png") + """'></img><br/>
         <div style=\"text-align: left;\">
         <b>Ryouko:</b> """ + app_version + """<br/>
         <b>""" + tr('codename') + """:</b> \"""" + app_codename + """\"<br/>
@@ -1739,8 +1743,8 @@ class TabBrowser(QtGui.QMainWindow):
             if not sys.platform.startswith("win"):
                 self.setWindowIcon(QtGui.QIcon(app_logo))
             else:
-                if os.path.exists(os.path.join(app_icons, 'about-logo.png')):
-                    self.setWindowIcon(QtGui.QIcon(os.path.join(app_icons, 'about-logo.png')))
+                if os.path.exists(ryouko_icon('about-logo.png')):
+                    self.setWindowIcon(QtGui.QIcon(ryouko_icon('about-logo.png')))
         self.tabCount = 0
         self.closed = False
         self.closedTabsList = []
@@ -1919,10 +1923,10 @@ self.origY + ev.globalY() - self.mouseY)
         if self.currentWebView().isLoading():
             self.historyCompletionBox.hide()
             self.mainToolBar.widgetForAction(self.stopReloadAction).setToolTip(tr("stopBtnTT"))
-            self.mainToolBar.widgetForAction(self.stopReloadAction).setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(os.path.join(app_icons, "stop.png"))))
+            self.mainToolBar.widgetForAction(self.stopReloadAction).setIcon(QtGui.QIcon().fromTheme("process-stop", QtGui.QIcon(ryouko_icon("stop.png"))))
         else:
             self.mainToolBar.widgetForAction(self.stopReloadAction).setToolTip(tr("reloadBtnTT"))
-            self.mainToolBar.widgetForAction(self.stopReloadAction).setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
+            self.mainToolBar.widgetForAction(self.stopReloadAction).setIcon(QtGui.QIcon().fromTheme("view-refresh", QtGui.QIcon(ryouko_icon('reload.png'))))
 
     def find(self):
         if self.findToolBar.isVisible() and self.findBar.hasFocus():
@@ -2121,7 +2125,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(deleteHistoryItemAction)
         self.searchHistoryField = QtGui.QLineEdit()
         self.searchHistoryField.textChanged.connect(self.searchHistory)
-        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(os.path.join(app_icons, "clear.png"))), tr('clearHistoryHKey'), self)
+        clearHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("edit-clear", QtGui.QIcon(ryouko_icon("clear.png"))), tr('clearHistoryHKey'), self)
         clearHistoryAction.setToolTip(tr('clearHistoryTT'))
         clearHistoryAction.setShortcut("Ctrl+Shift+Del")
         clearHistoryAction.triggered.connect(self.showClearHistoryDialog)
@@ -2141,13 +2145,13 @@ self.origY + ev.globalY() - self.mouseY)
         self.closedTabsListGUI.itemActivated.connect(self.undoCloseTab)
 
         # Bookmarks manager! FINALLY! Yay!
-        manageBookmarksAction = QtGui.QAction(tr('viewBookmarks'), self)
+        manageBookmarksAction = QtGui.QAction(QtGui.QIcon(ryouko_icon("heart.png")), tr('viewBookmarks'), self)
         manageBookmarksAction.setShortcut("Ctrl+Shift+O")
         manageBookmarksAction.triggered.connect(library.bookmarksManagerGUI.display)
         self.addAction(manageBookmarksAction)
 
         # Bookmarks manager! FINALLY! Yay!
-        viewNotificationsAction = QtGui.QAction(tr('viewNotifications'), self)
+        viewNotificationsAction = QtGui.QAction(QtGui.QIcon().fromTheme("dialog-warning", QtGui.QIcon(ryouko_icon("alert.png"))), tr('viewNotifications'), self)
         viewNotificationsAction.setShortcut("Ctrl+Alt+N")
         viewNotificationsAction.triggered.connect(notificationManager.show)
         self.addAction(viewNotificationsAction)
@@ -2194,7 +2198,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.backAction.setText(tr("back"))
         self.backAction.setToolTip(tr("backBtnTT"))
         self.backAction.triggered.connect(self.back)
-        self.backAction.setIcon(QtGui.QIcon().fromTheme("go-previous", QtGui.QIcon(os.path.join(app_icons, 'back.png'))))
+        self.backAction.setIcon(QtGui.QIcon().fromTheme("go-previous", QtGui.QIcon(ryouko_icon('back.png'))))
         self.mainToolBar.addAction(self.backAction)
         self.mainToolBar.widgetForAction(self.backAction).setFocusPolicy(QtCore.Qt.TabFocus)
         self.mainToolBar.widgetForAction(self.backAction).setPopupMode(QtGui.QToolButton.MenuButtonPopup)
@@ -2217,7 +2221,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.nextAction.setToolTip(tr("nextBtnTT"))
         self.nextAction.triggered.connect(self.forward)
         self.nextAction.setText("")
-        self.nextAction.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(os.path.join(app_icons, 'next.png'))))
+        self.nextAction.setIcon(QtGui.QIcon().fromTheme("go-next", QtGui.QIcon(ryouko_icon('next.png'))))
         self.mainToolBar.addAction(self.nextAction)
         self.mainToolBar.widgetForAction(self.nextAction).setFocusPolicy(QtCore.Qt.TabFocus)
         self.mainToolBar.widgetForAction(self.nextAction).setPopupMode(QtGui.QToolButton.MenuButtonPopup)
@@ -2249,7 +2253,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.stopReloadAction.triggered.connect(self.stopReload)
         self.stopReloadAction.setText("")
         self.stopReloadAction.setToolTip(tr("reloadBtnTT"))
-        self.stopReloadAction.setIcon(QtGui.QIcon().fromTheme("view-reload", QtGui.QIcon(os.path.join(app_icons, 'reload.png'))))
+        self.stopReloadAction.setIcon(QtGui.QIcon().fromTheme("view-reload", QtGui.QIcon(ryouko_icon('reload.png'))))
         self.mainToolBar.addAction(self.stopReloadAction)
         self.addAction(self.stopReloadAction)
         self.mainToolBar.widgetForAction(self.stopReloadAction).setFocusPolicy(QtCore.Qt.TabFocus)
@@ -2269,7 +2273,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.findAction.setShortcut("Ctrl+F")
         self.findAction.setText(tr("findHKey"))
         self.findAction.setToolTip(tr("findBtnTT"))
-        self.findAction.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(os.path.join(app_icons, 'find.png'))))
+        self.findAction.setIcon(QtGui.QIcon().fromTheme("edit-find", QtGui.QIcon(ryouko_icon('find.png'))))
         self.mainToolBar.addAction(self.findAction)
         self.mainToolBar.widgetForAction(self.findAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
@@ -2278,14 +2282,14 @@ self.origY + ev.globalY() - self.mouseY)
         self.findNextAction.setShortcuts(["Ctrl+G", "F3"])
         self.findNextAction.setText(tr("findNextHKey"))
         self.findNextAction.setToolTip(tr("findNextBtnTT"))
-        self.findNextAction.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(os.path.join(app_icons, 'find-next.png'))))
+        self.findNextAction.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(ryouko_icon('find-next.png'))))
 
         self.findPreviousAction = QtGui.QAction(self)
         self.findPreviousAction.triggered.connect(self.findPrevious)
         self.findPreviousAction.setShortcut("Ctrl+Shift+G")
         self.findPreviousAction.setText(tr("findPreviousHKey"))
         self.findPreviousAction.setToolTip(tr("findPreviousBtnTT"))
-        self.findPreviousAction.setIcon(QtGui.QIcon().fromTheme("media-seek-backward", QtGui.QIcon(os.path.join(app_icons, 'find-previous.png'))))
+        self.findPreviousAction.setIcon(QtGui.QIcon().fromTheme("media-seek-backward", QtGui.QIcon(ryouko_icon('find-previous.png'))))
 
         self.findBar = QtGui.QLineEdit()
         self.findBar.returnPressed.connect(self.findNext)
@@ -2296,7 +2300,7 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.closeFindToolBarAction = QtGui.QAction(self)
         self.closeFindToolBarAction.triggered.connect(self.findToolBar.hide)
-        self.closeFindToolBarAction.setIcon(QtGui.QIcon().fromTheme("window-close", QtGui.QIcon(os.path.join(app_icons, "close.png"))))
+        self.closeFindToolBarAction.setIcon(QtGui.QIcon().fromTheme("window-close", QtGui.QIcon(ryouko_icon("close.png"))))
 
         self.findToolBar.addAction(self.closeFindToolBarAction)
 
@@ -2310,7 +2314,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.translateAction = QtGui.QAction(self)
         self.translateAction.triggered.connect(self.translate)
         self.translateAction.setShortcut("Alt+Shift+T")
-        self.translateAction.setIcon(QtGui.QIcon().fromTheme("preferences-desktop-locale", QtGui.QIcon(os.path.join(app_icons, 'translate.png'))))
+        self.translateAction.setIcon(QtGui.QIcon().fromTheme("preferences-desktop-locale", QtGui.QIcon(ryouko_icon('translate.png'))))
         self.translateAction.setToolTip(tr("translateBtnTT"))
         self.mainToolBar.addAction(self.translateAction)
         self.addAction(self.translateAction)
@@ -2363,7 +2367,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.addBookmarkButton.setText("")
         self.addBookmarkButton.setToolTip(tr("addBookmarkTT"))
         self.addBookmarkButton.setShortcut("Ctrl+D")
-        self.addBookmarkButton.setIcon(QtGui.QIcon().fromTheme("emblem-favorite", QtGui.QIcon(os.path.join(app_icons, 'heart.png'))))
+        self.addBookmarkButton.setIcon(QtGui.QIcon().fromTheme("emblem-favorite", QtGui.QIcon(ryouko_icon('heart.png'))))
         self.addBookmarkButton.setIconSize(QtCore.QSize(16, 16))
         self.urlToolBar.addWidget(self.addBookmarkButton)
 
@@ -2372,7 +2376,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.goButton.clicked.connect(self.updateWeb)
         self.goButton.setText("")
         self.goButton.setToolTip(tr("go"))
-        self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(os.path.join(app_icons, 'go.png'))))
+        self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(ryouko_icon('go.png'))))
         self.goButton.setIconSize(QtCore.QSize(16, 16))
         self.urlToolBar.addWidget(self.goButton)"""
 
@@ -2414,12 +2418,12 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.closedTabsListGUIButton = QtGui.QAction(self)
         self.closedTabsListGUIButton.setText(tr("closedTabs"))
-        self.closedTabsListGUIButton.setIcon(QtGui.QIcon.fromTheme("user-trash", QtGui.QIcon(os.path.join(app_icons, "trash.png"))))
+        self.closedTabsListGUIButton.setIcon(QtGui.QIcon.fromTheme("user-trash", QtGui.QIcon(ryouko_icon("trash.png"))))
         self.closedTabsListGUIButton.triggered.connect(self.showClosedTabsListGUI)
 
         self.mainMenuButton = QtGui.QAction(self)
         self.mainMenuButton.setText(tr("menu"))
-        self.mainMenuButton.setIcon(QtGui.QIcon.fromTheme("document-properties", QtGui.QIcon(os.path.join(app_icons, "preferences.png"))))
+        self.mainMenuButton.setIcon(QtGui.QIcon.fromTheme("document-properties", QtGui.QIcon(ryouko_icon("preferences.png"))))
         self.mainMenuButton.setShortcuts(["Alt+M"])
         self.mainMenuButton.triggered.connect(self.showCornerWidgetsMenu)
 #        self.mainMenuButton.setArrowType(QtCore.Qt.DownArrow)
@@ -2454,7 +2458,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabs.currentChanged.connect(self.updateTitles)
         self.tabs.tabCloseRequested.connect(self.closeTab)
 
-        self.fullScreenAction = QtGui.QAction(tr("toggleFullscreen"), self)
+        self.fullScreenAction = QtGui.QAction(QtGui.QIcon().fromTheme("view-fullscreen", QtGui.QIcon(ryouko_icon("fullscreen.png"))), tr("toggleFullscreen"), self)
         self.fullScreenAction.setShortcut("F11")
         self.fullScreenAction.triggered.connect(self.toggleFullScreen)
         self.addAction(self.fullScreenAction)
@@ -2488,7 +2492,7 @@ self.origY + ev.globalY() - self.mouseY)
         closeTabForeverAction.triggered.connect(self.permanentCloseTab)
 
         # New tab button
-        newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(os.path.join(app_icons, 'newtab.png'))), tr('newTabBtn'), self)
+        newTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(ryouko_icon('newtab.png'))), tr('newTabBtn'), self)
         newTabAction.setToolTip(tr('newTabBtnTT'))
         newTabAction.setShortcuts(['Ctrl+T'])
         newTabAction.triggered.connect(self.newTab)
@@ -2508,25 +2512,25 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(self.showTabsContextMenuAction)
 
         # New window button
-        newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(os.path.join(app_icons, 'newwindow.png'))), tr("newWindowBtn"), self)
+        newWindowAction = QtGui.QAction(QtGui.QIcon().fromTheme("window-new", QtGui.QIcon(ryouko_icon('newwindow.png'))), tr("newWindowBtn"), self)
         newWindowAction.setShortcut('Ctrl+N')
         newWindowAction.triggered.connect(self.newWindow)
         self.addAction(newWindowAction)
 
         # Save page action
-        savePageAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-save-as", QtGui.QIcon(os.path.join(app_icons, 'saveas.png'))), tr('saveAs'), self)
+        savePageAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-save-as", QtGui.QIcon(ryouko_icon('saveas.png'))), tr('saveAs'), self)
         savePageAction.setShortcut('Ctrl+S')
         savePageAction.triggered.connect(self.savePage)
         self.mainMenu.addAction(savePageAction)
         self.addAction(savePageAction)
 
-        printAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-print", QtGui.QIcon(os.path.join(app_icons, 'print.png'))), tr('print'), self)
+        printAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-print", QtGui.QIcon(ryouko_icon('print.png'))), tr('print'), self)
         printAction.setShortcut('Ctrl+P')
         printAction.triggered.connect(self.printPage)
         self.mainMenu.addAction(printAction)
         self.addAction(printAction)
 
-        printPreviewAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-print-preview", QtGui.QIcon(os.path.join(app_icons, 'printpreview.png'))), tr('printPreviewHKey'), self)
+        printPreviewAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-print-preview", QtGui.QIcon(ryouko_icon('printpreview.png'))), tr('printPreviewHKey'), self)
         printPreviewAction.triggered.connect(self.printPreview)
         self.mainMenu.addAction(printPreviewAction)
         self.addAction(printPreviewAction)
@@ -2544,7 +2548,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addSeparator()
 
         # Undo closed tab button
-        undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(os.path.join(app_icons, 'undo.png'))), tr('undoCloseTabBtn'), self)
+        undoCloseTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("edit-undo", QtGui.QIcon(ryouko_icon('undo.png'))), tr('undoCloseTabBtn'), self)
         undoCloseTabAction.setToolTip(tr('undoCloseTabBtnTT'))
         undoCloseTabAction.setShortcuts(['Ctrl+Shift+T'])
         undoCloseTabAction.triggered.connect(self.undoCloseTab)
@@ -2556,7 +2560,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(undoCloseWindowAction)
 
         # History sidebar button
-        historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(os.path.join(app_icons, "history.png"))), tr('viewHistoryBtn'), self)
+        historyToggleAction = QtGui.QAction(QtGui.QIcon.fromTheme("document-open-recent", QtGui.QIcon(ryouko_icon("history.png"))), tr('viewHistoryBtn'), self)
         historyToggleAction.setToolTip(tr('viewHistoryBtnTT'))
         historyToggleAction.triggered.connect(self.historyToggle)
         historyToggleAction.triggered.connect(self.historyToolBar.show)
@@ -2564,14 +2568,14 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(historyToggleAction)
         self.mainMenu.addAction(historyToggleAction)
 
-        advHistoryAction = QtGui.QAction(tr('viewAdvHistory'), self)
+        advHistoryAction = QtGui.QAction(QtGui.QIcon.fromTheme("x-office-calendar", QtGui.QIcon(ryouko_icon("adv-history.png"))), tr('viewAdvHistory'), self)
         advHistoryAction.setShortcut("Ctrl+Shift+H")
         advHistoryAction.triggered.connect(library.advancedHistoryViewGUI.display)
         self.addAction(advHistoryAction)
         self.mainMenu.addAction(advHistoryAction)
 
         # New private browsing tab button
-        newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(os.path.join(app_icons, 'pb.png'))), tr('newPBTabBtn'), self)
+        newpbTabAction = QtGui.QAction(QtGui.QIcon().fromTheme("face-devilish", QtGui.QIcon(ryouko_icon('pb.png'))), tr('newPBTabBtn'), self)
         newpbTabAction.setToolTip(tr('newPBTabBtnTT'))
         newpbTabAction.setShortcuts(['Ctrl+Shift+P'])
         newpbTabAction.triggered.connect(self.newpbTab)
@@ -2597,15 +2601,15 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addAction(manageBookmarksAction)
         self.mainMenu.addSeparator()
 
-        closeTabAction = QtGui.QAction(tr('closeTab'), self)
+        closeTabAction = QtGui.QAction(QtGui.QIcon(ryouko_icon("close.png")), tr('closeTab'), self)
         closeTabAction.setShortcut("Ctrl+W")
         closeTabAction.triggered.connect(self.closeCurrentTab)
         self.addAction(closeTabAction)
-        closeLeftTabsAction = QtGui.QAction(QtGui.QIcon(os.path.join(app_icons, 'close-left.png')), tr('closeLeftTabs'), self)
+        closeLeftTabsAction = QtGui.QAction(QtGui.QIcon(ryouko_icon('close-left.png')), tr('closeLeftTabs'), self)
         closeLeftTabsAction.setShortcut("Ctrl+Shift+L")
         closeLeftTabsAction.triggered.connect(self.closeLeftTabs)
         self.addAction(closeLeftTabsAction)
-        closeRightTabsAction = QtGui.QAction(QtGui.QIcon(os.path.join(app_icons, 'close-right.png')), tr('closeRighttTabs'), self)
+        closeRightTabsAction = QtGui.QAction(QtGui.QIcon(ryouko_icon('close-right.png')), tr('closeRighttTabs'), self)
         closeRightTabsAction.setShortcut("Ctrl+Shift+R")
         closeRightTabsAction.triggered.connect(self.closeRightTabs)
         self.addAction(closeRightTabsAction)
@@ -2652,7 +2656,7 @@ self.origY + ev.globalY() - self.mouseY)
             self.addAction(numActions[action])
 
         # Config button
-        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(os.path.join(app_icons, 'settings.png'))), tr('preferencesButton'), self)
+        configAction = QtGui.QAction(QtGui.QIcon().fromTheme("preferences-system", QtGui.QIcon(ryouko_icon('settings.png'))), tr('preferencesButton'), self)
         configAction.setToolTip(tr('preferencesButtonTT'))
         configAction.setShortcuts(['Ctrl+Alt+P'])
         configAction.triggered.connect(self.showSettings)
@@ -2673,7 +2677,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.toolsMenu.addSeparator()
         self.toolsMenu.addAction(viewNotificationsAction)
 
-        downloadsAction = QtGui.QAction(tr("downloadsHKey"), self)
+        downloadsAction = QtGui.QAction(QtGui.QIcon().fromTheme("go-down", QtGui.QIcon(ryouko_icon("down.png"))), tr("downloadsHKey"), self)
         downloadsAction.setShortcuts(["Ctrl+Shift+Y", "Ctrl+J"])
         downloadsAction.triggered.connect(downloadManagerGUI.show)
         self.toolsMenu.addAction(downloadsAction)
@@ -2686,17 +2690,17 @@ self.origY + ev.globalY() - self.mouseY)
         # About Actions
         aboutQtAction = QtGui.QAction(tr('aboutQtHKey'), self)
         if not sys.platform.startswith("win"):
-            aboutQtAction.setIcon(QtGui.QIcon(os.path.join(app_icons, "qt.svg")))
+            aboutQtAction.setIcon(QtGui.QIcon(ryouko_icon("qt.svg")))
         else:
-            aboutQtAction.setIcon(QtGui.QIcon(os.path.join(app_icons, "qt-16.png")))
+            aboutQtAction.setIcon(QtGui.QIcon(ryouko_icon("qt-16.png")))
         aboutQtAction.triggered.connect(QtGui.QApplication.aboutQt)
         self.mainMenu.addAction(aboutQtAction)
 
         aboutAction = QtGui.QAction(tr('aboutRyoukoHKey'), self)
         if not sys.platform.startswith("win"):
-            aboutAction.setIcon(QtGui.QIcon(os.path.join(app_icons, "logo.svg")))
+            aboutAction.setIcon(QtGui.QIcon(ryouko_icon("logo.svg")))
         else:
-            aboutAction.setIcon(QtGui.QIcon(os.path.join(app_icons, "logo.png")))
+            aboutAction.setIcon(QtGui.QIcon(ryouko_icon("logo.png")))
         aboutAction.triggered.connect(self.aboutRyoukoHKey)
         self.mainMenu.addAction(aboutAction)
 
