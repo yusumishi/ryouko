@@ -70,16 +70,16 @@ class RWebPage(QtWebKit.QWebPage):
         tb.text.setWordWrap(True)
         tb.addWidget(tb.text)
 
-        tb.spacer = QtGui.QLabel()
-        tb.spacer.setStyleSheet("QLabel{min-width: 4px;max-width: 4px;}")
-        tb.addWidget(tb.spacer)
+        #tb.spacer = QtGui.QLabel()
+        #tb.spacer.setStyleSheet("QLabel{min-width: 4px;max-width: 4px;}")
+        #tb.addWidget(tb.spacer)
+
+        tb.addWidget(RExpander())
 
         tb.button = QtGui.QPushButton(tb)
         tb.button.setText(tr("OK"))
         tb.button.clicked.connect(tb.deleteLater)
         tb.addWidget(tb.button)
-
-        tb.addWidget(RExpander())
 
         return tb
 
