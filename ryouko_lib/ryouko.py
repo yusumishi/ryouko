@@ -1154,6 +1154,13 @@ def downloadFinished():
 
 notificationManager = None
 
+def firstRun():
+    if sys.platform.startswith("linux"):
+        c = os.path.join(app_profile, "menubar_visible.conf")
+        f = open(c, "w")
+        f.write("")
+        f.close()
+
 def undoCloseWindow():
     try:
         global app_windows
@@ -1570,6 +1577,12 @@ class CDialog(QtGui.QMainWindow):
         self.cToolBar.addWidget(applyAction)
         self.cToolBar.addWidget(closeAction)
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.cToolBar)
+        fr = os.path.join(app_profile, "firstrun.conf")
+        if not os.path.exists(fr):
+            firstRun()
+            f = open(fr, "w")
+            f.write("")
+            f.close()
         self.loadSettings()
         self.saveSettings()
         self.loadSettings()
