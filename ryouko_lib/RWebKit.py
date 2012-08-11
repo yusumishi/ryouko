@@ -14,7 +14,6 @@ from DialogFunctions import *
 from ViewSourceDialog import *
 from TranslationManager import *
 from SystemFunctions import *
-from RExpander import *
 
 app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
 app_zoho_extensions = [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".pps", ".xls", ".xlsx", ".odt", ".ods", ".odp", ".sxw", ".sxc", ".sxi", ".wpd", ".rtf", ".csv", ".tsv", ".txt", ".html"]
@@ -40,6 +39,7 @@ class RWebPage(QtWebKit.QWebPage):
         super(RWebPage, self).__init__()
         self.setParent(parent)
         self.userAgent = False
+        self.toolBarLimit = 0
         global app_default_useragent
         app_default_useragent = unicode(self.userAgentForUrl(QtCore.QUrl("about:blank"))).replace("Safari", "Ryouko/" + app_version + " Safari")
         self.bork = False
@@ -57,39 +57,48 @@ class RWebPage(QtWebKit.QWebPage):
         else:
             return
 
-    def createAlertToolBar(self, msg):
+    def createAlertToolBar(self, frame, msg):
         tb = QtGui.QToolBar()
         tb.setStyleSheet("QToolBar{background-color: #FFBF00;border:0;border-bottom:1px solid #FF7F00;}QToolBar,QLabel{color:#1A1A1A;}")
         tb.setMovable(False)
         tb.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 
-        tb.addWidget(RExpander())
+        i1 = QtGui.QLabel()
+        i1.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
+        tb.addWidget(i1)
 
         tb.text = QtGui.QLabel(msg, tb)
-        tb.text.setText(msg)
+        tb.text.setText("JavaScript: " + msg)
         tb.text.setWordWrap(True)
         tb.addWidget(tb.text)
 
-        #tb.spacer = QtGui.QLabel()
-        #tb.spacer.setStyleSheet("QLabel{min-width: 4px;max-width: 4px;}")
-        #tb.addWidget(tb.spacer)
-
-        tb.addWidget(RExpander())
+        i2 = QtGui.QLabel()
+        i2.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
+        tb.addWidget(i2)
 
         tb.button = QtGui.QPushButton(tb)
         tb.button.setText(tr("OK"))
         tb.button.clicked.connect(tb.deleteLater)
         tb.addWidget(tb.button)
 
+        self.toolBarLimit += 1
+
         return tb
 
+    def lowerToolBarLimit(self):
+        self.toolBarLimit -= 1
+
     def javaScriptAlert(self, frame, msg):
-        pause = QtCore.QEventLoop()
-        tb = self.createAlertToolBar(msg)
-        self.alertToolBar.emit(tb)
-        tb.button.clicked.connect(pause.quit)
-        pause.exec_()
-        return
+        if self.toolBarLimit < 5:
+            pause = QtCore.QEventLoop()
+            tb = self.createAlertToolBar(frame, msg)
+            self.alertToolBar.emit(tb)
+            tb.button.clicked.connect(self.lowerToolBarLimit)
+            tb.button.clicked.connect(pause.quit)
+            pause.exec_()
+            return
+        else:
+            return QtWebKit.QWebPage.javaScriptAlert(self, frame, msg)
 
     def provideAuthentication(self, reply, auth):
         if self.bork == False:
