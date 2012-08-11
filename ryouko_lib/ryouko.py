@@ -1765,19 +1765,19 @@ class TabBrowser(QtGui.QMainWindow):
         self.searchOn = False
         self.tempHistory = []
 
-        if app_vista == True:
-            self.setStyleSheet("""
-            TabBrowser {
-            background-image: url(\"""" + os.path.join(app_lib, "images", "win-toolbar.png").replace("\\", "/") + """\");
-            background-color: #e1e6f6;
-            background-repeat: repeat-x;
-            }
+        #if app_vista == True:
+            #self.setStyleSheet("""
+            #TabBrowser {
+            #background-image: url(\"""" + os.path.join(app_lib, "images", "win-toolbar.png").replace("\\", "/") + """\");
+            #background-color: #e1e6f6;
+            #background-repeat: repeat-x;
+            #}
 
-            QToolBar {
-            border: 0;
-            background: transparent;
-            }
-            """)
+            #QToolBar {
+            #border: 0;
+            #background: transparent;
+            #}
+            #""")
 
         self.urlCheckTimer = QtCore.QTimer()
         self.urlCheckTimer.timeout.connect(self.checkForURLs)
