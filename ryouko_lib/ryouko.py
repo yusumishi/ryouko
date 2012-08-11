@@ -2812,8 +2812,11 @@ self.origY + ev.globalY() - self.mouseY)
                 if len(h) == 0:
                     self.newTab()
                 else:
-                    for u in h:
-                        self.newTab(None, u)
+                    if h[0] == "":
+                        self.newTab()
+                    else:
+                        for u in h:
+                            self.newTab(None, u)
         elif len(sys.argv) > 1:
             for arg in range(1, len(sys.argv)):
                 if not "--pb" in sys.argv and not "-pb" in sys.argv:
