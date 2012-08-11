@@ -1571,7 +1571,7 @@ class CDialog(QtGui.QMainWindow):
         self.cToolBar.addWidget(closeAction)
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.cToolBar)
         self.loadSettings()
-        settingsManager.saveSettings()
+        self.saveSettings()
         self.loadSettings()
 
     def showHistoryDialog(self):
@@ -2608,8 +2608,11 @@ self.origY + ev.globalY() - self.mouseY)
         self.toggleBTAction.triggered.connect(self.toggleBookmarksToolBar)
         self.mainMenu.addAction(self.toggleBTAction)
 
-        if settingsManager.settings["showBookmarksToolBar"] == True:
-            self.toggleBTAction.setChecked(True)
+        try: settingsManager.settings["showBookmarksToolBar"]
+        except: do_nothing()
+        else:
+            if settingsManager.settings["showBookmarksToolBar"] == True:
+                self.toggleBTAction.setChecked(True)
 
         self.mainMenu.addAction(manageBookmarksAction)
         self.mainMenu.addSeparator()
