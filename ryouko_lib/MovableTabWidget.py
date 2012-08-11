@@ -32,13 +32,6 @@ class MovableTabWidget(QtGui.QTabWidget):
         self.mouseX = False
         self.mouseY = False
 
-    def mouseDoubleClickEvent(self, e):
-        e.accept()
-        try:
-            self.parent.newTab()
-        except:
-            print("MovableTabWidget could not add new tab to self.parent!")
-
     def mousePressEvent(self, ev):
         if ev.button() == QtCore.Qt.RightButton:
             try:

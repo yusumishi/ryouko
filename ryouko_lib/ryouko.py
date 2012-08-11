@@ -2665,6 +2665,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenu.addAction(undoCloseWindowAction)
 
         self.menuBar = QtGui.QMenuBar()
+        self.menuBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.setMenuBar(self.menuBar)
         self.reverseToggleMenuBar()
         #self.menuBar.setVisible(False)

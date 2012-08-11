@@ -507,7 +507,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
     def checkForAds(self):
         if self.settingsManager != None:
             if self.settingsManager.settings['adBlock']:
-                elements = self.page().mainFrame().findAllElements("iframe, frame, object, embed, .ego_unit").toList()
+                elements = self.page().mainFrame().findAllElements("[href*=\"\"], [src*=\"\"], [data*=\"\"], iframe, frame, object, embed, .ego_unit").toList()
                 for element in elements:
                     for attribute in element.attributeNames():
                         e = unicode(element.attribute(attribute))
