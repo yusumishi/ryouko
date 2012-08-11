@@ -123,12 +123,15 @@ class RAboutPageView(QtWebKit.QWebView):
         self.setPage(page)
         self.systemOpenView = RSystemOpenView(self)
         self.systemOpenView.hide()
+        self.userAgent = QtWebKit.QWebPage().userAgentForUrl(QtCore.QUrl("about:blank"))
         self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
         self.settings().setAttribute(QtWebKit.QWebSettings.PrivateBrowsingEnabled, True)
         self.page().linkClicked.connect(self.openLink)
     def openLink(self, url):
         u = unicode(url.toString())
         system_open(u)
+    def userAgentForUrl(self, url):
+        return self.userAgent
     def createWindow(self, windowType):
         return self.systemOpenView
 
