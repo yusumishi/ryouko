@@ -574,6 +574,15 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                         try: exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy")
                         except:
                             doNothing()
+            try: self.settingsManager.settings['showBookmarksToolBar']
+            except: do_nothing()
+            else:
+                if self.settingsManager.settings['showBookmarksToolBar'] == False:
+                    if not self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull():
+                        self.page().mainFrame().findFirstElement("#ryouko-toolbar").removeFromDocument()
+                else:
+                    if self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull():
+                        self.loadLinks()
             for child in range(1, len(self.newWindows)):
                 try: self.newWindows[child].updateSettings()
                 except:

@@ -558,7 +558,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         removeBookmarkAction.triggered.connect(self.removeBookmark)
         self.addAction(removeBookmarkAction)
         closeWindowAction = QtGui.QAction(self)
-        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Shift+B", "Ctrl+Shift+O"])
+        closeWindowAction.setShortcuts(["Ctrl+W", "Ctrl+Shift+O"])
         if self.parent:
             closeWindowAction.triggered.connect(self.parent.close)
         else:
@@ -873,7 +873,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         self.historyViewMenu.addAction(deleteHistoryItemAction)
 
         otherTabAction = QtGui.QAction(self)
-        otherTabAction.setShortcuts(["Ctrl+Shift+B", "Ctrl+Shift+O"])
+        otherTabAction.setShortcut("Ctrl+Shift+O")
         otherTabAction.triggered.connect(self.switchTabs)
         self.addAction(otherTabAction)
 
@@ -2142,7 +2142,7 @@ self.origY + ev.globalY() - self.mouseY)
 
         # Bookmarks manager! FINALLY! Yay!
         manageBookmarksAction = QtGui.QAction(tr('viewBookmarks'), self)
-        manageBookmarksAction.setShortcuts(["Ctrl+Shift+O", "Ctrl+Shift+B"])
+        manageBookmarksAction.setShortcut("Ctrl+Shift+O")
         manageBookmarksAction.triggered.connect(library.bookmarksManagerGUI.display)
         self.addAction(manageBookmarksAction)
 
@@ -2579,15 +2579,20 @@ self.origY + ev.globalY() - self.mouseY)
 #        self.mainMenu.addAction(closeTabForeverAction)
         self.mainMenu.addSeparator()
 
-        self.toggleMBAction = QtGui.QAction(tr("menuBarToggle"), self)
+        self.toggleMBAction = QtGui.QAction(tr("toggleMenuBar"), self)
         self.toggleMBAction.setCheckable(True)
         self.toggleMBAction.setShortcut("Ctrl+Shift+M")
         self.mainMenu.addAction(self.toggleMBAction)
         self.toggleMBAction.triggered.connect(self.toggleMenuBar)
 
-        toggleBTAction = QtGui.QAction(tr("bookmarksToolBarToggle"), self)
-        toggleBTAction.triggered.connect(self.toggleBookmarksToolBar)
-        self.mainMenu.addAction(toggleBTAction)
+        self.toggleBTAction = QtGui.QAction(tr("toggleBookmarksToolBar"), self)
+        self.toggleBTAction.setCheckable(True)
+        self.toggleBTAction.setShortcut("Ctrl+Shift+B")
+        self.toggleBTAction.triggered.connect(self.toggleBookmarksToolBar)
+        self.mainMenu.addAction(self.toggleBTAction)
+
+        if settingsManager.settings["showBookmarksToolBar"] == True:
+            self.toggleBTAction.setChecked(True)
 
         self.mainMenu.addAction(manageBookmarksAction)
         self.mainMenu.addSeparator()
@@ -2712,7 +2717,7 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.viewMenu = QtGui.QMenu(tr("viewHKey"))
         self.viewMenu.addAction(self.toggleMBAction)
-        self.viewMenu.addAction(toggleBTAction)
+        self.viewMenu.addAction(self.toggleBTAction)
         self.viewMenu.addSeparator()
         self.viewMenu.addAction(historyToggleAction)
         self.viewMenu.addSeparator()
@@ -2840,6 +2845,10 @@ self.origY + ev.globalY() - self.mouseY)
 
     def toggleBookmarksToolBar(self):
         cDialog.showBTBox.click(); cDialog.saveSettings()
+        if settingsManager.settings['showBookmarksToolBar'] == True:
+            self.toggleBTAction.setChecked(True)
+        else:
+            self.toggleBTAction.setChecked(False)
 
     def toggleFullScreen(self):
         if self.windowState() == QtCore.Qt.WindowFullScreen:
