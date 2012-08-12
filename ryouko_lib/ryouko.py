@@ -2644,8 +2644,10 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.tabsOnTopAction = QtGui.QAction(tr("tabsOnTop"), self)
         self.tabsOnTopAction.setCheckable(True)
+        self.tabsOnTopAction.setShortcut("Ctrl+Shift+,")
         self.reverseToggleTabsOnTop()
         self.tabsOnTopAction.triggered.connect(self.toggleTabsOnTop)
+        self.addAction(self.tabsOnTopAction)
 
         self.toggleMBAction = QtGui.QAction(tr("showMenuBar"), self)
         self.toggleMBAction.setCheckable(True)
