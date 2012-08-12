@@ -2663,6 +2663,7 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.mainMenu.addSeparator()
         self.mainMenu.addAction(self.tabsOnTopAction)
+        self.mainMenu.addSeparator()
 
         try: settingsManager.settings["showBookmarksToolBar"]
         except: do_nothing()
