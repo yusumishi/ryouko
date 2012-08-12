@@ -274,7 +274,24 @@ user_links = bookmarksManager.reload_user_links(bookmarksManager.app_links)
 reset = False
 
 blanktoolbarsheet = "QToolBar { border: 0; }"
-tabsontopsheet =  "QToolBar{background:transparent;border-bottom:1px solid palette(shadow);}"
+tabsontopsheet =  "QToolBar{background:palette(window);border-bottom:1px solid palette(shadow);}"
+tabsontopsheet2 = """QTabBar::tab {
+padding: 4px;
+border: 1px solid palette(shadow);
+}
+
+QTabBar::tab:top {
+border-top-left-radius: 4px;
+border-top-right-radius:4px;
+border-bottom: 1px solid palette(shadow);
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(window), stop:1 palette(midlight));
+}
+
+QTabBar::tab:top:selected {
+border-bottom: 0;
+padding-bottom: 5px;
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(light), stop:1 palette(window));
+}"""
 windowtoolbarsheet = "QToolBar { border: 0; background: palette(window); }"
 dw_stylesheet = ""
 
@@ -1161,9 +1178,13 @@ notificationManager = None
 def firstRun():
     if sys.platform.startswith("linux"):
         c = app_menubar_conf
-        f = open(c, "w")
-        f.write("")
-        f.close()
+    elif sys.platform.startswith("win"):
+        c = app_tabs_on_top_conf
+    else:
+        return
+    f = open(c, "w")
+    f.write("")
+    f.close()
 
 def undoCloseWindow():
     try:
@@ -2902,14 +2923,14 @@ self.origY + ev.globalY() - self.mouseY)
             for win in app_windows:
                 try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
                 except: do_nothing()
-                else: win.mainToolBar.setStyleSheet(tabsontopsheet)
+                else: win.mainToolBar.setStyleSheet(tabsontopsheet); win.tabs.setStyleSheet(tabsontopsheet2)
         else:
             self.tabsOnTopAction.setChecked(False)
             global app_tabs_on_top
             app_tabs_on_top = False
             for win in app_windows:
                 win.addToolBar(win.mainToolBar)
-                win.mainToolBar.setStyleSheet("")
+                win.mainToolBar.setStyleSheet(""); win.tabs.setStyleSheet("")
 
     def toggleTabsOnTop(self):
         c = app_tabs_on_top_conf
@@ -2920,7 +2941,7 @@ self.origY + ev.globalY() - self.mouseY)
             app_tabs_on_top = False
             for win in app_windows:
                 win.addToolBar(win.mainToolBar)
-                win.mainToolBar.setStyleSheet("")
+                win.mainToolBar.setStyleSheet(""); win.tabs.setStyleSheet("")
         else:
             f = open(c, "w")
             f.write("")
@@ -2931,13 +2952,13 @@ self.origY + ev.globalY() - self.mouseY)
             for win in app_windows:
                 try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
                 except: do_nothing()
-                else: win.mainToolBar.setStyleSheet(tabsontopsheet)
+                else: win.mainToolBar.setStyleSheet(tabsontopsheet); win.tabs.setStyleSheet(tabsontopsheet2)
 
     def checkTabsOnTop(self):
         if app_tabs_on_top == True:
             try: self.tabs.widget(self.tabs.currentIndex()).addToolBar(self.mainToolBar)
             except: do_nothing()
-            else: self.mainToolBar.setStyleSheet(tabsontopsheet)
+            else: self.mainToolBar.setStyleSheet(tabsontopsheet); self.tabs.setStyleSheet(tabsontopsheet2)
 
     def reverseToggleMenuBar(self):
         c = app_menubar_conf
