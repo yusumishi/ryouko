@@ -90,6 +90,7 @@ app_locale = locale.getdefaultlocale()[0]
 sys.path.append(app_lib)
 app_default_useragent = "Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/534.34 (KHTML, like Gecko) Qt/4.8.1 Safari/534.34"
 app_webview_default_icon = QtGui.QIcon()
+app_tabs_on_top = False
 
 from ryouko_common import *
 from RUrlBar import *
@@ -212,10 +213,12 @@ def remove2(fname):
             os.remove(u)
 
 def changeProfile(profile, init = False):
-    global app_profile_name; global app_profile; global app_links; global app_lock; global app_cookies; global app_instance2
+    global app_profile_name; global app_profile; global app_links; global app_lock; global app_cookies; global app_instance2; global app_tabs_on_top_conf; global app_menubar_conf
     app_profile_name = profile
     app_profile = os.path.join(app_profile_folder, profile)
     app_links = os.path.join(app_profile, "links")
+    app_tabs_on_top_conf = os.path.join(app_profile, "tabsontop.conf")
+    app_menubar_conf = os.path.join(app_profile, "menubar_visible.conf")
     app_lock = os.path.join(app_profile, ".lockfile")
     app_cookies = os.path.join(app_profile, "cookies.json")
     app_instance2 = os.path.join(app_profile, "instance2-says.txt")
@@ -271,6 +274,7 @@ user_links = bookmarksManager.reload_user_links(bookmarksManager.app_links)
 reset = False
 
 blanktoolbarsheet = "QToolBar { border: 0; }"
+tabsontopsheet =  "QToolBar{background:transparent;border-bottom:1px solid palette(shadow);}"
 windowtoolbarsheet = "QToolBar { border: 0; background: palette(window); }"
 dw_stylesheet = ""
 
@@ -1156,7 +1160,7 @@ notificationManager = None
 
 def firstRun():
     if sys.platform.startswith("linux"):
-        c = os.path.join(app_profile, "menubar_visible.conf")
+        c = app_menubar_conf
         f = open(c, "w")
         f.write("")
         f.close()
@@ -1965,6 +1969,7 @@ self.origY + ev.globalY() - self.mouseY)
         if self.findToolBar.isVisible() and self.findBar.hasFocus():
             self.findToolBar.hide()
         else:
+            self.currentWebView().parent2.addToolBarBreak()
             self.currentWebView().parent2.addToolBar(self.findToolBar)
             self.findToolBar.show()
             self.findBar.setFocus()
@@ -2616,6 +2621,11 @@ self.origY + ev.globalY() - self.mouseY)
 #        self.mainMenu.addAction(closeTabForeverAction)
         self.mainMenu.addSeparator()
 
+        self.tabsOnTopAction = QtGui.QAction(tr("tabsOnTop"), self)
+        self.tabsOnTopAction.setCheckable(True)
+        self.reverseToggleTabsOnTop()
+        self.tabsOnTopAction.triggered.connect(self.toggleTabsOnTop)
+
         self.toggleMBAction = QtGui.QAction(tr("showMenuBar"), self)
         self.toggleMBAction.setCheckable(True)
         self.toggleMBAction.setShortcut("Ctrl+Shift+M")
@@ -2627,6 +2637,9 @@ self.origY + ev.globalY() - self.mouseY)
         self.toggleBTAction.setShortcut("Ctrl+Shift+B")
         self.toggleBTAction.triggered.connect(self.toggleBookmarksToolBar)
         self.mainMenu.addAction(self.toggleBTAction)
+
+        self.mainMenu.addSeparator()
+        self.mainMenu.addAction(self.tabsOnTopAction)
 
         try: settingsManager.settings["showBookmarksToolBar"]
         except: do_nothing()
@@ -2773,6 +2786,8 @@ self.origY + ev.globalY() - self.mouseY)
         self.viewMenu.addAction(self.toggleMBAction)
         self.viewMenu.addAction(self.toggleBTAction)
         self.viewMenu.addSeparator()
+        self.viewMenu.addAction(self.tabsOnTopAction)
+        self.viewMenu.addSeparator()
         self.viewMenu.addAction(historyToggleAction)
         self.viewMenu.addSeparator()
         self.viewMenu.addAction(self.fullScreenAction)
@@ -2806,6 +2821,8 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addAction(quitAction)
 
         self.setCentralWidget(self.tabs)
+
+        self.tabs.currentChanged.connect(self.checkTabsOnTop)
 #        self.tabs.nuTabBar.setParent(self)
         #self.tabs.nuTabBar.setHidden(True)
         #self.tabsToolBar.addWidget(self.tabs.nuTabBar)
@@ -2876,29 +2893,81 @@ self.origY + ev.globalY() - self.mouseY)
         #self.tabs.setStyleSheet("QTabWidget::pane { margin-top: -" + str(self.tabs.nuTabBar.height()) + "px; padding-top: 0; }")
         #print("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
 
+    def reverseToggleTabsOnTop(self):
+        c = app_tabs_on_top_conf
+        if os.path.exists(c):
+            self.tabsOnTopAction.setChecked(True)
+            global app_tabs_on_top
+            app_tabs_on_top = True
+            for win in app_windows:
+                try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
+                except: do_nothing()
+                else: win.mainToolBar.setStyleSheet(tabsontopsheet)
+        else:
+            self.tabsOnTopAction.setChecked(False)
+            global app_tabs_on_top
+            app_tabs_on_top = False
+            for win in app_windows:
+                win.addToolBar(win.mainToolBar)
+                win.mainToolBar.setStyleSheet("")
+
+    def toggleTabsOnTop(self):
+        c = app_tabs_on_top_conf
+        if os.path.exists(app_tabs_on_top_conf):
+            remove2(c)
+            self.tabsOnTopAction.setChecked(False)
+            global app_tabs_on_top
+            app_tabs_on_top = False
+            for win in app_windows:
+                win.addToolBar(win.mainToolBar)
+                win.mainToolBar.setStyleSheet("")
+        else:
+            f = open(c, "w")
+            f.write("")
+            f.close()
+            global app_tabs_on_top
+            app_tabs_on_top = True
+            self.tabsOnTopAction.setChecked(True)
+            for win in app_windows:
+                try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
+                except: do_nothing()
+                else: win.mainToolBar.setStyleSheet(tabsontopsheet)
+
+    def checkTabsOnTop(self):
+        if app_tabs_on_top == True:
+            try: self.tabs.widget(self.tabs.currentIndex()).addToolBar(self.mainToolBar)
+            except: do_nothing()
+            else: self.mainToolBar.setStyleSheet(tabsontopsheet)
+
     def reverseToggleMenuBar(self):
-        c = os.path.join(app_profile, "menubar_visible.conf")
+        c = app_menubar_conf
         if os.path.exists(c):
             self.toggleMBAction.setChecked(True)
-            self.mainMenuButton.setVisible(False)
+            for win in app_windows:
+                win.mainMenuButton.setVisible(False)
         else:
             self.toggleMBAction.setChecked(False)
-            self.menuBar.hide()
+            for win in app_windows:
+                win.menuBar.hide()
 
     def toggleMenuBar(self):
-        c = os.path.join(app_profile, "menubar_visible.conf")
+        c = app_menubar_conf
         if os.path.exists(c):
             remove2(c)
             self.toggleMBAction.setChecked(False)
-            self.mainMenuButton.setVisible(True)
-            self.menuBar.hide()
+            for win in app_windows:
+                win.mainMenuButton.setVisible(True)
+            for win in app_windows:
+                win.menuBar.hide()
         else:
             f = open(c, "w")
             f.write("")
             f.close()
             self.toggleMBAction.setChecked(True)
-            self.mainMenuButton.setVisible(False)
-            self.menuBar.show()
+            for win in app_windows:
+                win.mainMenuButton.setVisible(False)
+            for win in app_windows:
+                win.menuBar.show()
 
     def toggleBookmarksToolBar(self):
         cDialog.showBTBox.click(); cDialog.saveSettings()
@@ -3154,6 +3223,8 @@ self.origY + ev.globalY() - self.mouseY)
         self.closeTab(self.tabs.currentIndex())
 
     def closeTab(self, index=None, permanent=False, allowZeroTabs=False):
+        if app_tabs_on_top == True:
+            self.addToolBar(self.mainToolBar)
         self.addToolBar(self.findToolBar)
         self.findToolBar.hide()
         if index == None:
