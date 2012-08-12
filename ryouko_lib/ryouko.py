@@ -64,8 +64,6 @@ else:
     use_linux_notifications = True
 
 import os, sys, json, time, datetime, string, shutil
-#if sys.platform.startswith("linux"):
-    #import commands
 
 app_vista = False
 if sys.platform.startswith("win"):
@@ -103,7 +101,6 @@ from RWebKit import *
 from DownloaderThread import *
 from DialogFunctions import *
 from MovableTabWidget import *
-#from GConfFunctions import *
 from BrowserHistory import *
 from HistoryCompletionList import *
 from BookmarksManager import *
@@ -295,8 +292,6 @@ background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 palette(light), s
 windowtoolbarsheet = "QToolBar { border: 0; background: palette(window); }"
 dw_stylesheet = ""
 
-# From http://stackoverflow.com/questions/448207/python-downloading-a-file-over-http-with-progress-bar-and-basic-authentication
-
 def hiddenNotificationMessage(message="This is a message."):
     if use_linux_notifications == False:
         notificationManager.newNotification(message)
@@ -336,7 +331,7 @@ def prepareQuit():
     try: settingsManager.settings['cloudService']
     except: doNothing()
     else:
-        syncData()
+        sync_data()
     sys.exit()
 
 def acopy(f1, f2):
@@ -347,20 +342,19 @@ def acopy(f1, f2):
     elif os.path.exists(f1):
         shutil.copyfile(f1, f2)
 
-def syncData():
+def sync_data():
     sfile = os.path.join(app_profile, "app_sync.conf")
+
+    # If syncing data has been enabled
     if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None" and os.path.exists(sfile):
         remote = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles")
         remote_profile = os.path.join(remote, app_profile_name)
         if not os.path.exists(remote_profile):
             os.makedirs(remote_profile)
         d = os.listdir(app_profile)
-        #print(d)
         for fname in d:
             r = os.path.join(remote_profile, fname)
-            #print("r", r)
             l = os.path.join(app_profile, fname)
-            #print("l", l)
             if not os.path.exists(r) and os.path.exists(l):
                 acopy(l, r)
             elif not os.path.exists(l) and os.path.exists(r):
@@ -372,11 +366,6 @@ def syncData():
                     acopy(r, l)
                 elif (rt >= lt) == False:
                     acopy(l, r)
-                #else:
-                    #if rt == lt:
-                        #print("Equal")
-                    #else:
-                        #print("Not Equal")
             elif os.path.exists(l):         
                 acopy(l, r)
             elif os.path.exists(r):
@@ -2705,15 +2694,9 @@ self.origY + ev.globalY() - self.mouseY)
         self.menuBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.setMenuBar(self.menuBar)
         self.reverseToggleMenuBar()
-        #self.menuBar.setVisible(False)
 
         self.tabs.customContextMenuRequested.connect(self.tabsContextMenu.show2)
 
-#        self.cornerWidgetsToolBar.addSeparator()
-
-        #self.mainToolBar.addSeparator()
-
-        # Activate tab actions
         activateTab1Action = QtGui.QAction(self)
         activateTab2Action = QtGui.QAction(self)
         activateTab3Action = QtGui.QAction(self)
@@ -2765,8 +2748,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.toolsMenu.addAction(clearHistoryAction)
         self.toolsMenu.addAction(configAction2)
         self.mainMenu.addSeparator()
-
-        # About Actions
+        
         aboutQtAction = QtGui.QAction(tr('aboutQtHKey'), self)
         if not sys.platform.startswith("win"):
             aboutQtAction.setIcon(QtGui.QIcon(ryouko_icon("qt.svg")))
@@ -2825,9 +2807,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.bookmarksMenu = QtGui.QMenu(tr("bookmarks"))
         self.bookmarksMenu.addAction(manageBookmarksAction)
 
-        #self.toolsMenu = QtGui.QMenu(tr("toolsHKey"))
-        #self.toolsMenu.addAction(viewSourceAction)
-
         self.helpMenu = QtGui.QMenu(tr("helpHKey"))
         self.helpMenu.addAction(aboutQtAction)
         self.helpMenu.addAction(aboutAction)
@@ -2847,13 +2826,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.setCentralWidget(self.tabs)
 
         self.tabs.currentChanged.connect(self.checkTabsOnTop)
-#        self.tabs.nuTabBar.setParent(self)
-        #self.tabs.nuTabBar.setHidden(True)
-        #self.tabsToolBar.addWidget(self.tabs.nuTabBar)
-        #self.tabs.tabBar().setVisible(False)
-        #self.tabsToolBar.addWidget(RExpander())
-        #self.tabsToolBar.addWidget(self.cornerWidgets)
-        #self.tabsToolBar.addWidget(self.tabs.cornerWidget(QtCore.Qt.TopRightCorner))
         if len(sys.argv) == 1:
             try: h = settingsManager.settings['homePages'].split("\n")
             except: self.newTab()
@@ -2913,10 +2885,7 @@ self.origY + ev.globalY() - self.mouseY)
         m = os.path.join(app_profile, "maximized.conf")
         if os.path.exists(m):
             self.setWindowState(QtCore.Qt.WindowMaximized)
-        #self.mainToolBar.setStyleSheet("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
-        #self.tabs.setStyleSheet("QTabWidget::pane { margin-top: -" + str(self.tabs.nuTabBar.height()) + "px; padding-top: 0; }")
-        #print("QToolBar { margin-bottom: -" + str(self.tabs.nuTabBar.height()) + "px; padding-bottom: 0; }")
-
+        
     def reverseToggleTabsOnTop(self):
         c = app_tabs_on_top_conf
         if os.path.exists(c):
@@ -3372,8 +3341,6 @@ win = None
 class Ryouko(QtGui.QWidget):
     def __init__(self):
 
-        # Prepare stuff
-
         dA = QtWebKit.QWebPage()
         dA.mainFrame().setHtml("<html><body><span id='userAgent'></span></body></html>")
         dA.mainFrame().evaluateJavaScript("document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;")
@@ -3422,7 +3389,7 @@ class Ryouko(QtGui.QWidget):
             os.mkdir(os.path.join(app_profile, "temp"))
         if not os.path.isdir(os.path.join(app_profile, "adblock")):
             os.mkdir(os.path.join(app_profile, "adblock"))
-        syncData()
+        sync_data()
         loadCookies()
         global library
         global searchEditor
@@ -3447,8 +3414,6 @@ class Ryouko(QtGui.QWidget):
     def primeBrowser(self):
         global win
         win.show()
-#        if app_profile_exists == True:
-#            notificationMessage(tr("profileError"))
 
 def updateProgress(pr):
     global app_launcher
