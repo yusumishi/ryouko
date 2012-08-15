@@ -91,28 +91,26 @@ app_webview_default_icon = QtGui.QIcon()
 app_tabs_on_top = False
 
 from ryouko_common import *
-from RUrlBar import *
-from RSearchBar import *
+from RUrlBar import RUrlBar
+from RSearchBar import RSearchBar
 from Python23Compat import *
 from QStringFunctions import *
-from SystemFunctions import *
-from SettingsManager import *
-from RWebKit import *
-from DownloaderThread import *
-from DialogFunctions import *
-from MovableTabWidget import *
-from BrowserHistory import *
-from HistoryCompletionList import *
-from BookmarksManager import *
-from ContextMenu import *
-from MenuPopupWindow import *
-from RExpander import *
-from SearchManager import *
-from RPrintPreviewDialog import *
-from RHBoxLayout import *
-from NotificationManager import *
+from SettingsManager import SettingsManager
+from RWebKit import RWebPage, RWebView, RAboutPageView, doNothing
+from DownloaderThread import DownloaderThread
+from DialogFunctions import inputDialog
+from MovableTabWidget import MovableTabWidget
+from BrowserHistory import BrowserHistory
+from HistoryCompletionList import HistoryCompletionList
+from BookmarksManager import BookmarksManager
+from ContextMenu import ContextMenu
+from MenuPopupWindow import MenuPopupWindowMenu, MenuPopupWindow
+from RExpander import RExpander
+from SearchManager import SearchManager, doNothing
+from RHBoxLayout import RHBoxLayout
+from NotificationManager import NotificationManager
 from TranslationManager import *
-from DownloadManager import *
+from DownloadManager import DownloadManagerGUI
 
 app_gnome_unity_integration = False
 """if sys.platform.startswith("linux"):
@@ -199,11 +197,11 @@ class RSettingsManager(SettingsManager):
     def errorMessage(self, backend):
         notificationMessage("Error!", "Backend %s could not be found!" % (backend))
 
-settingsManager = RSettingsManager()
+settings_manager = RSettingsManager()
 
 def remove2(fname):
     os.remove(fname)
-    try: u = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles", os.path.split(fname)[1])
+    try: u = os.path.join(os.path.expanduser("~"), settings_manager.settings['cloudService'], "ryouko-profiles", os.path.split(fname)[1])
     except: return
     else:
         if os.path.exists(u):
@@ -227,7 +225,7 @@ def changeProfile(profile, init = False):
     if not os.path.isdir(app_profile):
         os.makedirs(app_profile)
 
-    settingsManager.changeProfile(app_profile)
+    settings_manager.changeProfile(app_profile)
 
     try: bookmarksManager
     except: doNothing()
@@ -328,7 +326,7 @@ def prepareQuit():
     if os.path.exists(app_lock) and not os.path.isdir(app_lock):
         remove2(app_lock)
     saveCookies()
-    try: settingsManager.settings['cloudService']
+    try: settings_manager.settings['cloudService']
     except: doNothing()
     else:
         sync_data()
@@ -346,8 +344,8 @@ def sync_data():
     sfile = os.path.join(app_profile, "app_sync.conf")
 
     # If syncing data has been enabled
-    if settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None" and os.path.exists(sfile):
-        remote = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles")
+    if settings_manager.settings['cloudService'] != "No" and settings_manager.settings['cloudService'] != "None" and os.path.exists(sfile):
+        remote = os.path.join(os.path.expanduser("~"), settings_manager.settings['cloudService'], "ryouko-profiles")
         remote_profile = os.path.join(remote, app_profile_name)
         if not os.path.exists(remote_profile):
             os.makedirs(remote_profile)
@@ -371,8 +369,8 @@ def sync_data():
             elif os.path.exists(r):
                 acopy(r, l)
 
-    elif settingsManager.settings['cloudService'] != "No" and settingsManager.settings['cloudService'] != "None" and not os.path.exists(sfile):
-        remote = os.path.join(os.path.expanduser("~"), settingsManager.settings['cloudService'], "ryouko-profiles")
+    elif settings_manager.settings['cloudService'] != "No" and settings_manager.settings['cloudService'] != "None" and not os.path.exists(sfile):
+        remote = os.path.join(os.path.expanduser("~"), settings_manager.settings['cloudService'], "ryouko-profiles")
         remote_profile = os.path.join(remote, app_profile_name)
         if os.path.isdir(remote_profile):
             try: shutil.rmtree(app_profile)
@@ -395,7 +393,7 @@ def sync_data():
             f.write("")
             f.close()
 
-    elif settingsManager.settings['cloudService'] == "No" or settingsManager.settings['cloudService'] == "None":
+    elif settings_manager.settings['cloudService'] == "No" or settings_manager.settings['cloudService'] == "None":
         if os.path.exists(sfile) and not os.path.isdir(sfile):
             remove2(sfile)
 
@@ -1125,12 +1123,12 @@ class RAboutDialog(QtGui.QMainWindow):
         self.tabs.addTab(self.licensePage, tr("licenseHKey"))
 
     def updateUserAgent(self):
-        try: settingsManager.settings['customUserAgent']
+        try: settings_manager.settings['customUserAgent']
         except:
             doNothing()
         else:
-            if settingsManager.settings['customUserAgent'].replace(" ", "") != "":
-                self.aboutPage.page().userAgent = settingsManager.settings['customUserAgent']
+            if settings_manager.settings['customUserAgent'].replace(" ", "") != "":
+                self.aboutPage.page().userAgent = settings_manager.settings['customUserAgent']
             else:
                 self.aboutPage.page().userAgent = app_default_useragent
         showAboutPage(self.aboutPage)
@@ -1208,7 +1206,7 @@ class Browser(QtGui.QMainWindow):
         self.webView = webView
         if self.pb != True and self.webView.pb != True:
             self.webView.setCookieJar(app_cookiejar)
-        self.webView.setSettingsManager(settingsManager)
+        self.webView.setSettingsManager(settings_manager)
         self.webView.saveCookies.connect(saveCookies)
         self.webView.downloadStarted.connect(self.downloadStarted)
         self.updateSettings()
@@ -1249,7 +1247,7 @@ class Browser(QtGui.QMainWindow):
 
         self.progressBar = QtGui.QProgressBar(self)
 
-        webView = RWebView(self, settingsManager, self.pb, app_profile, searchManager, user_links, downloadManagerGUI)
+        webView = RWebView(self, settings_manager, self.pb, app_profile, searchManager, user_links, downloadManagerGUI)
         self.swapWebView(webView)
 
         self.mainLayout.setSpacing(0);
@@ -1617,7 +1615,7 @@ class CDialog(QtGui.QMainWindow):
     def applyFilters(self):
         l = os.listdir(os.path.join(app_profile, "adblock"))
         if len(l) != self.filterListCount:
-            settingsManager.applyFilters()
+            settings_manager.applyFilters()
             self.filterListCount = len(l)
     def tryDownload(self):
         if self.aBBox.isChecked():
@@ -1629,8 +1627,8 @@ class CDialog(QtGui.QMainWindow):
     def loadSettings(self):
         if not os.path.exists(app_profile):
             os.makedirs(app_profile)
-        settingsManager.loadSettings()
-        self.settings = settingsManager.settings
+        settings_manager.loadSettings()
+        self.settings = settings_manager.settings
         try: self.settings['homePages']
         except: self.homePagesField.setText("http://www.sourceforge.net/projects/ryouko")
         else: self.homePagesField.setText(qstring(self.settings['homePages']))
@@ -1768,10 +1766,10 @@ class CDialog(QtGui.QMainWindow):
                 self.profileList.setCurrentRow(0)
         f.write(unicode(self.profileList.currentItem().text()))
         f.close()
-        settingsManager.settings = self.settings
+        settings_manager.settings = self.settings
         aboutDialog.updateUserAgent()
-        settingsManager.setBackend('qt')
-        settingsManager.saveSettings()
+        settings_manager.setBackend('qt')
+        settings_manager.saveSettings()
         global app_windows
         for window in app_windows:
             try:
@@ -2654,10 +2652,10 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addAction(self.tabsOnTopAction)
         self.mainMenu.addSeparator()
 
-        try: settingsManager.settings["showBookmarksToolBar"]
+        try: settings_manager.settings["showBookmarksToolBar"]
         except: do_nothing()
         else:
-            if settingsManager.settings["showBookmarksToolBar"] == True:
+            if settings_manager.settings["showBookmarksToolBar"] == True:
                 self.toggleBTAction.setChecked(True)
 
         self.mainMenu.addAction(manageBookmarksAction)
@@ -2827,7 +2825,7 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.tabs.currentChanged.connect(self.checkTabsOnTop)
         if len(sys.argv) == 1:
-            try: h = settingsManager.settings['homePages'].split("\n")
+            try: h = settings_manager.settings['homePages'].split("\n")
             except: self.newTab()
             else:
                 if len(h) == 0:
@@ -2964,7 +2962,7 @@ self.origY + ev.globalY() - self.mouseY)
 
     def toggleBookmarksToolBar(self):
         cDialog.showBTBox.click(); cDialog.saveSettings()
-        if settingsManager.settings['showBookmarksToolBar'] == True:
+        if settings_manager.settings['showBookmarksToolBar'] == True:
             self.toggleBTAction.setChecked(True)
         else:
             self.toggleBTAction.setChecked(False)
@@ -3124,7 +3122,7 @@ self.origY + ev.globalY() - self.mouseY)
             exec("tab%s.webView.urlChanged.connect(self.correctURLText)" % (s))
             exec("tab%s.webView.loadProgress.connect(self.toggleStopReload)" % (s))
             exec("tab%s.webView.loadFinished.connect(self.toggleStopReload)" % (s))
-            if settingsManager.settings["relativeTabs"] == False:
+            if settings_manager.settings["relativeTabs"] == False:
                 exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
                 self.tabs.setCurrentIndex(self.tabs.count() - 1)
             else:
@@ -3229,12 +3227,12 @@ self.origY + ev.globalY() - self.mouseY)
                 self.closedTabsList.append({'widget' : self.tabs.widget(index), 'title' : unicode(self.tabs.widget(index).webView.title()), 'url' : unicode(self.tabs.widget(index).webView.url().toString())})
                 self.tabs.widget(index).webView.setHtml("<!DOCTYPE html><html><head><title></title></head><body></body></html>")
             self.tabs.removeTab(index)
-            try: settingsManager.settings['maxUndoCloseTab']
+            try: settings_manager.settings['maxUndoCloseTab']
             except:
                 doNothing()
             else:
-                if settingsManager.settings['maxUndoCloseTab'] >= 0:
-                    if len(self.closedTabsList) >= int(settingsManager.settings['maxUndoCloseTab'] + 1):
+                if settings_manager.settings['maxUndoCloseTab'] >= 0:
+                    if len(self.closedTabsList) >= int(settings_manager.settings['maxUndoCloseTab'] + 1):
                         self.closedTabsList[0]["widget"].deleteLater()
                         del self.closedTabsList[0]
             if self.tabs.count() == 0 and allowZeroTabs == False:
@@ -3382,7 +3380,7 @@ class Ryouko(QtGui.QWidget):
             os.makedirs(app_profile)
         if not os.path.isdir(os.path.join(app_profile, "adblock")):
             os.mkdir(os.path.join(app_profile, "adblock"))
-        settingsManager.loadSettings()
+        settings_manager.loadSettings()
         if not os.path.isdir(app_profile):
             os.makedirs(app_profile)
         if not os.path.isdir(os.path.join(app_profile, "temp")):
