@@ -98,7 +98,7 @@ from QStringFunctions import *
 from SettingsManager import SettingsManager
 from RWebKit import RWebPage, RWebView, RAboutPageView, doNothing
 from DownloaderThread import DownloaderThread
-from DialogFunctions import inputDialog
+from DialogFunctions import inputDialog, centerWidget, message
 from MovableTabWidget import MovableTabWidget
 from BrowserHistory import BrowserHistory
 from HistoryCompletionList import HistoryCompletionList
