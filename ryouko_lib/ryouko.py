@@ -2498,34 +2498,47 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).setFocusPolicy(QtCore.Qt.TabFocus)
 
         self.extensionToolBar = QtGui.QToolBar()
-        self.extensionToolBar.setStyleSheet("QToolBar{border:0;background:transparent;}")
-        self.mainToolBar.addWidget(self.extensionToolBar)
+        #self.extensionToolBar.setStyleSheet("QToolBar{border:0;background:transparent;}")
         count = 0
         for e in app_extensions:
             try: e["name"]
             except: print("Error! Extension has no name!")
             else:
                 count = count + 1
-                exec("ext" + str(count) + " = RExtensionButton(self)")
-                exec("ext" + str(count) + ".setIcon(QtGui.QIcon(app_logo))")
-                exec("ext" + str(count) + ".setText(e['name'])")
-                exec("ext" + str(count) + ".setToolTip(e['name'])")
-                exec("self.extensionToolBar.addWidget(ext" + str(count) + ")")
-                try: e["type"]
+                try:
+                    exec("ext" + str(count) + " = RExtensionButton(self)")
+                    exec("ext" + str(count) + ".setText(e['name'])")
+                    exec("ext" + str(count) + ".setToolTip(e['name'])")
+                    exec("self.extensionToolBar.addWidget(ext" + str(count) + ")")
                 except: do_nothing()
                 else:
-                    exec("ext" + str(count) + ".setType(e['type'])")
-                try: e["js"]
-                except: do_nothing()
-                else:
-                    exec("ext" + str(count) + ".setJavaScript(e['js'])")
-                try: e["url"]
-                except: do_nothing()
-                else:
-                    exec("ext" + str(count) + ".setLink(e['url'])")
-                exec("ext" + str(count) + ".linkTriggered.connect(self.loadExtensionURL)")
-                exec("ext" + str(count) + ".javaScriptTriggered.connect(self.loadExtensionJS)")
-                print("Extension loaded.")
+                    try: e["icon"]
+                    except: do_nothing()
+                    else:
+                        if e["folder"] != None:
+                            icon = os.path.join(unicode(e["folder"]), unicode(e["icon"]))
+                            if os.path.exists(icon) and not os.path.isdir(icon):
+                                try: exec("ext" + str(count) + ".setIcon(QtGui.QIcon(e['icon']))")
+                                except: do_nothing()
+                    try: e["type"]
+                    except: do_nothing()
+                    else:
+                        try: exec("ext" + str(count) + ".setType(unicode(e['type']))")
+                        except: do_nothing()
+                    try: e["js"]
+                    except: do_nothing()
+                    else:
+                        try: exec("ext" + str(count) + ".setJavaScript(unicode(e['js']))")
+                        except: do_nothing()
+                    try: e["url"]
+                    except: do_nothing()
+                    else:
+                        try: exec("ext" + str(count) + ".setLink(unicode(e['url']))")
+                        except: do_nothing()
+                    try: exec("ext" + str(count) + ".linkTriggered.connect(self.loadExtensionURL)")
+                    except: do_nothing()
+                    try: exec("ext" + str(count) + ".javaScriptTriggered.connect(self.loadExtensionJS)")
+                    except: do_nothing()
 
         self.mainToolBar.addAction(self.mainMenuButton)
         self.mainToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
@@ -2870,6 +2883,12 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addAction(quitAction)
 
         self.setCentralWidget(self.tabs)
+
+        self.addToolBarBreak()
+        self.addToolBar(self.extensionToolBar)
+        self.addToolBarBreak()
+        if count == 0:
+            self.extensionToolBar.hide()
 
         self.tabs.currentChanged.connect(self.checkTabsOnTop)
         if len(sys.argv) == 1:
@@ -3464,9 +3483,15 @@ class Ryouko(QtGui.QWidget):
                     fname = os.path.join(folder, addon)
                     if os.path.exists(fname) and not os.path.isdir(fname):
                         f = open(fname, "r")
-                        ext = json.load(f)
-                        app_extensions.append(ext)
-                        f.close()
+                        try: ext = json.load(f)
+                        except: do_nothing()
+                        else:
+                            try: ext["path"] = fname
+                            except: ext["path"] = None
+                            try: ext["folder"] = folder
+                            except: ext["folder"] = None
+                            app_extensions.append(ext)
+                            f.close()
         downloadManagerGUI = DownloadManagerGUI()
         downloadManagerGUI.networkAccessManager.setCookieJar(app_cookiejar)
         app_cookiejar.setParent(QtCore.QCoreApplication.instance())

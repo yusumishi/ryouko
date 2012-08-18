@@ -19,6 +19,8 @@ class RExtensionButton(QtGui.QToolButton):
     def getType(self):
         return self.type_
     def setJavaScript(self, js):
+        if js.startswith("javascript:"):
+            js = js.strip("javascript:").replace("%20", " ").replace("%7B", "{").replace("%7D", "}")
         self.js = js
     def setLink(self, link):
         self.link = QtCore.QUrl(link)
