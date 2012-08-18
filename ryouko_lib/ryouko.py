@@ -1487,6 +1487,8 @@ class CDialog(QtGui.QMainWindow):
         self.uABox.addItem("Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.35 (KHTML, like Gecko) Ubuntu/10.10 Chromium/13.0.764.0 Chrome/13.0.764.0 Safari/534.35")
         self.uABox.addItem("Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1")
         self.uABox.addItem("----------------")
+        self.uABox.addItem("BlackBerry8100/4.2.0")
+        self.uABox.addItem("----------------")
         self.uABox.addItem("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:14.0) Gecko/20100101 Firefox/14.0.1")
         self.uABox.addItem("----------------")
         self.uABox.addItem("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/534.55.3 (KHTML, like Gecko) Version/5.1.3 Safari/534.53.10")
