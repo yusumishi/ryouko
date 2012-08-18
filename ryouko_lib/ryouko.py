@@ -110,6 +110,7 @@ from SearchManager import SearchManager, doNothing
 from RHBoxLayout import RHBoxLayout
 from NotificationManager import NotificationManager
 from TranslationManager import *
+from RExtensionButton import RExtensionButton
 from DownloadManager import DownloadManagerGUI
 
 app_gnome_unity_integration = False
@@ -148,6 +149,9 @@ app_commandline = ""
 app_profile_exists = False
 app_kill_cookies = False
 app_kill_temp_files = False
+app_extensions = []
+app_extensions_path = []
+app_extensions_path.append(os.path.join(app_lib, "extensions"))
 for arg in sys.argv:
     app_commandline = "%s%s " % (app_commandline, arg)
 if sys.platform.startswith("win"):
@@ -208,9 +212,14 @@ def remove2(fname):
             os.remove(u)
 
 def changeProfile(profile, init = False):
-    global app_profile_name; global app_profile; global app_links; global app_lock; global app_cookies; global app_instance2; global app_tabs_on_top_conf; global app_menubar_conf
+    global app_profile_name; global app_profile; global app_links;
+    global app_lock; global app_cookies; global app_instance2;
+    global app_tabs_on_top_conf; global app_menubar_conf;
+    global app_extensions; global app_extensions_folder;
+    global app_extensions_path
     app_profile_name = profile
     app_profile = os.path.join(app_profile_folder, profile)
+    app_extensions_path.append(os.path.join(app_profile, "extensions"))
     app_links = os.path.join(app_profile, "links")
     app_tabs_on_top_conf = os.path.join(app_profile, "tabsontop.conf")
     app_menubar_conf = os.path.join(app_profile, "menubar_visible.conf")
@@ -1794,6 +1803,7 @@ class TabBrowser(QtGui.QMainWindow):
                     self.setWindowIcon(QtGui.QIcon(ryouko_icon('about-logo.png')))
         self.tabCount = 0
         self.closed = False
+        self.extensions = []
         self.closedTabsList = []
         self.tempHistory = []
         self.searchOn = False
@@ -2067,6 +2077,12 @@ self.origY + ev.globalY() - self.mouseY)
         else:
             self.urlBar2.setFocus()
             self.urlBar2.selectAll()
+
+    def loadExtensionURL(self, url):
+        self.currentWebView().load(url)
+
+    def loadExtensionJS(self, js):
+        self.currentWebView().page().mainFrame().evaluateJavaScript(js)
 
     def updateWeb(self):
         urlBar = self.urlBar.text()
@@ -2480,6 +2496,36 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.mainToolBar.addAction(self.closedTabsListGUIButton)
         self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).setFocusPolicy(QtCore.Qt.TabFocus)
+
+        self.extensionToolBar = QtGui.QToolBar()
+        self.extensionToolBar.setStyleSheet("QToolBar{border:0;background:transparent;}")
+        self.mainToolBar.addWidget(self.extensionToolBar)
+        count = 0
+        for e in app_extensions:
+            try: e["name"]
+            except: print("Error! Extension has no name!")
+            else:
+                count = count + 1
+                exec("ext" + str(count) + " = RExtensionButton(self)")
+                exec("ext" + str(count) + ".setIcon(QtGui.QIcon(app_logo))")
+                exec("ext" + str(count) + ".setText(e['name'])")
+                exec("ext" + str(count) + ".setToolTip(e['name'])")
+                exec("self.extensionToolBar.addWidget(ext" + str(count) + ")")
+                try: e["type"]
+                except: do_nothing()
+                else:
+                    exec("ext" + str(count) + ".setType(e['type'])")
+                try: e["js"]
+                except: do_nothing()
+                else:
+                    exec("ext" + str(count) + ".setJavaScript(e['js'])")
+                try: e["url"]
+                except: do_nothing()
+                else:
+                    exec("ext" + str(count) + ".setLink(e['url'])")
+                exec("ext" + str(count) + ".linkTriggered.connect(self.loadExtensionURL)")
+                exec("ext" + str(count) + ".javaScriptTriggered.connect(self.loadExtensionJS)")
+                print("Extension loaded.")
 
         self.mainToolBar.addAction(self.mainMenuButton)
         self.mainToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
@@ -3407,14 +3453,20 @@ class Ryouko(QtGui.QWidget):
             os.mkdir(os.path.join(app_profile, "adblock"))
         sync_data()
         loadCookies()
-        global library
-        global searchEditor
-        global cDialog
-        global win
-        global aboutDialog
-        global notificationManager
-        global clearHistoryDialog
-        global downloadManagerGUI
+        global library; global searchEditor; global cDialog; global win;
+        global aboutDialog; global notificationManager;
+        global clearHistoryDialog; global downloadManagerGUI;
+        global app_extensions
+        for folder in app_extensions_path:
+            if os.path.isdir(folder):
+                l = os.listdir(folder)
+                for addon in l:
+                    fname = os.path.join(folder, addon)
+                    if os.path.exists(fname) and not os.path.isdir(fname):
+                        f = open(fname, "r")
+                        ext = json.load(f)
+                        app_extensions.append(ext)
+                        f.close()
         downloadManagerGUI = DownloadManagerGUI()
         downloadManagerGUI.networkAccessManager.setCookieJar(app_cookiejar)
         app_cookiejar.setParent(QtCore.QCoreApplication.instance())
