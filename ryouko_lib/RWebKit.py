@@ -201,6 +201,7 @@ class RSystemOpenView(QtWebKit.QWebView):
         system_open(u)
 
 class RNetworkAccessManager(QtNetwork.QNetworkAccessManager):
+    custom_schemes = ["apt", "tel", "git"]
     def __init__(self, old_manager=QtNetwork.QNetworkAccessManager()):
         QtNetwork.QNetworkAccessManager.__init__(self, old_manager.parent())
         self.oldManager = old_manager
@@ -210,11 +211,23 @@ class RNetworkAccessManager(QtNetwork.QNetworkAccessManager):
         self.setProxyFactory(old_manager.proxyFactory())
     def createRequest(self, operation, request, data):
         s = str(request.url().scheme())
-        if s != "apt":
+        default = True
+        for scheme in self.custom_schemes:
+            if s == scheme:
+                default = False
+                break
+        if default == True:
             return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
         if operation == self.GetOperation:
             if s == "apt":
                 biased_system_open(unicode(request.url().toString()))
+                if sys.platform.startswith("win"):
+                    url = unicode(request.url().toString()).replace("apt://", "").replace("apt:", "")
+                    request.setUrl(QtCore.QUrl("data:text/html;charset=utf-8,<!DOCTYPE html><html><head><title>" + url + "</title></head><body>" + url + "</body></html>"))
+                return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
+            elif s == "tel":
+                num = unicode(request.url().toString()).replace("tel://", "").replace("tel:", "")
+                request.setUrl(QtCore.QUrl("data:text/html;charset=utf-8,<!DOCTYPE html><html><head><title>" + num + "</title></head><body>" + num + "</body></html>"))
                 return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
         else:
             return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
