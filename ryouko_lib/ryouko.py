@@ -150,6 +150,7 @@ app_profile_exists = False
 app_kill_cookies = False
 app_kill_temp_files = False
 app_extensions = []
+app_extensions_whitelist = []
 app_extensions_path = []
 app_extensions_path.append(os.path.join(app_lib, "extensions"))
 for arg in sys.argv:
@@ -216,9 +217,19 @@ def changeProfile(profile, init = False):
     global app_lock; global app_cookies; global app_instance2;
     global app_tabs_on_top_conf; global app_menubar_conf;
     global app_extensions; global app_extensions_folder;
-    global app_extensions_path
+    global app_extensions_path; global app_extensions_whitelist;
+    global app_extensions_wlfile
     app_profile_name = profile
     app_profile = os.path.join(app_profile_folder, profile)
+    app_extensions_wlfile = os.path.join(app_profile, "extensions.conf")
+    if os.path.exists(app_extensions_wlfile):
+        f = open(app_extensions_wlfile, "r")
+        try: a = f.read()
+        except: do_nothing()
+        f.close()
+        app_extensions_whitelist = a.split("\n")
+    else:
+        app_extensions_whitelist = []
     app_extensions_path.append(os.path.join(app_profile, "extensions"))
     app_links = os.path.join(app_profile, "links")
     app_tabs_on_top_conf = os.path.join(app_profile, "tabsontop.conf")
@@ -2504,41 +2515,42 @@ self.origY + ev.globalY() - self.mouseY)
             try: e["name"]
             except: print("Error! Extension has no name!")
             else:
-                count = count + 1
-                try:
-                    exec("ext" + str(count) + " = RExtensionButton(self)")
-                    exec("ext" + str(count) + ".setText(e['name'])")
-                    exec("ext" + str(count) + ".setToolTip(e['name'])")
-                    exec("self.extensionToolBar.addWidget(ext" + str(count) + ")")
-                except: do_nothing()
-                else:
-                    try: e["icon"]
+                if e["name"] in app_extensions_whitelist:
+                    count = count + 1
+                    try:
+                        exec("ext" + str(count) + " = RExtensionButton(self)")
+                        exec("ext" + str(count) + ".setText(e['name'])")
+                        exec("ext" + str(count) + ".setToolTip(e['name'])")
+                        exec("self.extensionToolBar.addWidget(ext" + str(count) + ")")
                     except: do_nothing()
                     else:
-                        if e["folder"] != None:
-                            icon = os.path.join(unicode(e["folder"]), unicode(e["icon"]))
-                            if os.path.exists(icon) and not os.path.isdir(icon):
-                                try: exec("ext" + str(count) + ".setIcon(QtGui.QIcon(e['icon']))")
-                                except: do_nothing()
-                    try: e["type"]
-                    except: do_nothing()
-                    else:
-                        try: exec("ext" + str(count) + ".setType(unicode(e['type']))")
+                        try: e["icon"]
                         except: do_nothing()
-                    try: e["js"]
-                    except: do_nothing()
-                    else:
-                        try: exec("ext" + str(count) + ".setJavaScript(unicode(e['js']))")
+                        else:
+                            if e["folder"] != None:
+                                icon = os.path.join(unicode(e["folder"]), unicode(e["icon"]))
+                                if os.path.exists(icon) and not os.path.isdir(icon):
+                                    try: exec("ext" + str(count) + ".setIcon(QtGui.QIcon(e['icon']))")
+                                    except: do_nothing()
+                        try: e["type"]
                         except: do_nothing()
-                    try: e["url"]
-                    except: do_nothing()
-                    else:
-                        try: exec("ext" + str(count) + ".setLink(unicode(e['url']))")
+                        else:
+                            try: exec("ext" + str(count) + ".setType(unicode(e['type']))")
+                            except: do_nothing()
+                        try: e["js"]
                         except: do_nothing()
-                    try: exec("ext" + str(count) + ".linkTriggered.connect(self.loadExtensionURL)")
-                    except: do_nothing()
-                    try: exec("ext" + str(count) + ".javaScriptTriggered.connect(self.loadExtensionJS)")
-                    except: do_nothing()
+                        else:
+                            try: exec("ext" + str(count) + ".setJavaScript(unicode(e['js']))")
+                            except: do_nothing()
+                        try: e["url"]
+                        except: do_nothing()
+                        else:
+                            try: exec("ext" + str(count) + ".setLink(unicode(e['url']))")
+                            except: do_nothing()
+                        try: exec("ext" + str(count) + ".linkTriggered.connect(self.loadExtensionURL)")
+                        except: do_nothing()
+                        try: exec("ext" + str(count) + ".javaScriptTriggered.connect(self.loadExtensionJS)")
+                        except: do_nothing()
 
         self.mainToolBar.addAction(self.mainMenuButton)
         self.mainToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
