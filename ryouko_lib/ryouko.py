@@ -2509,7 +2509,11 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).setFocusPolicy(QtCore.Qt.TabFocus)
 
         self.extensionToolBar = QtGui.QToolBar()
-        #self.extensionToolBar.setStyleSheet("QToolBar{border:0;background:transparent;}")
+        self.extensionToolBar.setMovable(False)
+        self.extensionToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.extensionToolBar.setStyleSheet("QToolBar{border:0;margin: 0;padding:0;background:transparent;}")
+        self.mainToolBar.addWidget(self.extensionToolBar)
+        
         count = 0
         for e in app_extensions:
             try: e["name"]
@@ -2530,7 +2534,7 @@ self.origY + ev.globalY() - self.mouseY)
                             if e["folder"] != None:
                                 icon = os.path.join(unicode(e["folder"]), unicode(e["icon"]))
                                 if os.path.exists(icon) and not os.path.isdir(icon):
-                                    try: exec("ext" + str(count) + ".setIcon(QtGui.QIcon(e['icon']))")
+                                    try: exec("ext" + str(count) + ".setIcon(QtGui.QIcon(icon))")
                                     except: do_nothing()
                         try: e["type"]
                         except: do_nothing()
@@ -2551,6 +2555,9 @@ self.origY + ev.globalY() - self.mouseY)
                         except: do_nothing()
                         try: exec("ext" + str(count) + ".javaScriptTriggered.connect(self.loadExtensionJS)")
                         except: do_nothing()
+
+        if count == 0:
+            self.extensionToolBar.hide()
 
         self.mainToolBar.addAction(self.mainMenuButton)
         self.mainToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
@@ -2895,12 +2902,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addAction(quitAction)
 
         self.setCentralWidget(self.tabs)
-
-        self.addToolBarBreak()
-        self.addToolBar(self.extensionToolBar)
-        self.addToolBarBreak()
-        if count == 0:
-            self.extensionToolBar.hide()
 
         self.tabs.currentChanged.connect(self.checkTabsOnTop)
         if len(sys.argv) == 1:
