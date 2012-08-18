@@ -201,7 +201,7 @@ class RSystemOpenView(QtWebKit.QWebView):
         system_open(u)
 
 class RNetworkAccessManager(QtNetwork.QNetworkAccessManager):
-    custom_schemes = ["apt", "tel"]
+    custom_schemes = ["apt", "tel", "market"]
     def __init__(self, old_manager=QtNetwork.QNetworkAccessManager()):
         QtNetwork.QNetworkAccessManager.__init__(self, old_manager.parent())
         self.oldManager = old_manager
@@ -224,13 +224,13 @@ class RNetworkAccessManager(QtNetwork.QNetworkAccessManager):
                 if sys.platform.startswith("win"):
                     url = unicode(request.url().toString()).replace("apt://", "").replace("apt:", "")
                     request.setUrl(QtCore.QUrl("data:text/html;charset=utf-8,<!DOCTYPE html><html><head><title>" + url + "</title></head><body>" + url + "</body></html>"))
-                return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
             elif s == "tel":
                 num = unicode(request.url().toString()).replace("tel://", "").replace("tel:", "")
                 request.setUrl(QtCore.QUrl("data:text/html;charset=utf-8,<!DOCTYPE html><html><head><title>" + num + "</title></head><body>" + num + "</body></html>"))
-                return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
-            else:
-                return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
+            elif s == "market":
+                urlcom = unicode(request.url().toString()).replace("market://", "").replace("market:", "")
+                request.setUrl(QtCore.QUrl("https://market.android.com/" + urlcom))
+            return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
         else:
             return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
 
