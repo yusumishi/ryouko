@@ -2892,10 +2892,16 @@ self.origY + ev.globalY() - self.mouseY)
             self.tabsOnTopAction.setChecked(True)
             global app_tabs_on_top
             app_tabs_on_top = True
-            for win in app_windows:
-                try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
-                except: do_nothing()
-                else: win.mainToolBar.setStyleSheet(tabsontopsheet); win.tabs.setStyleSheet(tabsontopsheet2)
+            if sys.platform.startswith("win"):
+                for win in app_windows:
+                    try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
+                    except: do_nothing()
+                    else: win.mainToolBar.setStyleSheet(tabsontopsheet); win.tabs.setStyleSheet(tabsontopsheet2)
+            else:
+                for win in app_windows:
+                    try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
+                    except: do_nothing()
+                    else: win.mainToolBar.setStyleSheet(""); win.tabs.setStyleSheet("")
         else:
             self.tabsOnTopAction.setChecked(False)
             global app_tabs_on_top
@@ -2921,16 +2927,26 @@ self.origY + ev.globalY() - self.mouseY)
             global app_tabs_on_top
             app_tabs_on_top = True
             self.tabsOnTopAction.setChecked(True)
-            for win in app_windows:
-                try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
-                except: do_nothing()
-                else: win.mainToolBar.setStyleSheet(tabsontopsheet); win.tabs.setStyleSheet(tabsontopsheet2)
+            if sys.platform.startswith("win"):
+                for win in app_windows:
+                    try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
+                    except: do_nothing()
+                    else: win.mainToolBar.setStyleSheet(tabsontopsheet); win.tabs.setStyleSheet(tabsontopsheet2)
+            else:
+                for win in app_windows:
+                    try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
+                    except: do_nothing()
+                    else: win.mainToolBar.setStyleSheet(""); win.tabs.setStyleSheet("")
 
     def checkTabsOnTop(self):
         if app_tabs_on_top == True:
             try: self.tabs.widget(self.tabs.currentIndex()).addToolBar(self.mainToolBar)
             except: do_nothing()
-            else: self.mainToolBar.setStyleSheet(tabsontopsheet); self.tabs.setStyleSheet(tabsontopsheet2)
+            else:
+                if sys.platform.startswith("win"):
+                    self.mainToolBar.setStyleSheet(tabsontopsheet); self.tabs.setStyleSheet(tabsontopsheet2)
+                else:
+                    self.mainToolBar.setStyleSheet(""); self.tabs.setStyleSheet("")
 
     def reverseToggleMenuBar(self):
         c = app_menubar_conf
