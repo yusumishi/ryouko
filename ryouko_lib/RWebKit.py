@@ -201,7 +201,7 @@ class RSystemOpenView(QtWebKit.QWebView):
         system_open(u)
 
 class RNetworkAccessManager(QtNetwork.QNetworkAccessManager):
-    custom_schemes = ["apt", "tel", "git"]
+    custom_schemes = ["apt", "tel"]
     def __init__(self, old_manager=QtNetwork.QNetworkAccessManager()):
         QtNetwork.QNetworkAccessManager.__init__(self, old_manager.parent())
         self.oldManager = old_manager
@@ -228,6 +228,8 @@ class RNetworkAccessManager(QtNetwork.QNetworkAccessManager):
             elif s == "tel":
                 num = unicode(request.url().toString()).replace("tel://", "").replace("tel:", "")
                 request.setUrl(QtCore.QUrl("data:text/html;charset=utf-8,<!DOCTYPE html><html><head><title>" + num + "</title></head><body>" + num + "</body></html>"))
+                return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
+            else:
                 return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
         else:
             return QtNetwork.QNetworkAccessManager.createRequest(self, operation, request, data)
