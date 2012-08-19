@@ -55,7 +55,8 @@ class TranslationManager():
             f = open(translationFile, "r")
             newTranslationStrings = f.read()
             f.close()
-            newTranslationStrings = loads(newTranslationStrings)
+            try: newTranslationStrings = loads(newTranslationStrings)
+            except: newTranslationStrings = {}
             for key in newTranslationStrings:
                 self.translationStrings[key] = newTranslationStrings[key]
     def loadTranslation(self, tr = None):
@@ -66,7 +67,8 @@ class TranslationManager():
             newTranslationStrings = f.read()
             f.close()
             #newTranslationStrings = newTranslationStrings.replace('\n', ' ')
-            newTranslationStrings = loads(newTranslationStrings)
+            try: newTranslationStrings = loads(newTranslationStrings)
+            except: newTranslationStrings = {}
             if not type(newTranslationStrings) is dict:
                 self.loadTranslation(os.path.join(self.directory, unicode(newTranslationStrings) + ".json"))
             else:
@@ -75,5 +77,9 @@ class TranslationManager():
     def tr(self, key):
         try: self.translationStrings[key]
         except:
-            self.translationStrings[key] = unicode(key)
+            try: self.translationStrings[key] = unicode(key)
+            except:
+                try: self.translationStrings[key] = key
+                except:
+                    self.translationStrings[key] = "FAIL"
         return unicode(self.translationStrings[key])
