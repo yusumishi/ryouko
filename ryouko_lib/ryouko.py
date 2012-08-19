@@ -1517,7 +1517,7 @@ class CDialog(QtGui.QMainWindow):
         self.nWidget = QtGui.QWidget()
         self.nLayout = QtGui.QVBoxLayout()
         self.nWidget.setLayout(self.nLayout)
-        self.tabs.addTab(self.nWidget, tr('advanced'))
+        self.tabs.addTab(self.nWidget, tr('extensions'))
 
         homePagesLabel = QtGui.QLabel(tr('homePages') + ":")
         self.gLayout.addWidget(homePagesLabel)
