@@ -16,6 +16,8 @@
 "backBtnTT": "<b>Previo</b><br>Alt+Izquierda",
 "back": "Previo",
 "bookmarkError": "Por favor, llene la aplicacion.",
+"bookmarksToolBarHide": "Ocultar la barra de marcadores",
+"bookmarksToolBarShow": "&Mostrar la barra de marcadores",
 "bookmarks": "&Marcadores",
 "browsing": "&Navegación",
 "clearCookiesMsg": "Las cookies voy a borrar cuando sales Ryouko.",
