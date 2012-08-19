@@ -1,0 +1,1 @@
+{"name": "Python Inject Example", "type": "python-inject", "python": "notificationMessage('This is an example of a Ryouko extension that automatically injects Python code into the runtime.');"}

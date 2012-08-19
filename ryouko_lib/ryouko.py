@@ -1453,6 +1453,12 @@ class CDialog(QtGui.QMainWindow):
         self.pWidget.setLayout(self.pLayout)
         self.tabs.addTab(self.pWidget, tr('browsing'))
 
+        # Advanced settings page
+        self.nWidget = QtGui.QWidget()
+        self.nLayout = QtGui.QVBoxLayout()
+        self.nWidget.setLayout(self.nLayout)
+        self.tabs.addTab(self.nWidget, tr('advanced'))
+
         homePagesLabel = QtGui.QLabel(tr('homePages') + ":")
         self.gLayout.addWidget(homePagesLabel)
         self.homePagesField = QtGui.QTextEdit()
@@ -1615,6 +1621,10 @@ class CDialog(QtGui.QMainWindow):
         self.cToolBar.addWidget(applyAction)
         self.cToolBar.addWidget(closeAction)
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.cToolBar)
+
+        self.s1Box = QtGui.QCheckBox(tr("allowInjectAddons"))
+        self.nLayout.addWidget(self.s1Box)
+
         fr = os.path.join(app_profile, "firstrun.conf")
         if not os.path.exists(fr):
             firstRun()
@@ -1722,6 +1732,10 @@ class CDialog(QtGui.QMainWindow):
                 self.userBox.setText(pr['user'])
             if pr['password']:
                 self.portBox.setText(pr['password'])
+        try: self.settings["allowInjectAddons"]
+        except: do_nothing()
+        else:
+            self.s1Box.setChecked(self.settings["allowInjectAddons"])
         try: self.settings['cloudService']
         except:
             doNothing()
@@ -1779,7 +1793,7 @@ class CDialog(QtGui.QMainWindow):
     def saveSettings(self):
         if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
-        self.settings = {'homePages': unicode(self.homePagesField.toPlainText()), 'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'showBookmarksToolBar': self.showBTBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'zohoViewerEnabled': self.zohoBox.isChecked(), 'customUserAgent' : unicode(self.uABox.currentText()), "relativeTabs" : self.rTabsBox.isChecked()}
+        self.settings = {'homePages': unicode(self.homePagesField.toPlainText()), 'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'showBookmarksToolBar': self.showBTBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'zohoViewerEnabled': self.zohoBox.isChecked(), 'customUserAgent' : unicode(self.uABox.currentText()), "relativeTabs" : self.rTabsBox.isChecked(), "allowInjectAddons" : self.s1Box.isChecked()}
         f = open(app_default_profile_file, "w")
         if self.profileList.currentItem() == None:
             self.profileList.setCurrentRow(0)
@@ -2474,9 +2488,9 @@ self.origY + ev.globalY() - self.mouseY)
                         exec("ext" + str(count) + " = RExtensionButton(self)")
                         exec("ext" + str(count) + ".setText(e['name'])")
                         exec("ext" + str(count) + ".setToolTip(e['name'])")
-                        exec("self.extensionToolBar.addWidget(ext" + str(count) + ")")
                     except: do_nothing()
                     else:
+                        nobutton = False
                         try: e["icon"]
                         except: do_nothing()
                         else:
@@ -2490,6 +2504,9 @@ self.origY + ev.globalY() - self.mouseY)
                         else:
                             try: exec("ext" + str(count) + ".setType(unicode(e['type']))")
                             except: do_nothing()
+                            else:
+                                if unicode(e["type"]).lower() == "python-inject":
+                                    nobutton = True
                         try: e["js"]
                         except: do_nothing()
                         else:
@@ -2516,6 +2533,19 @@ self.origY + ev.globalY() - self.mouseY)
                         except: do_nothing()
                         try: exec("ext" + str(count) + ".pythonTriggered.connect(self.loadExtensionPython)")
                         except: do_nothing()
+                        if nobutton == False:
+                            try: exec("self.extensionToolBar.addWidget(ext" + str(count) + ")")
+                            except: do_nothing()
+                        else:
+                            try: exec("ext" + str(count) + ".deleteLater()")
+                            except: do_nothing()
+                            try: cDialog.settings["allowInjectAddons"]
+                            except: notificationMessage(tr("extensionWarn"))
+                            else:
+                                if cDialog.settings["allowInjectAddons"] != True:
+                                    notificationMessage(tr("extensionWarn"))
+                                else:
+                                    exec(e["python"])
 
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.extensionToolBar)
         if count == 0:

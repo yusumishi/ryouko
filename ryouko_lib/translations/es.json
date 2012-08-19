@@ -9,6 +9,7 @@
 "addBookmark": "Añadir un marcador",
 "addBookmarkTT": "<b>Añadir este página</b><br>Ctrl+D",
 "addProfile": "Añadir un perfil",
+"allowInjectAddons": "Permitir extensiónes a ejecutar Python sin pedirá\nADVERTENCIA: ¡Este puede ser peligroso! ¡Usar con precaución!",
 "apply": "Aplicar",
 "audioVideoUnsupported": "Estan etiquetas de <audio> y/o <video> en este pagina, pero Ryouko no puede cargarlos y esta los convertido a <embed>. Es recomendado a instalar VLC para manejar los etiquetas <embed>. ¿Quieres installar VLC? (Ryouko no va a preguntar un otra vez si haces clic \"No\".)",
 "autoLoadImages": "Cargar &imagenes automáticamente",
