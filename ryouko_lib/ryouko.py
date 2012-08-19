@@ -1416,7 +1416,7 @@ class ExtensionManagerGUI(QtGui.QMainWindow):
     def initUI(self):
         pluginsWindow = QtGui.QWidget()
         pluginsLayout = QtGui.QVBoxLayout()
-        self.editPluginsButton = QtGui.QPushButton(tr('togglePlugin'))
+        self.editPluginsButton = QtGui.QPushButton(tr('toggleExtension'))
         self.editPluginsButton.setFocusPolicy(QtCore.Qt.TabFocus)
         pluginsSubLayout = QtGui.QGridLayout()
         eplabel = QtGui.QLabel("<b>" + tr('enabledExtensions') + "</b>")
