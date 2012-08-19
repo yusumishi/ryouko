@@ -1407,6 +1407,66 @@ class Browser(QtGui.QMainWindow):
 
 downloaderThread = DownloaderThread()
 
+class ExtensionManagerGUI(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        QtGui.QMainWindow.__init__(self, parent)
+        self.setWindowTitle(tr('pluginsBlacklist'))
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
+        self.initUI()
+    def initUI(self):
+        pluginsWindow = QtGui.QWidget()
+        pluginsLayout = QtGui.QVBoxLayout()
+        self.editPluginsButton = QtGui.QPushButton(tr('togglePlugin'))
+        self.editPluginsButton.setFocusPolicy(QtCore.Qt.TabFocus)
+        pluginsSubLayout = QtGui.QGridLayout()
+        eplabel = QtGui.QLabel("<b>" + tr('enabledExtensions') + "</b>")
+        dplabel = QtGui.QLabel("<b>" + tr('disabledExtensions') + "</b>")
+        self.enabledExtensionsList = QtGui.QListWidget()
+        self.disabledExtensionsList = QtGui.QListWidget()
+        self.editPluginsButton.clicked.connect(self.enableDisableExtension)
+        self.enabledExtensionsList.itemActivated.connect(self.enableDisableExtension)
+        self.disabledExtensionsList.itemActivated.connect(self.enableDisableExtension)
+        self.setCentralWidget(pluginsWindow)
+        pluginsWindow.setLayout(pluginsLayout)
+        pluginsLayout.addWidget(self.editPluginsButton)
+        pluginsLayout.addLayout(pluginsSubLayout)
+        pluginsSubLayout.addWidget(eplabel, 0, 0)
+        pluginsSubLayout.addWidget(dplabel, 0, 1)
+        pluginsSubLayout.addWidget(self.enabledExtensionsList, 1, 0)
+        pluginsSubLayout.addWidget(self.disabledExtensionsList, 1, 1)
+        self.loadExtensions()
+
+    def loadExtensions(self):
+        self.enabledExtensionsList.clear()
+        self.disabledExtensionsList.clear()
+        for e in app_extensions:
+            if e["name"] in app_extensions_whitelist:
+                self.enabledExtensionsList.addItem(e["name"])
+            else:
+                self.disabledExtensionsList.addItem(e["name"])
+        self.disabledExtensionsList.sortItems(QtCore.Qt.AscendingOrder)
+        self.enabledExtensionsList.sortItems(QtCore.Qt.AscendingOrder)
+
+    def saveExtensions(self):
+        l = ""
+        for i in range(self.enabledExtensionsList.count()):
+            l = l + self.enabledExtensionsList.item(i).text() + "\n"
+        f = open(app_extensions_wlfile, "w")
+        f.write(l)
+        f.close()
+                
+    def enableDisableExtension(self):
+        if self.enabledExtensionsList.hasFocus():
+            plugin = self.enabledExtensionsList.currentItem().text()
+            self.enabledExtensionsList.takeItem(self.enabledExtensionsList.row(self.enabledExtensionsList.currentItem()))
+            self.disabledExtensionsList.addItem(plugin)
+            self.disabledExtensionsList.sortItems(QtCore.Qt.AscendingOrder)
+        elif self.disabledExtensionsList.hasFocus():
+            plugin = self.disabledExtensionsList.currentItem().text()
+            self.disabledExtensionsList.takeItem(self.disabledExtensionsList.row(self.disabledExtensionsList.currentItem()))
+            self.enabledExtensionsList.addItem(plugin)
+            self.enabledExtensionsList.sortItems(QtCore.Qt.AscendingOrder)
+
 class CDialog(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(CDialog, self).__init__()
@@ -1622,6 +1682,9 @@ class CDialog(QtGui.QMainWindow):
         self.cToolBar.addWidget(closeAction)
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.cToolBar)
 
+        self.extensionManager = ExtensionManagerGUI()
+        self.nLayout.addWidget(self.extensionManager)
+
         self.s1Box = QtGui.QCheckBox(tr("allowInjectAddons"))
         self.nLayout.addWidget(self.s1Box)
 
@@ -1791,6 +1854,7 @@ class CDialog(QtGui.QMainWindow):
             if os.path.isdir(os.path.join(app_profile_folder, profile)):
                 self.profileList.addItem(profile)
     def saveSettings(self):
+        self.extensionManager.saveExtensions()
         if unicode(self.undoCloseTabCount.text()) == "":
             self.undoCloseTabCount.setText("-1")
         self.settings = {'homePages': unicode(self.homePagesField.toPlainText()), 'openInTabs' : self.openTabsBox.isChecked(), 'loadImages' : self.imagesBox.isChecked(), 'jsEnabled' : self.jsBox.isChecked(), 'showBookmarksToolBar': self.showBTBox.isChecked(), 'javaEnabled' : self.javaBox.isChecked(), 'storageEnabled' : self.storageBox.isChecked(), 'pluginsEnabled' : self.pluginsBox.isChecked(), 'privateBrowsing' : self.pbBox.isChecked(), 'backend' : 'qt', 'loginToDownload' : False, 'adBlock' : self.aBBox.isChecked(), 'proxy' : {"type" : unicode(self.proxySel.currentText()), "hostname" : unicode(self.hostnameBox.text()), "port" : unicode(self.portBox.text()), "user" : unicode(self.userBox.text()), "password" : unicode(self.passwordBox.text())}, "cloudService" : unicode(self.cloudBox.currentText()), 'maxUndoCloseTab' : int(unicode(self.undoCloseTabCount.text())), 'googleDocsViewerEnabled' : self.gDocsBox.isChecked(), 'zohoViewerEnabled': self.zohoBox.isChecked(), 'customUserAgent' : unicode(self.uABox.currentText()), "relativeTabs" : self.rTabsBox.isChecked(), "allowInjectAddons" : self.s1Box.isChecked()}
