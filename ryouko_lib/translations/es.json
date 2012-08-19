@@ -71,6 +71,7 @@
 "error": "Error",
 "everything": "Todo",
 "executablePath": "Ruta de ejecutable",
+"extensionError": "Este extensión tiene un error y no se puede cargar.",
 "fileHKey": "&Archivar",
 "findBtnTT": "<b>Buscar</b><br>Ctrl+F",
 "find": "Buscar",

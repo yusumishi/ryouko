@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-files = ["translations/*", "icons/*", "*.*"]
+files = ["extensions/*", "translations/*", "icons/*", "*.*"]
 
 import os, sys, shutil
 from distutils.core import setup

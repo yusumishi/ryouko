@@ -63,7 +63,7 @@ else:
     pynotify.init("Ryouko")
     use_linux_notifications = True
 
-import os, sys, json, time, datetime, string, shutil
+import os, sys, json, time, datetime, string, shutil, traceback
 
 app_vista = False
 if sys.platform.startswith("win"):
@@ -2095,6 +2095,10 @@ self.origY + ev.globalY() - self.mouseY)
     def loadExtensionJS(self, js):
         self.currentWebView().page().mainFrame().evaluateJavaScript(js)
 
+    def loadExtensionPython(self, pie):
+        try: exec(unicode(pie))
+        except: notificationMessage("extensionError")
+
     def updateWeb(self):
         urlBar = self.urlBar.text()
         urlBar = unicode(urlBar)
@@ -2166,14 +2170,14 @@ self.origY + ev.globalY() - self.mouseY)
         if name and name != "":
             bookmarksManager.add(unicode(self.currentWebView().url().toString()), unicode(name))
 
-    def showClosedTabsListGUI(self):
-        self.closedTabsListGUI.display(True, self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).mapToGlobal(QtCore.QPoint(0,0)).x(), self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).mapToGlobal(QtCore.QPoint(0,0)).y(),
-        self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).width(),
-        self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).height())
-        self.closedTabsListGUI.list.setFocus()
+    def showClosedTabsMenu(self):
+        self.closedTabsMenu.display(True, self.mainToolBar.widgetForAction(self.closedTabsMenuButton).mapToGlobal(QtCore.QPoint(0,0)).x(), self.mainToolBar.widgetForAction(self.closedTabsMenuButton).mapToGlobal(QtCore.QPoint(0,0)).y(),
+        self.mainToolBar.widgetForAction(self.closedTabsMenuButton).width(),
+        self.mainToolBar.widgetForAction(self.closedTabsMenuButton).height())
+        self.closedTabsMenu.list.setFocus()
 
     def editSearch(self):
-        searchEditor.display(True, self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).x(), self.searchEditButton.mapToGlobal(QtCore.QPoint(0,0)).y(), self.searchEditButton.width(), self.searchEditButton.height())
+        searchEditor.display(True, self.searchMenuButton.mapToGlobal(QtCore.QPoint(0,0)).x(), self.searchMenuButton.mapToGlobal(QtCore.QPoint(0,0)).y(), self.searchMenuButton.width(), self.searchMenuButton.height())
 
     def initUI(self):
 
@@ -2215,32 +2219,20 @@ self.origY + ev.globalY() - self.mouseY)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.historyDock)
         self.historyDock.hide()
 
-        self.closedTabsListGUI = ListMenu()
-        self.closedTabsListGUI.itemClicked.connect(self.undoCloseTab)
-        self.closedTabsListGUI.itemActivated.connect(self.undoCloseTab)
-
-        # Bookmarks manager! FINALLY! Yay!
+        self.closedTabsMenu = ListMenu()
+        self.closedTabsMenu.itemClicked.connect(self.undoCloseTab)
+        self.closedTabsMenu.itemActivated.connect(self.undoCloseTab)
+        
         manageBookmarksAction = QtGui.QAction(QtGui.QIcon(ryouko_icon("heart.png")), tr('viewBookmarks'), self)
         manageBookmarksAction.setShortcut("Ctrl+Shift+O")
         manageBookmarksAction.triggered.connect(library.bookmarksManagerGUI.display)
         self.addAction(manageBookmarksAction)
 
-        # Bookmarks manager! FINALLY! Yay!
         viewNotificationsAction = QtGui.QAction(QtGui.QIcon().fromTheme("dialog-warning", QtGui.QIcon(ryouko_icon("alert.png"))), tr('viewNotifications'), self)
         viewNotificationsAction.setShortcut("Ctrl+Alt+N")
         viewNotificationsAction.triggered.connect(notificationManager.show)
         self.addAction(viewNotificationsAction)
 
-        #Tabs toolbar:
-        #self.tabsToolBar = QtGui.QToolBar("")
-        #elf.tabsToolBar.setMovable(False)
-        #self.tabsToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        #self.tabsToolBar.setStyleSheet("QToolBar { border: 0; }")
-        #self.addToolBar(self.tabsToolBar)
-
-        #self.addToolBarBreak()
-
-        #Main toolbar
         self.mainToolBar = QtGui.QToolBar("")
         self.mainToolBar.setMovable(False)
         self.mainToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -2285,13 +2277,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.backListMenu = MenuPopupWindowMenu(self.showBackList)
         self.mainToolBar.widgetForAction(self.backAction).setMenu(self.backListMenu)
 
-        #self.backListBtn = QtGui.QToolButton(self)
-        #self.backListBtn.setArrowType(QtCore.Qt.DownArrow)
-        #self.backListBtn.setStyleSheet("QToolButton { max-width: 16px; }")
-        #self.backListBtn.clicked.connect(self.showBackList)
-        #self.backListBtn.setFocusPolicy(QtCore.Qt.TabFocus)
-        #elf.mainToolBar.addWidget(self.backListBtn)
-
         self.nextAction = QtGui.QAction(self)
         self.nextAction.setToolTip(tr("nextBtnTT"))
         self.nextAction.triggered.connect(self.forward)
@@ -2307,13 +2292,6 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.nextListMenu = MenuPopupWindowMenu(self.showNextList)
         self.mainToolBar.widgetForAction(self.nextAction).setMenu(self.nextListMenu)
-
-        #self.nextListBtn = QtGui.QToolButton(self)
-        #self.nextListBtn.setArrowType(QtCore.Qt.DownArrow)
-        #self.nextListBtn.setStyleSheet("QToolButton { max-width: 16px; }")
-        #self.nextListBtn.clicked.connect(self.showNextList)
-        #self.nextListBtn.setFocusPolicy(QtCore.Qt.TabFocus)
-        #self.mainToolBar.addWidget(self.nextListBtn)
 
         self.reloadAction = QtGui.QAction(self)
         self.reloadAction.triggered.connect(self.reload)
@@ -2332,8 +2310,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainToolBar.addAction(self.stopReloadAction)
         self.addAction(self.stopReloadAction)
         self.mainToolBar.widgetForAction(self.stopReloadAction).setFocusPolicy(QtCore.Qt.TabFocus)
-
-        #self.mainToolBar.addSeparator()
 
         self.findToolBar = QtGui.QToolBar()
         if sys.platform.startswith("win"):
@@ -2382,10 +2358,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(self.findPreviousAction)
         self.addAction(self.findNextAction)
 
-        #self.mainToolBar.widgetForAction(self.findNextAction).setFocusPolicy(QtCore.Qt.TabFocus)
-
-        #self.mainToolBar.addSeparator()
-
         self.translateAction = QtGui.QAction(self)
         self.translateAction.triggered.connect(self.translate)
         self.translateAction.setShortcut("Alt+Shift+T")
@@ -2395,15 +2367,8 @@ self.origY + ev.globalY() - self.mouseY)
         self.addAction(self.translateAction)
         self.mainToolBar.widgetForAction(self.translateAction).setFocusPolicy(QtCore.Qt.TabFocus)
 
-        # URL bar and history completion
         self.splitter = QtGui.QSplitter()
         self.splitter.setChildrenCollapsible(False)
-        """if sys.platform.startswith("win"):
-            self.splitter.setStyleSheet("""
-            #QSplitter::handle {
-            #image: url(\"""" + os.path.join(app_lib, "images", "win-splitter.png").replace("\\", "/") + """\");
-            #}
-            #""")
         self.mainToolBar.addWidget(self.splitter)
 
         self.urlToolBar = QtGui.QToolBar()
@@ -2446,15 +2411,6 @@ self.origY + ev.globalY() - self.mouseY)
         self.addBookmarkButton.setIconSize(QtCore.QSize(16, 16))
         self.urlToolBar.addWidget(self.addBookmarkButton)
 
-        """self.goButton = QtGui.QToolButton(self)
-        self.goButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.goButton.clicked.connect(self.updateWeb)
-        self.goButton.setText("")
-        self.goButton.setToolTip(tr("go"))
-        self.goButton.setIcon(QtGui.QIcon().fromTheme("go-jump", QtGui.QIcon(ryouko_icon('go.png'))))
-        self.goButton.setIconSize(QtCore.QSize(16, 16))
-        self.urlToolBar.addWidget(self.goButton)"""
-
         self.searchBar = RSearchBar(self)
         self.searchBar.setStyleSheet("QLineEdit{min-width:200px;}")
         searchEditor.searchChanged.connect(self.searchBar.setLabel)
@@ -2462,57 +2418,50 @@ self.origY + ev.globalY() - self.mouseY)
         self.searchToolBar.addWidget(self.searchBar)
         self.splitter.setSizes([1920, 200])
         searchEditor.reload()
-        #self.searchButton = QtGui.QPushButton(self)
-        #self.searchButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        #self.searchButton.clicked.connect(self.searchWeb)
-        #self.searchButton.setText(tr("searchBtn"))
-        #self.searchButton.setToolTip(tr("searchBtnTT"))
-        #self.mainToolBar.addWidget(self.searchButton)
 
-        self.searchEditButtonContainer = QtGui.QWidget(self)
-        self.searchEditButtonContainerLayout = QtGui.QVBoxLayout(self.searchEditButtonContainer)
-        self.searchEditButtonContainerLayout.setSpacing(0);
-        self.searchEditButtonContainerLayout.setContentsMargins(0, 0, 0, 0)
-        self.searchEditButtonContainer.setLayout(self.searchEditButtonContainerLayout)
-        self.searchEditButton = QtGui.QToolButton(self)
-        self.searchEditButton.setStyleSheet("QToolButton { max-width: 16px; }")
-        self.searchEditButton.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.searchEditButton.setToolTip(tr("searchBtnTT"))
-        self.searchEditButton.clicked.connect(self.editSearch)
-        self.searchEditButton.setShortcut("Ctrl+Shift+K")
-        self.searchEditButton.setToolTip(tr("editSearchTT"))
-        self.searchEditButton.setArrowType(QtCore.Qt.DownArrow)
-        self.searchEditButtonContainerLayout.addWidget(self.searchEditButton)
-        self.mainToolBar.addWidget(self.searchEditButtonContainer)
+        self.searchMenuButtonContainer = QtGui.QWidget(self)
+        self.searchMenuButtonContainerLayout = QtGui.QVBoxLayout(self.searchMenuButtonContainer)
+        self.searchMenuButtonContainerLayout.setSpacing(0);
+        self.searchMenuButtonContainerLayout.setContentsMargins(0, 0, 0, 0)
+        self.searchMenuButtonContainer.setLayout(self.searchMenuButtonContainerLayout)
+        self.searchMenuButton = QtGui.QToolButton(self)
+        self.searchMenuButton.setStyleSheet("QToolButton { max-width: 16px; }")
+        self.searchMenuButton.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.searchMenuButton.setToolTip(tr("searchBtnTT"))
+        self.searchMenuButton.clicked.connect(self.editSearch)
+        self.searchMenuButton.setShortcut("Ctrl+Shift+K")
+        self.searchMenuButton.setToolTip(tr("editSearchTT"))
+        self.searchMenuButton.setArrowType(QtCore.Qt.DownArrow)
+        self.searchMenuButtonContainerLayout.addWidget(self.searchMenuButton)
+        self.mainToolBar.addWidget(self.searchMenuButtonContainer)
 
         self.focusURLBarAction = QtGui.QAction(self)
         self.historyCompletionBox.addAction(self.focusURLBarAction)
         self.focusURLBarAction.setShortcuts(["Alt+D", "Ctrl+L"])
         self.focusURLBarAction.triggered.connect(self.focusURLBar)
-        self.addAction(self.focusURLBarAction)        
+        self.addAction(self.focusURLBarAction)
 
-        self.closedTabsListGUIButton = QtGui.QAction(self)
-        self.closedTabsListGUIButton.setText(tr("closedTabs"))
-        self.closedTabsListGUIButton.setIcon(QtGui.QIcon.fromTheme("user-trash", QtGui.QIcon(ryouko_icon("trash.png"))))
-        self.closedTabsListGUIButton.triggered.connect(self.showClosedTabsListGUI)
+        self.closedTabsMenuButton = QtGui.QAction(self)
+        self.closedTabsMenuButton.setText(tr("closedTabs"))
+        self.closedTabsMenuButton.setIcon(QtGui.QIcon.fromTheme("user-trash", QtGui.QIcon(ryouko_icon("trash.png"))))
+        self.closedTabsMenuButton.triggered.connect(self.showClosedTabsMenu)
 
         self.mainMenuButton = QtGui.QAction(self)
         self.mainMenuButton.setText(tr("menu"))
         self.mainMenuButton.setIcon(QtGui.QIcon.fromTheme("document-properties", QtGui.QIcon(ryouko_icon("preferences.png"))))
         self.mainMenuButton.setShortcuts(["Alt+M"])
         self.mainMenuButton.triggered.connect(self.showCornerWidgetsMenu)
-#        self.mainMenuButton.setArrowType(QtCore.Qt.DownArrow)
         self.mainMenu = QtGui.QMenu(self)
         self.mainMenu.setTitle(tr('menu'))
 
-        self.mainToolBar.addAction(self.closedTabsListGUIButton)
-        self.mainToolBar.widgetForAction(self.closedTabsListGUIButton).setFocusPolicy(QtCore.Qt.TabFocus)
+        self.mainToolBar.addAction(self.closedTabsMenuButton)
+        self.mainToolBar.widgetForAction(self.closedTabsMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
 
         self.extensionToolBar = QtGui.QToolBar()
+        self.extensionToolBar.setIconSize(QtCore.QSize(16, 16))
         self.extensionToolBar.setMovable(False)
         self.extensionToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.extensionToolBar.setStyleSheet("QToolBar{border:0;margin: 0;padding:0;background:transparent;}")
-        self.mainToolBar.addWidget(self.extensionToolBar)
+        self.extensionToolBar.setStyleSheet("QToolBar{border:0;margin: 0;padding:0;background:palette(window);}")
         
         count = 0
         for e in app_extensions:
@@ -2546,6 +2495,16 @@ self.origY + ev.globalY() - self.mouseY)
                         else:
                             try: exec("ext" + str(count) + ".setJavaScript(unicode(e['js']))")
                             except: do_nothing()
+                        try: e["javascript"]
+                        except: do_nothing()
+                        else:
+                            try: exec("ext" + str(count) + ".setJavaScript(unicode(e['javascript']))")
+                            except: do_nothing()
+                        try: e["python"]
+                        except: do_nothing()
+                        else:
+                            try: exec("ext" + str(count) + ".setPython(unicode(e['python']))")
+                            except: do_nothing()
                         try: e["url"]
                         except: do_nothing()
                         else:
@@ -2555,7 +2514,10 @@ self.origY + ev.globalY() - self.mouseY)
                         except: do_nothing()
                         try: exec("ext" + str(count) + ".javaScriptTriggered.connect(self.loadExtensionJS)")
                         except: do_nothing()
+                        try: exec("ext" + str(count) + ".pythonTriggered.connect(self.loadExtensionPython)")
+                        except: do_nothing()
 
+        self.addToolBar(QtCore.Qt.BottomToolBarArea, self.extensionToolBar)
         if count == 0:
             self.extensionToolBar.hide()
 
@@ -3333,13 +3295,13 @@ self.origY + ev.globalY() - self.mouseY)
                         del self.closedTabsList[0]
             if self.tabs.count() == 0 and allowZeroTabs == False:
                 self.newTab()
-        self.reloadClosedTabsListGUI()
+        self.reloadClosedTabsMenu()
 
-    def reloadClosedTabsListGUI(self):
-        self.closedTabsListGUI.clear()
-        self.closedTabsListGUI.setCurrentRow(0)
+    def reloadClosedTabsMenu(self):
+        self.closedTabsMenu.clear()
+        self.closedTabsMenu.setCurrentRow(0)
         for tab in self.closedTabsList:
-            self.closedTabsListGUI.addItem(tab["title"])
+            self.closedTabsMenu.addItem(tab["title"])
 
     def permanentCloseTab(self):
         self.closeTab(self.tabs.currentIndex(), True)
@@ -3359,7 +3321,7 @@ self.origY + ev.globalY() - self.mouseY)
         if index == False:
             index = len(self.closedTabsList) - 1
         elif type(index) != int:
-            index = self.closedTabsListGUI.row(index)
+            index = self.closedTabsMenu.row(index)
         self.closeTab(i, True, True)
         if len(self.closedTabsList) > 0:
             self.tabs.insertTab(i, self.closedTabsList[index]['widget'], self.closedTabsList[index]['widget'].webView.icon(), self.closedTabsList[index]['widget'].webView.title())
@@ -3374,13 +3336,13 @@ self.origY + ev.globalY() - self.mouseY)
             else:
                 self.tabs.widget(self.tabs.currentIndex()).webView.load(QtCore.QUrl(self.closedTabsList[index]["url"]))
             del self.closedTabsList[index]
-        self.reloadClosedTabsListGUI()
+        self.reloadClosedTabsMenu()
 
     def undoCloseTab(self, index=False):
         if index == False:
             index = len(self.closedTabsList) - 1
         elif type(index) != int:
-            index = self.closedTabsListGUI.row(index)
+            index = self.closedTabsMenu.row(index)
         if len(self.closedTabsList) > 0:
             self.tabs.addTab(self.closedTabsList[index]['widget'], self.closedTabsList[index]['widget'].webView.icon(), self.closedTabsList[index]['widget'].webView.title())
             self.updateTitles()
@@ -3394,7 +3356,7 @@ self.origY + ev.globalY() - self.mouseY)
             else:
                 self.tabs.widget(self.tabs.currentIndex()).webView.load(QtCore.QUrl(self.closedTabsList[index]["url"]))
             del self.closedTabsList[index]
-        self.reloadClosedTabsListGUI()
+        self.reloadClosedTabsMenu()
 
     def updateIcons(self):
         self.setIcon()

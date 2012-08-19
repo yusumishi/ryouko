@@ -71,6 +71,7 @@
 "error": "Error",
 "everything": "Everything",
 "executablePath": "Executable path",
+"extensionError": "This extension has a bug and cannot not be loaded.",
 "fileHKey": "&File",
 "findBtnTT": "<b>Find</b><br>Ctrl+F",
 "find": "Find",

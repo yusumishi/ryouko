@@ -1,0 +1,1 @@
+{"name": "Hello, World (Python)", "icon": "hellopython.png", "type": "python", "python": "notificationMessage('Hello, world!')"}
