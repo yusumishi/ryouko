@@ -74,7 +74,7 @@
 "executablePath": "Ruta de ejecutable",
 "extensionError": "Este complemento tiene un error y no se puede cargar.",
 "extensions": "C&omplementos",
-"extensionWarn": "Este complemento intentó a ejecutar código Python sin permiso. Por su seguridad, Ryouko ha bloqueado el complemento.",
+"extensionWarn": "Un complemento intentó a ejecutar código Python sin permiso. Por su seguridad, Ryouko ha bloqueado el complemento.",
 "fileHKey": "&Archivar",
 "findBtnTT": "<b>Buscar</b><br>Ctrl+F",
 "find": "Buscar",
