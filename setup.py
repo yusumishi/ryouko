@@ -99,7 +99,7 @@ if "--include-nonfree" in sys.argv:
         try: os.remove(os.path.join(app_lib, "ryouko_lib", "extensions", fname))
         except: print("Error in removing file " + fname)
 
-if "--help" in sys.argv:
+if "--help" in sys.argv or "-h" in sys.argv:
     print("Ryouko-specific commands:\n")
     print("  setup.py install-singleuser\n                      On Linux, this installs Ryouko to ~/ryouko")
     print("\nRyouko-specific options:")
