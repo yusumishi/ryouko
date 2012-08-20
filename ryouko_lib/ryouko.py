@@ -63,7 +63,7 @@ else:
     pynotify.init("Ryouko")
     use_linux_notifications = True
 
-import os, sys, json, time, datetime, string, shutil, traceback
+import os, sys, json, time, datetime, string, shutil
 
 app_vista = False
 if sys.platform.startswith("win"):
