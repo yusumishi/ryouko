@@ -3,6 +3,11 @@
 import os, sys
 from PyQt4 import QtCore
 
+def rchop(string, ending):
+    if string.endswith(ending):
+        return string[:-len(ending)]
+    return string
+
 class BookmarksManager(QtCore.QObject):
     bookmarksChanged = QtCore.pyqtSignal()
     userLinksChanged = QtCore.pyqtSignal(str)
@@ -25,7 +30,7 @@ class BookmarksManager(QtCore.QObject):
                 contents = fi.read()
                 fi.close()
                 contents = contents.rstrip("\n")
-                links.append([contents, fname.rstrip(".txt")])
+                links.append([contents, rchop(fname, ".txt")])
             links.sort()
             global user_links
             user_links = ""
@@ -45,7 +50,7 @@ class BookmarksManager(QtCore.QObject):
                 link = f.read()
                 f.close()
                 link = link.replace("\n", "")
-                self.bookmarks.append({"name": fname.rstrip(".txt"), "url": link})
+                self.bookmarks.append({"name": rchop(fname, ".txt"), "url": link})
             if sys.version_info[0] < 3:
                 self.bookmarks.sort()
             self.bookmarksChanged.emit()
