@@ -95,6 +95,7 @@
 "historyHKey": "Hi&story",
 "homePages": "Load these pages at startup",
 "hostname": "Hostname",
+"installNonFreeExtensions": "Install proprietary extensions",
 "isRunning": "Ryouko thinks that you already have Ryouko open. Is this correct?",
 "last10Min": "Last 10 minutes",
 "last15Min": "Last 15 minutes",

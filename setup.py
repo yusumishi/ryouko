@@ -5,6 +5,7 @@ files = ["extensions/*", "translations/*", "icons/*", "*.*"]
 import os, sys, shutil
 from distutils.core import setup
 
+app_name = "ryouko"
 app_lib = os.path.dirname(os.path.realpath(__file__))
 app_info = os.path.join(app_lib, "ryouko_lib", "info.txt")
 app_version = '0.6.5'
@@ -15,23 +16,9 @@ if os.path.exists(app_info):
     if len(metadata) > 0:
         app_version = metadata[0].rstrip("\n")
 
-if "--add-nonfree" in sys.argv or "--include-nonfree" in sys.argv:
-    nf = os.path.join(app_lib, "extensions-nonfree")
-    i = os.listdir(nf)
-    for fname in i:
-        try: shutil.copy2(os.path.join(nf, fname), os.path.join(app_lib, "ryouko_lib", "extensions"))
-        except: print("Error in copying file " + fname)
-
-if "--remove-nonfree" in sys.argv:
-    nf = os.path.join(app_lib, "extensions-nonfree")
-    i = os.listdir(nf)
-    for fname in i:
-        try: os.remove(os.path.join(app_lib, "ryouko_lib", "extensions", fname))
-        except: print("Error in removing file " + fname)
-
-if not "install-singleuser" in sys.argv and not "add-nonfree" in sys.argv and not "remove-nonfree" in sys.argv and not "include-nonfree" in sys.argv:
+if not "install-singleuser" in sys.argv:# and not "add-nonfree" in sys.argv and not "remove-nonfree" in sys.argv and not "include-nonfree" in sys.argv:
     setup(
-        name = 'ryouko',
+        name = app_name,
         version = app_version,
         description = 'PyQt4 Web browser',
         long_description = """Ryouko is a basic PyQt4 Web browser. It was coded for fun and is not intended for serious usage, but it should be capable of fulfilling very basic browsing needs.""",
@@ -45,9 +32,9 @@ if not "install-singleuser" in sys.argv and not "add-nonfree" in sys.argv and no
     )
 
     if sys.platform.startswith("linux") and "install" in sys.argv:
-        stdout_handle = os.popen("ryouko --icons")
+        stdout_handle = os.popen(app_name + " --icons")
         icons = stdout_handle.read().replace("\n", "")
-        f = open(os.path.join("/", "usr", "share", "applications", "ryouko.desktop"), "w")
+        f = open(os.path.join("/", "usr", "share", "applications", app_name + ".desktop"), "w")
         f.write("""[Desktop Entry]
 Name=Ryouko
 GenericName=Web Browser
@@ -58,52 +45,40 @@ Icon=""" + os.path.join(icons, "logo.svg") + """
 Type=Application
 Categories=Network;
 
-Exec=ryouko %F
+Exec=""" + app_name + """ %F
 StartupNotify=false
 Terminal=false
 MimeType=text/html;text/webviewhtml;text/plain;image/jpeg;image/png;image/bmp;image/x-windows-bmp;image/gif;""")
         f.close()
 
 elif "install-singleuser" in sys.argv:
-    if os.path.exists(os.path.join(os.path.expanduser("~"), "ryouko")):
-        shutil.rmtree(os.path.join(os.path.expanduser("~"), "ryouko"))
-    shutil.copytree(app_lib, os.path.join(os.path.expanduser("~"), "ryouko"))
+    if os.path.exists(os.path.join(os.path.expanduser("~"), app_name)):
+        shutil.rmtree(os.path.join(os.path.expanduser("~"), app_name))
+    shutil.copytree(app_lib, os.path.join(os.path.expanduser("~"), app_name))
     if not os.path.exists(os.path.join(os.path.expanduser("~"), ".local", "share", "applications", "network")):
         os.makedirs(os.path.join(os.path.expanduser("~"), ".local", "share", "applications", "network"))
-    f = open(os.path.join(os.path.expanduser("~"), ".local", "share", "applications", "network", "ryouko.desktop"), "w")
+    f = open(os.path.join(os.path.expanduser("~"), ".local", "share", "applications", "network", app_name + ".desktop"), "w")
     f.write("""[Desktop Entry]
 Name=Ryouko
 GenericName=Web Browser
 Comment=Simple PyQt4 Web Browser
 
-Icon=""" + os.path.join(os.path.expanduser("~"), "ryouko", "ryouko_lib", "icons", "logo.svg") + """
+Icon=""" + os.path.join(os.path.expanduser("~"), app_name, app_name + "_lib", "icons", "logo.svg") + """
 
 Type=Application
 Categories=Network;
 
-Exec=""" + os.path.join(os.path.expanduser("~"), "ryouko", "ryouko") + """ %F
+Exec=""" + os.path.join(os.path.expanduser("~"), app_name, app_name) + """ %F
 StartupNotify=false
 Terminal=false
 MimeType=text/html;text/webviewhtml;text/plain;image/jpeg;image/png;image/bmp;image/x-windows-bmp;image/gif;""")
     f.close()
-    if os.path.exists(os.path.join(os.path.expanduser("~"), "bin", "ryouko")):
-        os.remove(os.path.join(os.path.expanduser("~"), "bin", "ryouko"))
+    if os.path.exists(os.path.join(os.path.expanduser("~"), "bin", app_name)):
+        os.remove(os.path.join(os.path.expanduser("~"), "bin", app_name))
     elif not os.path.isdir(os.path.join(os.path.expanduser("~"), "bin")):
         os.makedirs(os.path.join(os.path.expanduser("~"), "bin"))
-    os.system("ln -s \"" + os.path.join(os.path.expanduser("~"), "ryouko", "ryouko") + "\" \"" + os.path.join(os.path.expanduser("~"), "bin", "ryouko") + "\"")
-
-if "--include-nonfree" in sys.argv:
-    nf = os.path.join(app_lib, "extensions-nonfree")
-    i = os.listdir(nf)
-    for fname in i:
-        try: os.remove(os.path.join(app_lib, "ryouko_lib", "extensions", fname))
-        except: print("Error in removing file " + fname)
+    os.system("ln -s \"" + os.path.join(os.path.expanduser("~"), app_name, app_name) + "\" \"" + os.path.join(os.path.expanduser("~"), "bin", app_name) + "\"")
 
 if "--help" in sys.argv or "-h" in sys.argv:
     print("Ryouko-specific commands:\n")
     print("  setup.py install-singleuser\n                      On Linux, this installs Ryouko to ~/ryouko")
-    print("\nRyouko-specific options:")
-    print("  --add-nonfree       include nonfree extensions before install-singleuser")
-    print("  --remove-nonfree    exclude nonfree extensions before install-singleuser")
-    print("  --include-nonfree   include nonfree extensions before install-singleuser,\
-    \n                      then removes them after the operation")

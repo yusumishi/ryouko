@@ -63,7 +63,7 @@ else:
     pynotify.init("Ryouko")
     use_linux_notifications = True
 
-import os, sys, json, time, datetime, string, shutil
+import os, sys, json, time, datetime, string, shutil, zipfile
 
 app_vista = False
 if sys.platform.startswith("win"):
@@ -92,6 +92,7 @@ app_webview_default_icon = QtGui.QIcon()
 app_tabs_on_top = False
 
 from ryouko_common import *
+from SystemFunctions import system_open
 from RUrlBar import RUrlBar
 from RSearchBar import RSearchBar
 from Python23Compat import *
@@ -206,23 +207,16 @@ class RSettingsManager(SettingsManager):
 settings_manager = RSettingsManager()
 
 def remove2(fname):
-    os.remove(fname)
+    try: os.remove(fname)
+    except: return
     try: u = os.path.join(os.path.expanduser("~"), settings_manager.settings['cloudService'], "ryouko-profiles", os.path.split(fname)[1])
     except: return
     else:
         if os.path.exists(u):
             os.remove(u)
 
-def changeProfile(profile, init = False):
-    global app_profile_name; global app_profile; global app_links;
-    global app_lock; global app_cookies; global app_instance2;
-    global app_tabs_on_top_conf; global app_menubar_conf;
-    global app_extensions; global app_extensions_folder;
-    global app_extensions_path; global app_extensions_whitelist;
-    global app_extensions_wlfile
-    app_profile_name = profile
-    app_profile = os.path.join(app_profile_folder, profile)
-    app_extensions_wlfile = os.path.join(app_profile, "extensions.conf")
+def reload_app_extension_whitelist():
+    global app_extensions_whitelist
     if os.path.exists(app_extensions_wlfile):
         f = open(app_extensions_wlfile, "r")
         try: a = f.read()
@@ -231,6 +225,40 @@ def changeProfile(profile, init = False):
         app_extensions_whitelist = a.split("\n")
     else:
         app_extensions_whitelist = []
+
+def reload_app_extensions():
+    global app_extensions
+    app_extensions = []
+    for folder in app_extensions_path:
+        if os.path.isdir(folder):
+            l = os.listdir(folder)
+            for addon in l:
+                fname = os.path.join(folder, addon)
+                if os.path.exists(fname) and not os.path.isdir(fname):
+                    f = open(fname, "r")
+                    try: ext = json.load(f)
+                    except: do_nothing()
+                    else:
+                        try: ext["path"] = fname
+                        except: ext["path"] = None
+                        try: ext["folder"] = folder
+                        except: ext["folder"] = None
+                        app_extensions.append(ext)
+                        f.close()
+
+def changeProfile(profile, init = False):
+    global app_profile_name; global app_profile; global app_links;
+    global app_lock; global app_cookies; global app_instance2;
+    global app_tabs_on_top_conf; global app_menubar_conf;
+    global app_extensions; global app_extensions_folder;
+    global app_extensions_path;
+    global app_extensions_wlfile; global app_nonfree_dest
+    app_profile_name = profile
+    app_profile = os.path.join(app_profile_folder, profile)
+    app_extensions_folder = os.path.join(app_profile, "extensions")
+    app_nonfree_dest = os.path.join(app_profile, "temp", "nonfree.zip")
+    app_extensions_wlfile = os.path.join(app_profile, "extensions.conf")
+    reload_app_extension_whitelist()
     app_extensions_path.append(os.path.join(app_profile, "extensions"))
     app_links = os.path.join(app_profile, "links")
     app_tabs_on_top_conf = os.path.join(app_profile, "tabsontop.conf")
@@ -1414,7 +1442,9 @@ class ExtensionManagerGUI(QtGui.QMainWindow):
         self.setWindowTitle(tr('pluginsBlacklist'))
         self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.initUI()
+
     def initUI(self):
+
         pluginsWindow = QtGui.QWidget()
         pluginsLayout = QtGui.QVBoxLayout()
         self.editPluginsButton = QtGui.QPushButton(tr('toggleExtension'))
@@ -1424,9 +1454,11 @@ class ExtensionManagerGUI(QtGui.QMainWindow):
         dplabel = QtGui.QLabel("<b>" + tr('disabledExtensions') + "</b>")
         self.enabledExtensionsList = QtGui.QListWidget()
         self.disabledExtensionsList = QtGui.QListWidget()
+        self.installNonFreeButton = QtGui.QPushButton(tr("installNonFreeExtensions"))
         self.editPluginsButton.clicked.connect(self.enableDisableExtension)
         self.enabledExtensionsList.itemActivated.connect(self.enableDisableExtension)
         self.disabledExtensionsList.itemActivated.connect(self.enableDisableExtension)
+        self.installNonFreeButton.clicked.connect(downloadNonFreeExtensions)
         self.setCentralWidget(pluginsWindow)
         pluginsWindow.setLayout(pluginsLayout)
         pluginsLayout.addWidget(self.editPluginsButton)
@@ -1435,6 +1467,7 @@ class ExtensionManagerGUI(QtGui.QMainWindow):
         pluginsSubLayout.addWidget(dplabel, 0, 1)
         pluginsSubLayout.addWidget(self.enabledExtensionsList, 1, 0)
         pluginsSubLayout.addWidget(self.disabledExtensionsList, 1, 1)
+        pluginsLayout.addWidget(self.installNonFreeButton)
         self.loadExtensions()
 
     def loadExtensions(self):
@@ -1455,6 +1488,7 @@ class ExtensionManagerGUI(QtGui.QMainWindow):
         f = open(app_extensions_wlfile, "w")
         f.write(l)
         f.close()
+        reload_app_extension_whitelist()
                 
     def enableDisableExtension(self):
         if self.enabledExtensionsList.hasFocus():
@@ -1467,6 +1501,47 @@ class ExtensionManagerGUI(QtGui.QMainWindow):
             self.disabledExtensionsList.takeItem(self.disabledExtensionsList.row(self.disabledExtensionsList.currentItem()))
             self.enabledExtensionsList.addItem(plugin)
             self.enabledExtensionsList.sortItems(QtCore.Qt.AscendingOrder)
+
+def downloadNonFreeExtensions():
+    if os.path.exists(app_nonfree_dest):
+        remove2(app_nonfree_dest)
+    global d
+    d = DownloaderThread()
+    d.setUrl("http://github.com/foxhead128/ryouko-nonfree/zipball/master")
+    d.fileDownloaded.connect(installNonFreeExtensions)
+    d.fileDownloaded.connect(d.deleteLater)
+    d.setDestination(app_nonfree_dest)
+    d.start()
+
+def installNonFreeExtensions():
+    if not os.path.isdir(app_extensions_folder):
+        os.mkdir(app_extensions_folder)
+    z = zipfile.ZipFile(app_nonfree_dest, "r")
+    for m in z.namelist():
+        fname = os.path.basename(m)
+        if not fname:
+            continue
+        s = z.open(m)
+        e = os.path.join(app_extensions_folder, fname)
+        t = file(e, "wb")
+        shutil.copyfileobj(s, t)
+        s.close()
+        t.close()
+        if e.endswith("README.md"):
+            f = open(e, "r")
+            text = f.read()
+            f.close()
+            cDialog.hide()
+            global v
+            v = QtGui.QTextEdit()
+            v.resize(640, 480)
+            v.setWindowModality(QtCore.Qt.ApplicationModal)
+            v.setWindowTitle(tr("license"))
+            v.setPlainText(text)
+            v.show()
+            centerWidget(v)
+    reload_app_extensions()
+    cDialog.extensionManager.loadExtensions()
 
 class CDialog(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -3569,6 +3644,8 @@ class Ryouko(QtGui.QWidget):
             os.makedirs(app_profile)
         if not os.path.isdir(os.path.join(app_profile, "temp")):
             os.mkdir(os.path.join(app_profile, "temp"))
+        if not os.path.isdir(app_extensions_folder):
+            os.mkdir(app_extensions_folder)
         if not os.path.isdir(os.path.join(app_profile, "adblock")):
             os.mkdir(os.path.join(app_profile, "adblock"))
         sync_data()
@@ -3576,23 +3653,7 @@ class Ryouko(QtGui.QWidget):
         global library; global searchEditor; global cDialog; global win;
         global aboutDialog; global notificationManager;
         global clearHistoryDialog; global downloadManagerGUI;
-        global app_extensions
-        for folder in app_extensions_path:
-            if os.path.isdir(folder):
-                l = os.listdir(folder)
-                for addon in l:
-                    fname = os.path.join(folder, addon)
-                    if os.path.exists(fname) and not os.path.isdir(fname):
-                        f = open(fname, "r")
-                        try: ext = json.load(f)
-                        except: do_nothing()
-                        else:
-                            try: ext["path"] = fname
-                            except: ext["path"] = None
-                            try: ext["folder"] = folder
-                            except: ext["folder"] = None
-                            app_extensions.append(ext)
-                            f.close()
+        reload_app_extensions()
         downloadManagerGUI = DownloadManagerGUI()
         downloadManagerGUI.networkAccessManager.setCookieJar(app_cookiejar)
         app_cookiejar.setParent(QtCore.QCoreApplication.instance())
