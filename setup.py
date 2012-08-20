@@ -15,14 +15,21 @@ if os.path.exists(app_info):
     if len(metadata) > 0:
         app_version = metadata[0].rstrip("\n")
 
-if "include-nonfree" in sys.argv:
+if "--add-nonfree" in sys.argv or "--include-nonfree" in sys.argv:
     nf = os.path.join(app_lib, "extensions-nonfree")
     i = os.listdir(nf)
     for fname in i:
         try: shutil.copy2(os.path.join(nf, fname), os.path.join(app_lib, "ryouko_lib", "extensions"))
         except: print("Error in copying file " + fname)
 
-if not "install-singleuser" in sys.argv:
+if "--remove-nonfree" in sys.argv:
+    nf = os.path.join(app_lib, "extensions-nonfree")
+    i = os.listdir(nf)
+    for fname in i:
+        try: os.remove(os.path.join(app_lib, "ryouko_lib", "extensions", fname))
+        except: print("Error in removing file " + fname)
+
+if not "install-singleuser" in sys.argv and not "add-nonfree" in sys.argv and not "remove-nonfree" in sys.argv and not "include-nonfree" in sys.argv:
     setup(
         name = 'ryouko',
         version = app_version,
@@ -57,7 +64,7 @@ Terminal=false
 MimeType=text/html;text/webviewhtml;text/plain;image/jpeg;image/png;image/bmp;image/x-windows-bmp;image/gif;""")
         f.close()
 
-else:
+elif "install-singleuser" in sys.argv:
     if os.path.exists(os.path.join(os.path.expanduser("~"), "ryouko")):
         shutil.rmtree(os.path.join(os.path.expanduser("~"), "ryouko"))
     shutil.copytree(app_lib, os.path.join(os.path.expanduser("~"), "ryouko"))
@@ -85,9 +92,18 @@ MimeType=text/html;text/webviewhtml;text/plain;image/jpeg;image/png;image/bmp;im
         os.makedirs(os.path.join(os.path.expanduser("~"), "bin"))
     os.system("ln -s \"" + os.path.join(os.path.expanduser("~"), "ryouko", "ryouko") + "\" \"" + os.path.join(os.path.expanduser("~"), "bin", "ryouko") + "\"")
 
-if "include-nonfree" in sys.argv:
+if "--include-nonfree" in sys.argv:
     nf = os.path.join(app_lib, "extensions-nonfree")
     i = os.listdir(nf)
     for fname in i:
         try: os.remove(os.path.join(app_lib, "ryouko_lib", "extensions", fname))
-        except: print("Error in copying file " + fname)
+        except: print("Error in removing file " + fname)
+
+if "--help" in sys.argv:
+    print("Ryouko-specific commands:\n")
+    print("  setup.py install-singleuser\n                      On Linux, this installs Ryouko to ~/ryouko")
+    print("\nRyouko-specific options:")
+    print("  --add-nonfree       include nonfree extensions before install-singleuser")
+    print("  --remove-nonfree    exclude nonfree extensions before install-singleuser")
+    print("  --include-nonfree   include nonfree extensions before install-singleuser,\
+    \n                      then removes them after the operation")
