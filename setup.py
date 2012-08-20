@@ -15,6 +15,13 @@ if os.path.exists(app_info):
     if len(metadata) > 0:
         app_version = metadata[0].rstrip("\n")
 
+if "include-nonfree" in sys.argv:
+    nf = os.path.join(app_lib, "extensions-nonfree")
+    i = os.listdir(nf)
+    for fname in i:
+        try: shutil.copy2(os.path.join(nf, fname), os.path.join(app_lib, "ryouko_lib", "extensions"))
+        except: print("Error in copying file " + fname)
+
 if not "install-singleuser" in sys.argv:
     setup(
         name = 'ryouko',
@@ -77,3 +84,10 @@ MimeType=text/html;text/webviewhtml;text/plain;image/jpeg;image/png;image/bmp;im
     elif not os.path.isdir(os.path.join(os.path.expanduser("~"), "bin")):
         os.makedirs(os.path.join(os.path.expanduser("~"), "bin"))
     os.system("ln -s \"" + os.path.join(os.path.expanduser("~"), "ryouko", "ryouko") + "\" \"" + os.path.join(os.path.expanduser("~"), "bin", "ryouko") + "\"")
+
+if "include-nonfree" in sys.argv:
+    nf = os.path.join(app_lib, "extensions-nonfree")
+    i = os.listdir(nf)
+    for fname in i:
+        try: os.remove(os.path.join(app_lib, "ryouko_lib", "extensions", fname))
+        except: print("Error in copying file " + fname)
