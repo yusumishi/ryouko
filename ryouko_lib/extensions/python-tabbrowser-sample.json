@@ -1,0 +1,1 @@
+{"name": "python-tabbrowser Example", "license": "Public domain", "type": "python-tabbrowser", "python": "notificationMessage('This extension injects Python code into the runtime whenever a new window is created.');"}

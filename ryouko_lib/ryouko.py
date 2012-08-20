@@ -84,6 +84,7 @@ else:
 try: __file__
 except: __file__ = sys.executable
 app_lib = os.path.dirname(os.path.realpath(__file__))
+app_inject_types = ["python-tabbrowser", "python-startup"]
 app_locale = locale.getdefaultlocale()[0]
 sys.path.append(app_lib)
 app_default_useragent = "Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/534.34 (KHTML, like Gecko) Qt/4.8.1 Safari/534.34"
@@ -2565,12 +2566,13 @@ self.origY + ev.globalY() - self.mouseY)
                                     try: exec("ext" + str(count) + ".setIcon(QtGui.QIcon(icon))")
                                     except: do_nothing()
                         try: e["type"]
-                        except: do_nothing()
+                        except: t = ""
                         else:
+                            t = unicode(e["type"])
                             try: exec("ext" + str(count) + ".setType(unicode(e['type']))")
                             except: do_nothing()
                             else:
-                                if unicode(e["type"]).lower() == "python-inject":
+                                if unicode(e["type"]).lower() == "python-tabbrowser":
                                     nobutton = True
                         try: e["js"]
                         except: do_nothing()
@@ -2599,8 +2601,12 @@ self.origY + ev.globalY() - self.mouseY)
                         try: exec("ext" + str(count) + ".pythonTriggered.connect(self.loadExtensionPython)")
                         except: do_nothing()
                         if nobutton == False:
-                            try: exec("self.extensionToolBar.addWidget(ext" + str(count) + ")")
-                            except: do_nothing()
+                            if not t in app_inject_types:
+                                try: exec("self.extensionToolBar.addWidget(ext" + str(count) + ")")
+                                except: do_nothing()
+                            else:
+                                try: exec("ext" + str(count) + ".deleteLater()")
+                                except: do_nothing()
                         else:
                             try: exec("ext" + str(count) + ".deleteLater()")
                             except: do_nothing()
@@ -2610,7 +2616,8 @@ self.origY + ev.globalY() - self.mouseY)
                                 if cDialog.settings["allowInjectAddons"] != True:
                                     notificationMessage(tr("extensionWarn"))
                                 else:
-                                    exec(e["python"])
+                                    try: exec(e["python"])
+                                    except: notificationMessage("extensionError")
 
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.extensionToolBar)
         if count == 0:
@@ -3489,6 +3496,30 @@ self.origY + ev.globalY() - self.mouseY)
 
 win = None
 
+def load_startup_extensions():
+    for e in app_extensions:
+        try: e["name"]
+        except: print("Error! Extension has no name!")
+        else:
+            if e["name"] in app_extensions_whitelist:
+                try: e["type"]
+                except: do_nothing()
+                else:
+                    nobutton = False
+                    if unicode(e["type"]).lower() == "python-startup":
+                        nobutton = True
+                    if nobutton == False:
+                        do_nothing()
+                    else:
+                        try: cDialog.settings["allowInjectAddons"]
+                        except: notificationMessage(tr("extensionWarn"))
+                        else:
+                            if cDialog.settings["allowInjectAddons"] != True:
+                                notificationMessage(tr("extensionWarn"))
+                            else:
+                                try: exec(e["python"])
+                                except: notificationMessage("extensionError")
+
 class Ryouko(QtGui.QWidget):
     def __init__(self):
 
@@ -3573,6 +3604,7 @@ class Ryouko(QtGui.QWidget):
         searchEditor = SearchEditor()
         cDialog = CDialog(self)
         aboutDialog.updateUserAgent()
+        load_startup_extensions()
         win = TabBrowser(self)
     def primeBrowser(self):
         global win
