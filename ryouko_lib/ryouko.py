@@ -2251,8 +2251,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.currentWebView().page().mainFrame().evaluateJavaScript(js)
 
     def loadExtensionPython(self, pie):
-        try: exec(unicode(pie))
-        except: notificationMessage("extensionError")
+        exec(unicode(pie))
 
     def updateWeb(self):
         urlBar = self.urlBar.text()
