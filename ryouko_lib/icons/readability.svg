@@ -25,18 +25,62 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
-  <path
-     d="M 7.5,2.5064 C 5.561,2.5064 4,4.0674 4,6.0064 4,6.0584 3.99775,6.1109 4,6.1626 3.7649134,6.0796 3.5136413,6.0064 3.25,6.0064 2.0073593,6.0064 1,7.0137 1,8.2564 c 0,1.1182 0.8061163,2.0442 1.875,2.2187 l 1.5625,2.6875 c 0.183395,0.3177 0.5886005,0.4334 0.90625,0.25 l 1.4375,-0.8437 c 0.02864,-0.017 0.037214,-0.043 0.0625,-0.062 l 2.3125,0 c 0.025286,0.02 0.03386,0.046 0.0625,0.062 l 1.4375,0.8437 c 0.317649,0.1834 0.722855,0.068 0.90625,-0.25 L 13.125,10.4751 C 14.193883,10.3006 15,9.3746 15,8.2564 c 0,-1.2427 -1.00736,-2.25 -2.25,-2.25 -0.263641,0 -0.514913,0.073 -0.75,0.1562 0.0022,-0.052 0,-0.1039 0,-0.1562 0,-1.939 -1.561,-3.5 -3.5,-3.5 l -1,0 z"
-     id="rect3802"
-     style="fill:#004d99;fill-opacity:1;stroke:#004d99;stroke-opacity:1" />
+  <g
+     transform="translate(7.2549533e-8,-0.49999988)"
+     id="g3092">
+    <rect
+       width="1.7808141"
+       height="4.4520354"
+       ry="0.34379604"
+       x="-3.4171519"
+       y="8.0753307"
+       transform="matrix(0.51449575,-0.85749293,0.51449575,0.85749293,0,0)"
+       id="rect3028"
+       style="fill:#004d99;fill-opacity:1;stroke:#004d99;stroke-width:1.06458127;stroke-linecap:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <path
+       d="m -6.4406782,4.0677967 a 1.7288135,2.1016948 0 1 1 -3.4576271,0 1.7288135,2.1016948 0 1 1 3.4576271,0 z"
+       transform="matrix(1.0122549,0,0,0.83266134,11.519608,5.3629026)"
+       id="path2993"
+       style="fill:#004d99;fill-opacity:1;stroke:#004d99;stroke-width:1.08923316;stroke-linecap:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <rect
+       width="1.7808141"
+       height="4.4520354"
+       ry="0.34379604"
+       x="-18.966358"
+       y="-7.473875"
+       transform="matrix(-0.51449575,-0.85749293,-0.51449575,0.85749293,0,0)"
+       id="rect3030"
+       style="fill:#004d99;fill-opacity:1;stroke:#004d99;stroke-width:1.06458127;stroke-linecap:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <path
+       d="m -6.4406782,4.0677967 a 1.7288135,2.1016948 0 1 1 -3.4576271,0 1.7288135,2.1016948 0 1 1 3.4576271,0 z"
+       transform="matrix(1.0122549,0,0,0.83266134,21.019608,5.3629026)"
+       id="path3022"
+       style="fill:#004d99;fill-opacity:1;stroke:#004d99;stroke-width:1.08923316;stroke-linecap:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <rect
+       width="8"
+       height="7"
+       ry="3.5"
+       x="4"
+       y="3.5"
+       id="rect3034"
+       style="fill:#004d99;fill-opacity:1;stroke:#004d99;stroke-width:1;stroke-linecap:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <rect
+       width="7"
+       height="5"
+       ry="0"
+       x="4.5"
+       y="7.9999995"
+       id="rect3036"
+       style="fill:#004d99;fill-opacity:1;stroke:#004d99;stroke-width:0.99999994;stroke-linecap:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+  </g>
   <text
-     x="4.7600002"
-     y="11.310041"
+     x="5.0840001"
+     y="10.979"
      id="text3822"
      xml:space="preserve"
      style="font-size:28px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><tspan
-       x="4.7600002"
-       y="11.310041"
+       x="5.0840001"
+       y="10.979"
        id="tspan3824"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;fill-opacity:1;font-family:MgOpen Canonica;-inkscape-font-specification:MgOpen Canonica">R</tspan></text>
+       style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;fill-opacity:1;font-family:MgOpen Canonica;-inkscape-font-specification:MgOpen Canonica">R</tspan></text>
 </svg>
