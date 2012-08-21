@@ -1,5 +1,5 @@
 {
-"name": "Word Count",
+"name": "Character Count",
 "homepage": "http://code.google.com/p/charcount/",
 "license": "Apache License 2.0",
 "modifications": "Unescaped code, removed javascript: prefix, and converted into a Ryouko extension. Otherwise, the bookmarklet remains untouched.",
