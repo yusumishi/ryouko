@@ -1,1 +1,7 @@
-{"name": "Hello, World (Python)", "license": "Public domain", "icon": "hellopython.png", "type": "python", "python": "notificationMessage('Hello, world!')"}
+{
+"name": "Hello, World (Python)",
+"license": "Public domain",
+"icon": "hellopython.png",
+"type": "python",
+"python": "notificationMessage('Hello, world!')"
+}

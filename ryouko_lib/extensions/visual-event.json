@@ -2,6 +2,8 @@
 "name": "Visual Event",
 "homepage": "http://sprymedia.co.uk/article/Visual+Event+2",
 "license": "GNU General Public License v2",
+"NOTICE": "This file has been modified from the original bookmarklet available at the Visual Event project homepage.",
+"date-of-modification": "2012/08/21",
 "modifications": "Unescaped code, removed javascript: prefix, and converted into a Ryouko extension. Otherwise, the bookmarklet remains untouched.",
 "icon": "visual-event.png",
 "type": "javascript",

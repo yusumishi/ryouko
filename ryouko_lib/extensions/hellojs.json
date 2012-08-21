@@ -1,1 +1,6 @@
-{"name": "Hello, World (JavaScript)", "license": "Public domain", "icon": "hellojs.png", "type": "javascript", "js": "alert('Hello, world!');"}
+{
+"name": "Hello, World (JavaScript)",
+"license": "Public domain",
+"icon": "hellojs.png",
+"type": "javascript",
+"js": "alert('Hello, world!');"}
