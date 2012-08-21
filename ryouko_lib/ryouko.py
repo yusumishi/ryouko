@@ -92,6 +92,7 @@ app_webview_default_icon = QtGui.QIcon()
 app_tabs_on_top = False
 
 from ryouko_common import *
+from ServerThread import ServerThread
 from SystemFunctions import system_open
 from RUrlBar import RUrlBar
 from RSearchBar import RSearchBar
@@ -1435,6 +1436,8 @@ class Browser(QtGui.QMainWindow):
         self.webView.updateSettings()
 
 downloaderThread = DownloaderThread()
+extensionServer = ServerThread()
+extensionServer.setDirectory(app_extensions_path[0])
 
 class ExtensionManagerGUI(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -3597,6 +3600,7 @@ def load_startup_extensions():
 class Ryouko(QtGui.QWidget):
     def __init__(self):
 
+        extensionServer.start()
         dA = QtWebKit.QWebPage()
         dA.mainFrame().setHtml("<html><body><span id='userAgent'></span></body></html>")
         dA.mainFrame().evaluateJavaScript("document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;")
