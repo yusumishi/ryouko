@@ -1455,6 +1455,7 @@ class ExtensionManagerGUI(QtGui.QMainWindow):
 
         pluginsWindow = QtGui.QWidget()
         pluginsLayout = QtGui.QVBoxLayout()
+        pluginsLayout.setContentsMargins(0,0,0,0)
         self.editPluginsButton = QtGui.QPushButton(tr('toggleExtension'))
         self.editPluginsButton.setFocusPolicy(QtCore.Qt.TabFocus)
         pluginsSubLayout = QtGui.QGridLayout()
@@ -1768,6 +1769,7 @@ class CDialog(QtGui.QMainWindow):
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.cToolBar)
 
         self.extensionManager = ExtensionManagerGUI()
+        self.extensionManager.layout().setContentsMargins(0,0,0,0)
         self.nLayout.addWidget(self.extensionManager)
 
         self.s1Box = QtGui.QCheckBox(tr("allowInjectAddons"))
