@@ -392,10 +392,13 @@ def prepareQuit():
 def acopy(f1, f2):
     if os.path.isdir(f1):
         if os.path.exists(f2):
-            shutil.rmtree(f2)
-        shutil.copytree(f1, f2)
+            try: shutil.rmtree(f2)
+            except: do_nothing()
+        try: shutil.copytree(f1, f2)
+        except: do_nothing()
     elif os.path.exists(f1):
-        shutil.copyfile(f1, f2)
+        try: shutil.copyfile(f1, f2)
+        except: do_nothing()
 
 def sync_data():
     sfile = os.path.join(app_profile, "app_sync.conf")
