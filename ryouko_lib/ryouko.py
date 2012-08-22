@@ -155,7 +155,6 @@ app_kill_temp_files = False
 app_extensions = []
 app_extensions_whitelist = []
 app_extensions_path = []
-app_extensions_path.append(os.path.join(app_lib, "extensions"))
 for arg in sys.argv:
     app_commandline = "%s%s " % (app_commandline, arg)
 if sys.platform.startswith("win"):
@@ -247,6 +246,8 @@ def reload_app_extensions():
                         app_extensions.append(ext)
                         f.close()
 
+extensionServer = ServerThread()
+
 def changeProfile(profile, init = False):
     global app_profile_name; global app_profile; global app_links;
     global app_lock; global app_cookies; global app_instance2;
@@ -261,6 +262,7 @@ def changeProfile(profile, init = False):
     app_extensions_wlfile = os.path.join(app_profile, "extensions.conf")
     reload_app_extension_whitelist()
     app_extensions_path.append(os.path.join(app_profile, "extensions"))
+    extensionServer.setDirectory(app_extensions_path[len(app_extensions_path) - 1])
     app_links = os.path.join(app_profile, "links")
     app_tabs_on_top_conf = os.path.join(app_profile, "tabsontop.conf")
     app_menubar_conf = os.path.join(app_profile, "menubar_visible.conf")
@@ -274,6 +276,11 @@ def changeProfile(profile, init = False):
         os.makedirs(app_profile_folder)
     if not os.path.isdir(app_profile):
         os.makedirs(app_profile)
+    if not os.path.isdir(app_extensions_folder):
+        if os.path.isdir(os.path.join(app_lib, "extensions")):
+            shutil.copytree(os.path.join(app_lib, "extensions"), app_extensions_folder)
+        else:
+            os.makedirs(app_extensions_folder)
 
     settings_manager.changeProfile(app_profile)
 
@@ -1436,8 +1443,6 @@ class Browser(QtGui.QMainWindow):
         self.webView.updateSettings()
 
 downloaderThread = DownloaderThread()
-extensionServer = ServerThread()
-extensionServer.setDirectory(app_extensions_path[0])
 
 class ExtensionManagerGUI(QtGui.QMainWindow):
     def __init__(self, parent=None):
