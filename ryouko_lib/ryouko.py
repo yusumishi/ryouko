@@ -392,13 +392,10 @@ def prepareQuit():
 def acopy(f1, f2):
     if os.path.isdir(f1):
         if os.path.exists(f2):
-            try: shutil.rmtree(f2)
-            except: do_nothing()
-        try: shutil.copytree(f1, f2)
-        except: do_nothing()
+            shutil.rmtree(f2)
+        shutil.copytree(f1, f2)
     elif os.path.exists(f1):
-        try: shutil.copyfile(f1, f2)
-        except: do_nothing()
+        shutil.copyfile(f1, f2)
 
 def sync_data():
     sfile = os.path.join(app_profile, "app_sync.conf")
@@ -3608,7 +3605,6 @@ def load_startup_extensions():
 class Ryouko(QtGui.QWidget):
     def __init__(self):
 
-        extensionServer.start()
         dA = QtWebKit.QWebPage()
         dA.mainFrame().setHtml("<html><body><span id='userAgent'></span></body></html>")
         dA.mainFrame().evaluateJavaScript("document.getElementById(\"userAgent\").innerHTML = navigator.userAgent;")
@@ -3660,6 +3656,7 @@ class Ryouko(QtGui.QWidget):
         if not os.path.isdir(os.path.join(app_profile, "adblock")):
             os.mkdir(os.path.join(app_profile, "adblock"))
         sync_data()
+        extensionServer.start()
         loadCookies()
         global library; global searchEditor; global cDialog; global win;
         global aboutDialog; global notificationManager;
