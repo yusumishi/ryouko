@@ -1,0 +1,7 @@
+{
+"name": "Edit Page",
+"license": "Public domain",
+"icon": "edit-page.png",
+"type": "javascript",
+"js": "document.body.contentEditable = 'true'; document.designMode='on'; void 0"
+}
