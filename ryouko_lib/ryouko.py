@@ -1243,6 +1243,7 @@ def undoCloseWindow():
             if app_windows[len(app_windows) - 1].tabs.count() < 1:
                 app_windows[len(app_windows) - 1].newTab()
                 app_windows[len(app_windows) - 1].tabs.widget(app_windows[len(app_windows) - 1].tabs.currentIndex()).webView.buildNewTabPage()
+        app_windows[len(app_windows) - 1].updateExtensions()
         app_windows[len(app_windows) - 1].show()
 
 class Browser(QtGui.QMainWindow):
@@ -1498,6 +1499,7 @@ class ExtensionManagerGUI(QtGui.QMainWindow):
         f.write(l)
         f.close()
         reload_app_extension_whitelist()
+        self.updateExtensions()
                 
     def enableDisableExtension(self):
         if self.enabledExtensionsList.hasFocus():
@@ -1510,6 +1512,10 @@ class ExtensionManagerGUI(QtGui.QMainWindow):
             self.disabledExtensionsList.takeItem(self.disabledExtensionsList.row(self.disabledExtensionsList.currentItem()))
             self.enabledExtensionsList.addItem(plugin)
             self.enabledExtensionsList.sortItems(QtCore.Qt.AscendingOrder)
+
+    def updateExtensions(self):
+        for win in app_windows:
+            win.updateExtensions()
 
 def downloadNonFreeExtensions():
     if os.path.exists(app_nonfree_dest):
@@ -1979,7 +1985,7 @@ class TabBrowser(QtGui.QMainWindow):
                     self.setWindowIcon(QtGui.QIcon(ryouko_icon('about-logo.png')))
         self.tabCount = 0
         self.closed = False
-        self.extensions = []
+        self.extensions = {}
         self.closedTabsList = []
         self.tempHistory = []
         self.searchOn = False
@@ -2626,86 +2632,10 @@ self.origY + ev.globalY() - self.mouseY)
         self.extensionToolBar.setMovable(False)
         self.extensionToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.extensionToolBar.setStyleSheet("QToolBar{border:0;margin: 0;padding:0;background:palette(window);}")
-        
-        count = 0
-        for e in app_extensions:
-            try: e["name"]
-            except: print("Error! Extension has no name!")
-            else:
-                if e["name"] in app_extensions_whitelist:
-                    count = count + 1
-                    try:
-                        exec("ext" + str(count) + " = RExtensionButton(self)")
-                        exec("ext" + str(count) + ".setText(e['name'])")
-                        exec("ext" + str(count) + ".setToolTip(e['name'])")
-                    except: do_nothing()
-                    else:
-                        nobutton = False
-                        try: e["icon"]
-                        except: do_nothing()
-                        else:
-                            if e["folder"] != None:
-                                icon = os.path.join(unicode(e["folder"]), unicode(e["icon"]))
-                                if os.path.exists(icon) and not os.path.isdir(icon):
-                                    try: exec("ext" + str(count) + ".setIcon(QtGui.QIcon(icon))")
-                                    except: do_nothing()
-                        try: e["type"]
-                        except: t = ""
-                        else:
-                            t = unicode(e["type"])
-                            try: exec("ext" + str(count) + ".setType(unicode(e['type']))")
-                            except: do_nothing()
-                            else:
-                                if unicode(e["type"]).lower() == "python-tabbrowser":
-                                    nobutton = True
-                        try: e["js"]
-                        except: do_nothing()
-                        else:
-                            try: exec("ext" + str(count) + ".setJavaScript(unicode(e['js']))")
-                            except: do_nothing()
-                        try: e["javascript"]
-                        except: do_nothing()
-                        else:
-                            try: exec("ext" + str(count) + ".setJavaScript(unicode(e['javascript']))")
-                            except: do_nothing()
-                        try: e["python"]
-                        except: do_nothing()
-                        else:
-                            try: exec("ext" + str(count) + ".setPython(unicode(e['python']))")
-                            except: do_nothing()
-                        try: e["url"]
-                        except: do_nothing()
-                        else:
-                            try: exec("ext" + str(count) + ".setLink(unicode(e['url']))")
-                            except: do_nothing()
-                        try: exec("ext" + str(count) + ".linkTriggered.connect(self.loadExtensionURL)")
-                        except: do_nothing()
-                        try: exec("ext" + str(count) + ".javaScriptTriggered.connect(self.loadExtensionJS)")
-                        except: do_nothing()
-                        try: exec("ext" + str(count) + ".pythonTriggered.connect(self.loadExtensionPython)")
-                        except: do_nothing()
-                        if nobutton == False:
-                            if not t in app_inject_types:
-                                try: exec("self.extensionToolBar.addWidget(ext" + str(count) + ")")
-                                except: do_nothing()
-                            else:
-                                try: exec("ext" + str(count) + ".deleteLater()")
-                                except: do_nothing()
-                        else:
-                            try: exec("ext" + str(count) + ".deleteLater()")
-                            except: do_nothing()
-                            try: cDialog.settings["allowInjectAddons"]
-                            except: notificationMessage(tr("extensionWarn"))
-                            else:
-                                if cDialog.settings["allowInjectAddons"] != True:
-                                    notificationMessage(tr("extensionWarn"))
-                                else:
-                                    try: exec(e["python"])
-                                    except: notificationMessage("extensionError")
 
         self.addToolBar(QtCore.Qt.BottomToolBarArea, self.extensionToolBar)
-        if count == 0:
-            self.extensionToolBar.hide()
+
+        self.loadExtensions()
 
         self.mainToolBar.addAction(self.mainMenuButton)
         self.mainToolBar.widgetForAction(self.mainMenuButton).setFocusPolicy(QtCore.Qt.TabFocus)
@@ -3106,6 +3036,100 @@ self.origY + ev.globalY() - self.mouseY)
         if os.path.exists(m):
             self.setWindowState(QtCore.Qt.WindowMaximized)
 
+    def loadExtensions(self):
+        count = 0
+
+        for e in self.extensions:
+            try: self.extensions[e].deleteLater()
+            except: do_nothing()
+        self.extensions = {}
+        for e in app_extensions:
+            try: e["name"]
+            except: print("Error! Extension has no name!")
+            else:
+                if e["name"] in app_extensions_whitelist:
+                    count = count + 1
+                    try:
+                        exec("ext" + str(count) + " = RExtensionButton(self)")
+                        exec("ext" + str(count) + ".setText(e['name'])")
+                        exec("ext" + str(count) + ".setToolTip(e['name'])")
+                    except: do_nothing()
+                    else:
+                        nobutton = False
+                        try: e["icon"]
+                        except: do_nothing()
+                        else:
+                            if e["folder"] != None:
+                                icon = os.path.join(unicode(e["folder"]), unicode(e["icon"]))
+                                if os.path.exists(icon) and not os.path.isdir(icon):
+                                    try: exec("ext" + str(count) + ".setIcon(QtGui.QIcon(icon))")
+                                    except: do_nothing()
+                        try: e["type"]
+                        except: t = ""
+                        else:
+                            t = unicode(e["type"])
+                            try: exec("ext" + str(count) + ".setType(unicode(e['type']))")
+                            except: do_nothing()
+                            else:
+                                if unicode(e["type"]).lower() == "python-tabbrowser":
+                                    nobutton = True
+                        try: e["js"]
+                        except: do_nothing()
+                        else:
+                            try: exec("ext" + str(count) + ".setJavaScript(unicode(e['js']))")
+                            except: do_nothing()
+                        try: e["javascript"]
+                        except: do_nothing()
+                        else:
+                            try: exec("ext" + str(count) + ".setJavaScript(unicode(e['javascript']))")
+                            except: do_nothing()
+                        try: e["python"]
+                        except: do_nothing()
+                        else:
+                            try: exec("ext" + str(count) + ".setPython(unicode(e['python']))")
+                            except: do_nothing()
+                        try: e["url"]
+                        except: do_nothing()
+                        else:
+                            try: exec("ext" + str(count) + ".setLink(unicode(e['url']))")
+                            except: do_nothing()
+                        try: exec("ext" + str(count) + ".linkTriggered.connect(self.loadExtensionURL)")
+                        except: do_nothing()
+                        try: exec("ext" + str(count) + ".javaScriptTriggered.connect(self.loadExtensionJS)")
+                        except: do_nothing()
+                        try: exec("ext" + str(count) + ".pythonTriggered.connect(self.loadExtensionPython)")
+                        except: do_nothing()
+                        if nobutton == False:
+                            if not t in app_inject_types:
+                                try: exec("self.extensionToolBar.addWidget(ext" + str(count) + ")")
+                                except: do_nothing()
+                                else: exec("self.extensions[\"" + e["name"] + "\"] = ext" + str(count))
+                            else:
+                                try: exec("ext" + str(count) + ".deleteLater()")
+                                except: do_nothing()
+                        else:
+                            try: exec("ext" + str(count) + ".deleteLater()")
+                            except: do_nothing()
+                            try: cDialog.settings["allowInjectAddons"]
+                            except: notificationMessage(tr("extensionWarn"))
+                            else:
+                                if cDialog.settings["allowInjectAddons"] != True:
+                                    notificationMessage(tr("extensionWarn"))
+                                else:
+                                    try: exec(e["python"])
+                                    except: notificationMessage("extensionError")
+
+        if count == 0:
+            self.extensionToolBar.hide()
+        else:
+            self.extensionToolBar.show()
+
+    def updateExtensions(self):
+        for extension in self.extensions.keys():
+            if not extension in app_extensions_whitelist:
+                self.extensions[extension].deleteLater()
+        self.loadExtensions()
+
     def show(self):
         self.setVisible(True)
         m = os.path.join(app_profile, "maximized.conf")
@@ -3419,6 +3443,7 @@ self.origY + ev.globalY() - self.mouseY)
         browserHistory.reload()
         for item in browserHistory.history:
            self.historyList.addItem(qstring(unicode(item['name'])))
+
     def searchHistory(self, string=""):
         string = unicode(string)
         if string != "":
