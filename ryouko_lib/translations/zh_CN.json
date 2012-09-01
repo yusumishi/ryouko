@@ -181,7 +181,7 @@
 "sourceOf2": "",
 "sslWarning": "Ryouko使用SSL加密连接时出错,继续执行吗?",
 "stopBtnTT": "<b>停止/重置位置栏</b><br>Esc",
-"tabsOnTop": "页签上的工具条",
+"tabsOnTop": "页签置顶",
 "tempFiles": "临时文件",
 "time": "时间",
 "title": "标题",
