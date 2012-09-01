@@ -6,6 +6,7 @@ import os, sys, shutil
 from distutils.core import setup
 
 app_name = "ryouko"
+target_dir = os.path.join(os.path.expanduser("~"), ".ryouko-data", app_name)
 app_lib = os.path.dirname(os.path.realpath(__file__))
 app_info = os.path.join(app_lib, "ryouko_lib", "info.txt")
 app_version = '0.6.5'
@@ -52,9 +53,9 @@ MimeType=text/html;text/webviewhtml;text/plain;image/jpeg;image/png;image/bmp;im
         f.close()
 
 elif "install-singleuser" in sys.argv:
-    if os.path.exists(os.path.join(os.path.expanduser("~"), app_name)):
-        shutil.rmtree(os.path.join(os.path.expanduser("~"), app_name))
-    shutil.copytree(app_lib, os.path.join(os.path.expanduser("~"), app_name))
+    if os.path.exists(target_dir):
+        shutil.rmtree(target_dir)
+    shutil.copytree(app_lib, target_dir)
     if not os.path.exists(os.path.join(os.path.expanduser("~"), ".local", "share", "applications", "network")):
         os.makedirs(os.path.join(os.path.expanduser("~"), ".local", "share", "applications", "network"))
     f = open(os.path.join(os.path.expanduser("~"), ".local", "share", "applications", "network", app_name + ".desktop"), "w")
@@ -77,7 +78,7 @@ MimeType=text/html;text/webviewhtml;text/plain;image/jpeg;image/png;image/bmp;im
         os.remove(os.path.join(os.path.expanduser("~"), "bin", app_name))
     elif not os.path.isdir(os.path.join(os.path.expanduser("~"), "bin")):
         os.makedirs(os.path.join(os.path.expanduser("~"), "bin"))
-    os.system("ln -s \"" + os.path.join(os.path.expanduser("~"), app_name, app_name) + "\" \"" + os.path.join(os.path.expanduser("~"), "bin", app_name) + "\"")
+    os.system("ln -s \"" + os.path.join(target_dir, app_name) + "\" \"" + os.path.join(os.path.expanduser("~"), "bin", app_name) + "\"")
 
 if "--help" in sys.argv or "-h" in sys.argv:
     print("Ryouko-specific commands:\n")
