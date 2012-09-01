@@ -1812,7 +1812,7 @@ class CDialog(QtGui.QMainWindow):
                 downloaderThread.setUrl("https://easylist-downloads.adblockplus.org/easylist.txt")
                 downloaderThread.setDestination(os.path.join(app_profile, "adblock", "easylist.txt"))
                 downloaderThread.start()
-    def loadSettings(self):
+    def loadSettings(self):       
         if not os.path.exists(app_profile):
             os.makedirs(app_profile)
         settings_manager.loadSettings()
@@ -1928,6 +1928,7 @@ class CDialog(QtGui.QMainWindow):
                     doNothing()
         except:
             doNothing()
+        self.extensionManager.loadExtensions()
     def addProfile(self):
         pname = inputDialog(tr('query'), tr('enterProfileName'))
         if pname:
@@ -3327,6 +3328,7 @@ self.origY + ev.globalY() - self.mouseY)
 
     def showSettings(self):
         cDialog.show()
+        cDialog.loadSettings()
         centerWidget(cDialog)
 
     def updateSettings(self):
