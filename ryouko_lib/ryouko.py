@@ -30,7 +30,7 @@ SOFTWARE.
 from __future__ import print_function
 import locale
 
-def do_nothing():
+def do_nothing(dummy=None):
     return
 
 try:
@@ -1266,7 +1266,7 @@ class MiniBrowser(QtGui.QDockWidget):
         self.urlBar.returnPressed.connect(self.updateWeb)
         self.toolBar.addWidget(self.urlBar)
 
-        self.pbBox = QtGui.QCheckBox("PB")
+        self.pbBox = QtGui.QCheckBox("&PB")
         self.pbBox.stateChanged.connect(self.establishPBMode)
         self.toolBar.addWidget(self.pbBox)
 
@@ -1286,7 +1286,9 @@ class MiniBrowser(QtGui.QDockWidget):
 
     def updateWeb(self):
         u = unicode(self.urlBar.text())
-        if not "://" in u:
+        if not "://" in u and not " " in u:
+            u = "http://" + u
+        elif not "://" in u:
             u = "http://duckduckgo.com/?q=" + u
         u = QtCore.QUrl(u)
         self.browser.webView.load(u)
