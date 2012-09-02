@@ -1253,11 +1253,17 @@ class MiniBrowser(QtGui.QDockWidget):
         self.browser = Browser(parent, url, pb)
         self.initUI()
 
+    def webView(self):
+        return self.browser.webView
+
     def initUI(self):
 
-        self.browser.webView.urlChanged.connect(self.appendToHistory)
+        self.webView().urlChanged.connect(self.appendToHistory)
+        self.webView().newTabRequest.connect(self.parent().newTab)
+        self.webView().newWindowRequest.connect(self.parent().newWindowWithRWebView)
 
         self.toolBar = QtGui.QToolBar()
+        self.toolBar.setStyleSheet("QToolBar{border:0;background:transparent;}")
         self.toolBar.setMovable(False)
         self.toolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.browser.addToolBar(self.toolBar)
@@ -1270,19 +1276,19 @@ class MiniBrowser(QtGui.QDockWidget):
         self.pbBox.stateChanged.connect(self.establishPBMode)
         self.toolBar.addWidget(self.pbBox)
 
-        self.browser.webView.urlChanged.connect(self.updateText)
-        self.browser.webView.iconChanged.connect(self.setIcon)
+        self.webView().urlChanged.connect(self.updateText)
+        self.webView().iconChanged.connect(self.setIcon)
         
         self.setWidget(self.browser)
 
         self.setIcon()
 
     def appendToHistory(self, url):
-        if self.browser.webView.pb == False:
+        if self.webView().pb == False:
             browserHistory.append(url)
 
     def establishPBMode(self):
-        self.browser.webView.establishPBMode(self.pbBox.isChecked())
+        self.webView().establishPBMode(self.pbBox.isChecked())
 
     def updateWeb(self):
         u = unicode(self.urlBar.text())
@@ -1291,16 +1297,16 @@ class MiniBrowser(QtGui.QDockWidget):
         elif not "://" in u:
             u = "http://duckduckgo.com/?q=" + u
         u = QtCore.QUrl(u)
-        self.browser.webView.load(u)
+        self.webView().load(u)
 
     def updateText(self):
-        self.urlBar.setText(self.browser.webView.url().toString())
+        self.urlBar.setText(self.webView().url().toString())
 
     def setIcon(self):
-        try: i = self.browser.webView.icon()
+        try: i = self.webView().icon()
         except: do_nothing()
         else:
-            if i.actualSize(QtCore.QSize(16, 16)).width() < 1 or self.browser.webView.url() == QtCore.QUrl("about:blank"):
+            if i.actualSize(QtCore.QSize(16, 16)).width() < 1 or self.webView().url() == QtCore.QUrl("about:blank"):
                 self.urlBar.setIcon(app_webview_default_icon)
             else:
                 self.urlBar.setIcon(i)
@@ -1314,7 +1320,7 @@ class MiniBrowser(QtGui.QDockWidget):
     def initUI(self):
         self.setWidget(self.browser)
     def closeEvent(self, ev):
-        self.parent().closedTabsList.append({'widget' : self, 'title' : unicode(self.browser.webView.title()), 'url' : unicode(self.browser.webView.url().toString())})
+        self.parent().closedTabsList.append({'widget' : self, 'title' : unicode(self.webView().title()), 'url' : unicode(self.webView().url().toString())})
         self.parent().removeDockWidget(self)
         ev.accept()"""
 
