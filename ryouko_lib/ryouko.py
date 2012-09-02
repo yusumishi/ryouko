@@ -1246,6 +1246,18 @@ def undoCloseWindow():
         app_windows[len(app_windows) - 1].updateExtensions()
         app_windows[len(app_windows) - 1].show()
 
+class BrowserPartition(QtGui.QDockWidget):
+    def __init__(self, parent=None, url=False, pb=False):
+        QtGui.QDockWidget.__init__(self, parent)
+        self.browser = Browser(parent, url, pb)
+        self.initUI()
+    def initUI(self):
+        self.setWidget(self.browser)
+    def closeEvent(self, ev):
+        self.parent().closedTabsList.append({'widget' : self, 'title' : unicode(self.browser.webView.title()), 'url' : unicode(self.browser.webView.url().toString())})
+        self.parent().removeDockWidget(self)
+        ev.accept()
+
 class Browser(QtGui.QMainWindow):
     def __init__(self, parent=None, url=False, pb=False):
         super(Browser, self).__init__()
@@ -1988,6 +2000,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.closed = False
         self.extensions = {}
         self.closedTabsList = []
+        self.partitions = []
         self.tempHistory = []
         self.searchOn = False
         self.tempHistory = []
@@ -2406,7 +2419,7 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.mainToolBar = QtGui.QToolBar("")
         self.mainToolBar.setMovable(False)
-        self.mainToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        #self.mainToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addToolBar(self.mainToolBar)
 
         self.historyCompletionBox = QtGui.QWidget()
@@ -2501,7 +2514,7 @@ self.origY + ev.globalY() - self.mouseY)
 
         self.findNextAction = QtGui.QAction(self)
         self.findNextAction.triggered.connect(self.findNext)
-        self.findNextAction.setShortcuts(["Ctrl+G", "F3"])
+        self.findNextAction.setShortcuts(["Ctrl+G"])
         self.findNextAction.setText(tr("findNextHKey"))
         self.findNextAction.setToolTip(tr("findNextBtnTT"))
         self.findNextAction.setIcon(QtGui.QIcon().fromTheme("media-seek-forward", QtGui.QIcon(ryouko_icon('find-next.png'))))
@@ -2722,6 +2735,12 @@ self.origY + ev.globalY() - self.mouseY)
         newWindowAction.triggered.connect(self.newWindow)
         self.addAction(newWindowAction)
 
+        #newPartitionAction = QtGui.QAction(QtGui.QIcon().fromTheme("tab-new", QtGui.QIcon(ryouko_icon('newtab.png'))), tr('newTabBtn'), self)
+        #newPartitionAction.setToolTip(tr('newPartitionBtnTT'))
+        #newPartitionAction.setShortcuts(['F3'])
+        #newPartitionAction.triggered.connect(self.newPartition)
+        #self.addAction(newPartitionAction)
+
         # Save page action
         savePageAction = QtGui.QAction(QtGui.QIcon().fromTheme("document-save-as", QtGui.QIcon(ryouko_icon('saveas.png'))), tr('saveAs'), self)
         savePageAction.setShortcut('Ctrl+S')
@@ -2837,6 +2856,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenu.setTitle(tr("windowsHKey"))
         self.tabsContextMenu.addAction(newTabAction)
         self.tabsContextMenu.addAction(newWindowAction)
+        self.tabsContextMenu.addAction(newPartitionAction)
         self.tabsContextMenu.addAction(newpbTabAction)
         self.tabsContextMenu.addSeparator()
         self.tabsContextMenu.addAction(closeTabAction)
@@ -2925,6 +2945,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.fileMenu = QtGui.QMenu(tr("fileHKey"))
         self.fileMenu.addAction(newTabAction)
         self.fileMenu.addAction(newWindowAction)
+        self.fileMenu.addAction(newPartitionAction)
         self.fileMenu.addAction(newpbTabAction)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(savePageAction)
@@ -3334,6 +3355,8 @@ self.origY + ev.globalY() - self.mouseY)
     def updateSettings(self):
         for tab in range(self.tabs.count()):
             self.tabs.widget(tab).updateSettings()
+        for partition in self.partitions:
+            partition.browser.updateSettings()
 
     def nextTab(self):
         tabIndex = self.tabs.currentIndex() + 1
@@ -3365,6 +3388,11 @@ self.origY + ev.globalY() - self.mouseY)
         win = self.newWindow()
         win.closeTab(0, True, True)
         win.newpbTab(webView)
+
+    def newPartition(self, webView = None, url=False):
+        p = BrowserPartition(self, webView, url)
+        self.partitions.append(p)
+        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, p)
 
     def newTab(self, webView = None, url=False):
         if cDialog.settings['privateBrowsing']:
@@ -3535,21 +3563,24 @@ self.origY + ev.globalY() - self.mouseY)
             index = len(self.closedTabsList) - 1
         elif type(index) != int:
             index = self.closedTabsMenu.row(index)
-        self.closeTab(i, True, True)
         if len(self.closedTabsList) > 0:
-            self.tabs.insertTab(i, self.closedTabsList[index]['widget'], self.closedTabsList[index]['widget'].webView.icon(), self.closedTabsList[index]['widget'].webView.title())
-            self.updateTitles()
-            self.tabs.setCurrentIndex(i)
-            if self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoForward():
-                self.tabs.widget(self.tabs.currentIndex()).webView.forward()
-                self.tabs.widget(self.tabs.currentIndex()).webView.back()
-            elif self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoBack():
-                self.tabs.widget(self.tabs.currentIndex()).webView.back()
-                self.tabs.widget(self.tabs.currentIndex()).webView.forward()
+            if type(self.closedTabsList[index]['widget']) == Browser:
+                self.closeTab(i, True, True)
+                self.tabs.insertTab(i, self.closedTabsList[index]['widget'], self.closedTabsList[index]['widget'].webView.icon(), self.closedTabsList[index]['widget'].webView.title())
+                self.updateTitles()
+                self.tabs.setCurrentIndex(i)
+                if self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoForward():
+                    self.tabs.widget(self.tabs.currentIndex()).webView.forward()
+                    self.tabs.widget(self.tabs.currentIndex()).webView.back()
+                elif self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoBack():
+                    self.tabs.widget(self.tabs.currentIndex()).webView.back()
+                    self.tabs.widget(self.tabs.currentIndex()).webView.forward()
+                else:
+                    self.tabs.widget(self.tabs.currentIndex()).webView.load(QtCore.QUrl(self.closedTabsList[index]["url"]))
             else:
-                self.tabs.widget(self.tabs.currentIndex()).webView.load(QtCore.QUrl(self.closedTabsList[index]["url"]))
+                undoCloseTab(index)
             del self.closedTabsList[index]
-        self.reloadClosedTabsMenu()
+            self.reloadClosedTabsMenu()
 
     def undoCloseTab(self, index=False):
         if index == False:
@@ -3557,19 +3588,33 @@ self.origY + ev.globalY() - self.mouseY)
         elif type(index) != int:
             index = self.closedTabsMenu.row(index)
         if len(self.closedTabsList) > 0:
-            self.tabs.addTab(self.closedTabsList[index]['widget'], self.closedTabsList[index]['widget'].webView.icon(), self.closedTabsList[index]['widget'].webView.title())
-            self.updateTitles()
-            self.tabs.setCurrentIndex(self.tabs.count() - 1)
-            if self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoForward():
-                self.tabs.widget(self.tabs.currentIndex()).webView.forward()
-                self.tabs.widget(self.tabs.currentIndex()).webView.back()
-            elif self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoBack():
-                self.tabs.widget(self.tabs.currentIndex()).webView.back()
-                self.tabs.widget(self.tabs.currentIndex()).webView.forward()
+            if type(self.closedTabsList[index]['widget']) == Browser:
+                self.tabs.addTab(self.closedTabsList[index]['widget'], self.closedTabsList[index]['widget'].webView.icon(), self.closedTabsList[index]['widget'].webView.title())
+                self.updateTitles()
+                self.tabs.setCurrentIndex(self.tabs.count() - 1)
+                if self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoForward():
+                    self.tabs.widget(self.tabs.currentIndex()).webView.forward()
+                    self.tabs.widget(self.tabs.currentIndex()).webView.back()
+                elif self.tabs.widget(self.tabs.currentIndex()).webView.history().canGoBack():
+                    self.tabs.widget(self.tabs.currentIndex()).webView.back()
+                    self.tabs.widget(self.tabs.currentIndex()).webView.forward()
+                else:
+                    self.tabs.widget(self.tabs.currentIndex()).webView.load(QtCore.QUrl(self.closedTabsList[index]["url"]))
             else:
-                self.tabs.widget(self.tabs.currentIndex()).webView.load(QtCore.QUrl(self.closedTabsList[index]["url"]))
+                w = self.closedTabsList[index]['widget']
+                self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, w)
+                do_nothing()
+                else:
+                    if w.browser.webView.history().canGoForward():
+                        w.browser.webView.forward()
+                        w.browser.webView.back()
+                    elif w.browser.webView.history().canGoBack():
+                        w.browser.webView.back()
+                        w.browser.webView.forward()
+                    else:
+                        w.browser.webView.load(QtCore.QUrl(self.closedTabsList[index]["url"]))
             del self.closedTabsList[index]
-        self.reloadClosedTabsMenu()
+            self.reloadClosedTabsMenu()
 
     def updateIcons(self):
         self.setIcon()
