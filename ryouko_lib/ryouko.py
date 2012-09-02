@@ -1246,7 +1246,65 @@ def undoCloseWindow():
         app_windows[len(app_windows) - 1].updateExtensions()
         app_windows[len(app_windows) - 1].show()
 
-class BrowserPartition(QtGui.QDockWidget):
+class MiniBrowser(QtGui.QDockWidget):
+    def __init__(self, parent=None, url=False, pb=False):
+        QtGui.QDockWidget.__init__(self, parent)
+        self.setWindowTitle(tr('miniBrowser'))
+        self.browser = Browser(parent, url, pb)
+        self.initUI()
+
+    def initUI(self):
+
+        self.browser.webView.urlChanged.connect(self.appendToHistory)
+
+        self.toolBar = QtGui.QToolBar()
+        self.toolBar.setMovable(False)
+        self.toolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.browser.addToolBar(self.toolBar)
+
+        self.urlBar = RUrlBar(QtGui.QIcon(), self)
+        self.urlBar.returnPressed.connect(self.updateWeb)
+        self.toolBar.addWidget(self.urlBar)
+
+        self.pbBox = QtGui.QCheckBox("PB")
+        self.pbBox.stateChanged.connect(self.establishPBMode)
+        self.toolBar.addWidget(self.pbBox)
+
+        self.browser.webView.urlChanged.connect(self.updateText)
+        self.browser.webView.iconChanged.connect(self.setIcon)
+        
+        self.setWidget(self.browser)
+
+        self.setIcon()
+
+    def appendToHistory(self, url):
+        if self.browser.webView.pb == False:
+            browserHistory.append(url)
+
+    def establishPBMode(self):
+        self.browser.webView.establishPBMode(self.pbBox.isChecked())
+
+    def updateWeb(self):
+        u = unicode(self.urlBar.text())
+        if not "://" in u:
+            u = "http://duckduckgo.com/?q=" + u
+        u = QtCore.QUrl(u)
+        self.browser.webView.load(u)
+
+    def updateText(self):
+        self.urlBar.setText(self.browser.webView.url().toString())
+
+    def setIcon(self):
+        try: i = self.browser.webView.icon()
+        except: do_nothing()
+        else:
+            if i.actualSize(QtCore.QSize(16, 16)).width() < 1 or self.browser.webView.url() == QtCore.QUrl("about:blank"):
+                self.urlBar.setIcon(app_webview_default_icon)
+            else:
+                self.urlBar.setIcon(i)
+            self.urlBar.repaint()
+
+"""class BrowserPartition(QtGui.QDockWidget):
     def __init__(self, parent=None, url=False, pb=False):
         QtGui.QDockWidget.__init__(self, parent)
         self.browser = Browser(parent, url, pb)
@@ -1256,7 +1314,7 @@ class BrowserPartition(QtGui.QDockWidget):
     def closeEvent(self, ev):
         self.parent().closedTabsList.append({'widget' : self, 'title' : unicode(self.browser.webView.title()), 'url' : unicode(self.browser.webView.url().toString())})
         self.parent().removeDockWidget(self)
-        ev.accept()
+        ev.accept()"""
 
 class Browser(QtGui.QMainWindow):
     def __init__(self, parent=None, url=False, pb=False):
@@ -1284,8 +1342,8 @@ class Browser(QtGui.QMainWindow):
         self.mainLayout.addWidget(self.webView, 1, 0)
         self.webView.urlChanged.connect(browserHistory.reload)
         self.webView.titleChanged.connect(browserHistory.reload)
+        self.webView.urlChanged.connect(self.appendToHistory)
         if not self.pb and not self.webView.pb:
-            self.webView.urlChanged.connect(browserHistory.append)
             self.webView.titleChanged.connect(browserHistory.updateTitles)
         self.webInspector.setPage(self.webView.page())
         self.webView.settings().setIconDatabasePath(qstring(app_profile))
@@ -1297,6 +1355,10 @@ class Browser(QtGui.QMainWindow):
         self.webView.page().alertToolBar.connect(self.addToolBarBreak)
         self.webView.page().alertToolBar.connect(self.addToolBar)
         bookmarksManager.userLinksChanged.connect(self.webView.setUserLinks)
+
+    def appendToHistory(self, url):
+        if self.webView.pb == False:
+            browserHistory.append(url)
 
     def downloadStarted(self):
         downloadStartTimer.start(250)
@@ -1324,7 +1386,9 @@ class Browser(QtGui.QMainWindow):
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
 
         historySearchAction = QtGui.QAction(self)
-        historySearchAction.triggered.connect(self.parent.focusHistorySearch)
+        try: self.parent.focusHistorySearch
+        except: do_nothing()
+        else: historySearchAction.triggered.connect(self.parent.focusHistorySearch)
         #historySearchAction.setShortcuts(["Alt+H"])
         self.addAction(historySearchAction)
 
@@ -1352,7 +1416,9 @@ class Browser(QtGui.QMainWindow):
         self.statusMessage = QtGui.QLineEdit(self)
         self.statusMessage.setReadOnly(True)
         self.statusMessage.setFocusPolicy(QtCore.Qt.TabFocus)
-        self.parent.historyCompletion.statusMessage.connect(self.statusMessage.setText)
+        try: self.parent.historyCompletion
+        except: do_nothing()
+        else: self.parent.historyCompletion.statusMessage.connect(self.statusMessage.setText)
         self.statusMessage.setStyleSheet("""
         QLineEdit {
         min-height: 1em;
@@ -2000,7 +2066,7 @@ class TabBrowser(QtGui.QMainWindow):
         self.closed = False
         self.extensions = {}
         self.closedTabsList = []
-        self.partitions = []
+        #self.partitions = []
         self.tempHistory = []
         self.searchOn = False
         self.tempHistory = []
@@ -2402,6 +2468,10 @@ self.origY + ev.globalY() - self.mouseY)
         self.reloadHistory()
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.historyDock)
         self.historyDock.hide()
+
+        self.miniBrowser = MiniBrowser(self)
+        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.miniBrowser)
+        self.miniBrowser.hide()
 
         self.closedTabsMenu = ListMenu()
         self.closedTabsMenu.itemClicked.connect(self.undoCloseTab)
@@ -2827,6 +2897,15 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addAction(self.toggleBTAction)
 
         self.mainMenu.addSeparator()
+
+        self.toggleMiniBrowserAction = QtGui.QAction(tr("showMiniBrowser"), self)
+        self.toggleMiniBrowserAction.setCheckable(True)
+        self.toggleMiniBrowserAction.setShortcut("F3")
+        self.toggleMiniBrowserAction.triggered.connect(self.toggleMiniBrowser)
+        self.mainMenu.addAction(self.toggleMiniBrowserAction)
+        
+        self.mainMenu.addSeparator()
+
         self.mainMenu.addAction(self.tabsOnTopAction)
         self.mainMenu.addSeparator()
 
@@ -2856,7 +2935,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.tabsContextMenu.setTitle(tr("windowsHKey"))
         self.tabsContextMenu.addAction(newTabAction)
         self.tabsContextMenu.addAction(newWindowAction)
-        self.tabsContextMenu.addAction(newPartitionAction)
+        #self.tabsContextMenu.addAction(newPartitionAction)
         self.tabsContextMenu.addAction(newpbTabAction)
         self.tabsContextMenu.addSeparator()
         self.tabsContextMenu.addAction(closeTabAction)
@@ -2945,7 +3024,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.fileMenu = QtGui.QMenu(tr("fileHKey"))
         self.fileMenu.addAction(newTabAction)
         self.fileMenu.addAction(newWindowAction)
-        self.fileMenu.addAction(newPartitionAction)
+        #self.fileMenu.addAction(newPartitionAction)
         self.fileMenu.addAction(newpbTabAction)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(savePageAction)
@@ -2969,6 +3048,8 @@ self.origY + ev.globalY() - self.mouseY)
         self.viewMenu = QtGui.QMenu(tr("viewHKey"))
         self.viewMenu.addAction(self.toggleMBAction)
         self.viewMenu.addAction(self.toggleBTAction)
+        self.viewMenu.addSeparator()
+        self.viewMenu.addAction(self.toggleMiniBrowserAction)
         self.viewMenu.addSeparator()
         self.viewMenu.addAction(self.tabsOnTopAction)
         self.viewMenu.addSeparator()
@@ -3257,6 +3338,19 @@ self.origY + ev.globalY() - self.mouseY)
         else:
             self.toggleBTAction.setChecked(False)
 
+    def toggleMiniBrowser(self):
+        if self.miniBrowser.isVisible() and not self.miniBrowser.urlBar.hasFocus():
+            self.miniBrowser.urlBar.setFocus()
+            self.miniBrowser.urlBar.selectAll()
+        else:
+            self.miniBrowser.setVisible(not self.miniBrowser.isVisible())
+            if self.miniBrowser.isVisible():
+                self.miniBrowser.urlBar.setFocus()
+                self.miniBrowser.urlBar.selectAll()
+                self.toggleMiniBrowserAction.setChecked(True)
+            else:
+                self.toggleMiniBrowserAction.setChecked(False)
+
     def toggleFullScreen(self):
         if self.windowState() == QtCore.Qt.WindowFullScreen:
             self.setWindowState(QtCore.Qt.WindowNoState)
@@ -3355,8 +3449,9 @@ self.origY + ev.globalY() - self.mouseY)
     def updateSettings(self):
         for tab in range(self.tabs.count()):
             self.tabs.widget(tab).updateSettings()
-        for partition in self.partitions:
-            partition.browser.updateSettings()
+        #for partition in self.partitions:
+            #partition.browser.updateSettings()
+        self.miniBrowser.browser.updateSettings()
 
     def nextTab(self):
         tabIndex = self.tabs.currentIndex() + 1
@@ -3600,7 +3695,7 @@ self.origY + ev.globalY() - self.mouseY)
                     self.tabs.widget(self.tabs.currentIndex()).webView.forward()
                 else:
                     self.tabs.widget(self.tabs.currentIndex()).webView.load(QtCore.QUrl(self.closedTabsList[index]["url"]))
-            else:
+            """else:
                 w = self.closedTabsList[index]['widget']
                 self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, w)
                 do_nothing()
@@ -3612,7 +3707,7 @@ self.origY + ev.globalY() - self.mouseY)
                         w.browser.webView.back()
                         w.browser.webView.forward()
                     else:
-                        w.browser.webView.load(QtCore.QUrl(self.closedTabsList[index]["url"]))
+                        w.browser.webView.load(QtCore.QUrl(self.closedTabsList[index]["url"]))"""
             del self.closedTabsList[index]
             self.reloadClosedTabsMenu()
 
