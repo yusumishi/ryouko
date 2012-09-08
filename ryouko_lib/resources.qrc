@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+ <qresource>
+     <file alias="about.png">icons/about-logo.png</file>
+     <file alias="about.html">LICENSE.html</file>
+     <file>AUTHORS.txt</file>
+     <file>apache-license-2.0.txt</file>
+ </qresource>
+ </RCC>

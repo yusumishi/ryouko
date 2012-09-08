@@ -91,6 +91,7 @@ app_default_useragent = "Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/534.34 (KHT
 app_webview_default_icon = QtGui.QIcon()
 app_tabs_on_top = False
 
+import resources
 from ryouko_common import *
 from ServerThread import ServerThread
 from SystemFunctions import system_open
@@ -1138,7 +1139,7 @@ def showAboutPage(webView):
         <div style=\"max-width: 640px;\">
         <a name='about'></a>
         <h1 style='margin-bottom: 0;'>""" + tr('aboutRyouko') + """</h1>
-        <img src='file://%""" + ryouko_icon("about-logo.png") + """'></img><br/>
+        <img src='qrc:///about.png'></img><br/>
         <div style=\"text-align: left;\">
         <b>Ryouko:</b> """ + app_version + """<br/>
         <b>""" + tr('codename') + """:</b> \"""" + app_codename + """\"<br/>
@@ -1196,10 +1197,7 @@ class RAboutDialog(QtGui.QMainWindow):
         h = self.licensePage.history()
         for item in h.backItems(h.count()):
             self.licensePage.back()
-        h = os.path.join(app_lib, "LICENSE.html").replace("\\", "/")
-        if sys.platform.startswith("win"):
-            h = h.replace(h[0:2], "")
-        self.licensePage.load(QtCore.QUrl("file://" + h))
+        self.licensePage.load(QtCore.QUrl("qrc:///about.html"))
 
 
 aboutDialog = None
