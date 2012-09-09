@@ -295,6 +295,7 @@ def changeProfile(profile, init = False):
     else: searchManager.changeProfile(app_profile)
 
 app_default_profile_name = "default"
+app_tray_icon = None
 if os.path.exists(app_default_profile_file):
     f = open(app_default_profile_file)
     app_default_profile_name = f.read()
@@ -340,17 +341,17 @@ windowtoolbarsheet = "QToolBar { border: 0; background: palette(window); }"
 dw_stylesheet = ""
 
 def hiddenNotificationMessage(message="This is a message."):
-    if use_linux_notifications == False:
-        notificationManager.newNotification(message)
-    else:
+    if use_linux_notifications != False:
         linux_notification(message)
+    notificationManager.newNotification(message)
 
 def notificationMessage(message="This is a message."):
     if use_linux_notifications == False:
-        notificationManager.show()
-        notificationManager.newNotification(message)
+        try: app_tray_icon.showMessage(tr("ryoukoSays"), message)
+        except: do_nothing()
     else:
         linux_notification(message)
+    notificationManager.newNotification(message)
 
 def linux_notification(string="This is a message."):
     n = pynotify.Notification(tr("ryoukoSays"), string)
@@ -3821,7 +3822,10 @@ class Ryouko(QtGui.QWidget):
         global library; global searchEditor; global cDialog; global win;
         global aboutDialog; global notificationManager;
         global clearHistoryDialog; global downloadManagerGUI;
+        global app_tray_icon
         reload_app_extensions()
+        app_tray_icon = QtGui.QSystemTrayIcon(QtGui.QIcon(ryouko_icon("globe.png")))
+        app_tray_icon.show()
         downloadManagerGUI = DownloadManagerGUI()
         downloadManagerGUI.networkAccessManager.setCookieJar(app_cookiejar)
         app_cookiejar.setParent(QtCore.QCoreApplication.instance())
