@@ -28,7 +28,7 @@ SOFTWARE.
 ## END OF LICENSE ##
 
 from __future__ import print_function
-import locale
+from locale import getdefaultlocale
 
 def do_nothing(dummy=None):
     return
@@ -85,7 +85,7 @@ try: __file__
 except: __file__ = sys.executable
 app_lib = os.path.dirname(os.path.realpath(__file__))
 app_inject_types = ["python-tabbrowser", "python-startup"]
-app_locale = locale.getdefaultlocale()[0]
+app_locale = getdefaultlocale()[0]
 sys.path.append(app_lib)
 app_default_useragent = "Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/534.34 (KHTML, like Gecko) Qt/4.8.1 Safari/534.34"
 app_webview_default_icon = QtGui.QIcon()
@@ -116,15 +116,6 @@ from NotificationManager import NotificationManager
 from TranslationManager import *
 from RExtensionButton import RExtensionButton
 from DownloadManager import DownloadManagerGUI
-
-app_gnome_unity_integration = False
-"""if sys.platform.startswith("linux"):
-    if "gnome-session" in commands.getoutput('ps -A'):
-        app_gnome_unity_integration = True
-#app_use_ambiance = False
-if sys.platform.startswith("linux"):
-    if get_key("/desktop/gnome/shell/windows/theme") == "Ambiance" and "gnome-session" in commands.getoutput('ps -A'):
-        app_use_ambiance = True"""
 
 app_windows = []
 app_closed_windows = []
@@ -592,10 +583,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
             self.setWindowIcon(QtGui.QIcon(app_logo))
         self.setWindowTitle(tr('bookmarks'))
         self.nameToolBar = QtGui.QToolBar("Add a bookmarky")
-        if app_gnome_unity_integration:
-            self.nameToolBar.setStyleSheet(windowtoolbarsheet)
-        else:
-            self.nameToolBar.setStyleSheet(blanktoolbarsheet)
+        self.nameToolBar.setStyleSheet(blanktoolbarsheet)
         self.nameToolBar.setMovable(False)
         self.nameToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         nameLabel = QtGui.QLabel(tr('name') + ": ")
@@ -604,10 +592,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.nameToolBar.addWidget(nameLabel)
         self.nameToolBar.addWidget(self.nameField)
         self.urlToolBar = QtGui.QToolBar("Add a bookmarky")
-        if app_gnome_unity_integration:
-            self.urlToolBar.setStyleSheet(windowtoolbarsheet)
-        else:
-            self.urlToolBar.setStyleSheet(blanktoolbarsheet)
+        self.urlToolBar.setStyleSheet(blanktoolbarsheet)
         self.urlToolBar.setMovable(False)
         self.urlToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         uLabel = QtGui.QLabel(tr('url') + ": ")
@@ -616,10 +601,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         self.urlToolBar.addWidget(uLabel)
         self.urlToolBar.addWidget(self.urlField)
         self.finishToolBar = QtGui.QToolBar()
-        if app_gnome_unity_integration:
-            self.finishToolBar.setStyleSheet(windowtoolbarsheet)
-        else:
-            self.finishToolBar.setStyleSheet(blanktoolbarsheet)
+        self.finishToolBar.setStyleSheet(blanktoolbarsheet)
         self.finishToolBar.setMovable(False)
         self.finishToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addButton = QtGui.QPushButton(tr('add'))
@@ -906,10 +888,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         self.parent = parent
 
         self.historyToolBar = QtGui.QToolBar("")
-        if app_gnome_unity_integration:
-            self.historyToolBar.setStyleSheet(windowtoolbarsheet)
-        else:
-            self.historyToolBar.setStyleSheet(blanktoolbarsheet)
+        self.historyToolBar.setStyleSheet(blanktoolbarsheet)
         self.historyToolBar.setMovable(False)
         self.historyToolBar.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.addToolBar(self.historyToolBar)
