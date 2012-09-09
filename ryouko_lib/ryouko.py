@@ -3825,7 +3825,8 @@ class Ryouko(QtGui.QWidget):
         global app_tray_icon
         reload_app_extensions()
         app_tray_icon = QtGui.QSystemTrayIcon(QtGui.QIcon(ryouko_icon("globe.png")))
-        app_tray_icon.show()
+        if use_linux_notifications == True:
+            app_tray_icon.show()
         downloadManagerGUI = DownloadManagerGUI()
         downloadManagerGUI.networkAccessManager.setCookieJar(app_cookiejar)
         app_cookiejar.setParent(QtCore.QCoreApplication.instance())
