@@ -2280,6 +2280,8 @@ self.origY + ev.globalY() - self.mouseY)
                 self.historyCompletionBox.move(self.urlBar.mapToGlobal(QtCore.QPoint(0,0)).x(), self.urlBar.mapToGlobal(QtCore.QPoint(0,0)).y())
                 self.historyCompletionBox.show()
                 self.historyCompletionBox.resize(self.urlBar.width(), self.historyCompletionBox.height())
+                self.rSyncText()
+                self.urlBar2.setCursorPosition(self.urlBar.cursorPosition())
 
     def historyUp(self):
         if self.historyCompletion.currentRow() == 0 and self.historyCompletion.hasFocus():
@@ -2375,6 +2377,8 @@ self.origY + ev.globalY() - self.mouseY)
             else:
                 if os.path.exists(unicode(urlBar)):
                     header = "file://"
+                elif urlBar.startswith("qrc:") and sys.platform.startswith("win"):
+                    return
                 elif not unicode(urlBar).startswith("about:") and not "://" in unicode(urlBar) and not "javascript:" in unicode(urlBar):
                     header = "http://"
                 if unicode(urlBar) == "about:" or unicode(urlBar) == "about:version":
@@ -2414,7 +2418,9 @@ self.origY + ev.globalY() - self.mouseY)
             self.urlBar2.setText(self.urlBar.text())
 
     def syncText(self):
-        self.urlBar.setText(self.urlBar2.text())
+        if self.urlBar2.text() != self.urlBar.text():
+            self.urlBar.setText(self.urlBar2.text())
+            self.urlBar.setCursorPosition(self.urlBar2.cursorPosition())
 
     def openHistoryItemFromPopup(self, item):
         self.currentWebView().load(QtCore.QUrl(self.tempHistory[self.historyCompletion.row(item)]['url']))
