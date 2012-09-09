@@ -31,7 +31,6 @@ def do_nothing():
     return
 
 import os, sys
-from subprocess import Popen, PIPE
 
 try:
     filename = __file__
@@ -84,6 +83,15 @@ def get_mimetype(filename):
         return None
     else:
         return f.headers['content-type']
+
+def ryouko_file(fname):
+    return os.path.join(app_lib, fname)
+
+def read_file(fname):
+    f = open(fname)
+    t = f.read()
+    f.close()
+    return t
 
 def shred_directory(directory):
     if os.path.isdir(directory):
