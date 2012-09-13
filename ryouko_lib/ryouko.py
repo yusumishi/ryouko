@@ -1290,18 +1290,6 @@ class MiniBrowser(QtGui.QDockWidget):
                 self.urlBar.setIcon(i)
             self.urlBar.repaint()
 
-"""class BrowserPartition(QtGui.QDockWidget):
-    def __init__(self, parent=None, url=False, pb=False):
-        QtGui.QDockWidget.__init__(self, parent)
-        self.browser = Browser(parent, url, pb)
-        self.initUI()
-    def initUI(self):
-        self.setWidget(self.browser)
-    def closeEvent(self, ev):
-        self.parent().closedTabsList.append({'widget' : self, 'title' : unicode(self.webView().title()), 'url' : unicode(self.webView().url().toString())})
-        self.parent().removeDockWidget(self)
-        ev.accept()"""
-
 class Browser(QtGui.QMainWindow):
     def __init__(self, parent=None, url=False, pb=False):
         super(Browser, self).__init__()
@@ -3465,11 +3453,6 @@ self.origY + ev.globalY() - self.mouseY)
         win = self.newWindow()
         win.closeTab(0, True, True)
         win.newpbTab(webView)
-
-    def newPartition(self, webView = None, url=False):
-        p = BrowserPartition(self, webView, url)
-        self.partitions.append(p)
-        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, p)
 
     def newTab(self, webView = None, url=False):
         if cDialog.settings['privateBrowsing']:
