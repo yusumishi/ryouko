@@ -1247,6 +1247,12 @@ class MiniBrowser(QDockWidget):
         self.toolBar.setMovable(False)
         self.toolBar.setContextMenuPolicy(Qt.CustomContextMenu)
         self.browser.addToolBar(self.toolBar)
+        self.browser.statusBarBorder.deleteLater()
+        self.browser.statusBar.deleteLater()
+
+        self.browser.zoomInAction.setShortcuts([""])
+        self.browser.zoomOutAction.setShortcut("")
+        self.browser.zoomResetAction.setShortcut("")
 
         self.toolBar.addAction(self.webView().pageAction(QWebPage.Back))
         self.toolBar.addAction(self.webView().pageAction(QWebPage.Forward))
