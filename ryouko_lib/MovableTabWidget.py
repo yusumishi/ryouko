@@ -15,9 +15,6 @@ sys.path.append(app_lib)
 from MovableTabBar import *
 #from GConfFunctions import *
 
-def doNothing():
-    return
-
 win_stylesheet = ""
 
 class MovableTabWidget(QtGui.QTabWidget):
@@ -35,7 +32,7 @@ class MovableTabWidget(QtGui.QTabWidget):
     def mousePressEvent(self, ev):
         if ev.button() == QtCore.Qt.RightButton:
             try:
-                doNothing()
+                pass
             except:
                 print("MovableTabWidget could not display its parent's context menu!")
         else:

@@ -12,9 +12,6 @@ from TranslationManager import *
 from Python23Compat import *
 from DialogFunctions import message
 
-def doNothing():
-    return
-
 class SearchManager(QtCore.QObject):
     def __init__(self, app_profile=os.path.expanduser("~"), parent=None):
         super(SearchManager, self).__init__(parent)
@@ -33,16 +30,16 @@ class SearchManager(QtCore.QObject):
             f = open(self.searchEnginesFile, "r")
             try: read = json.load(f)
             except:
-                doNothing()
+                pass
             f.close()
             try: read['searchEngines']
             except:
-                doNothing()
+                pass
             else:
                 self.searchEngines = read['searchEngines'] 
             try: read['currentSearch']
             except:
-                doNothing()
+                pass
             else:
                 self.currentSearch = read['currentSearch']
     def save(self):

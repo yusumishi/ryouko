@@ -27,12 +27,6 @@ if os.path.exists(app_info):
     if len(metadata) > 0:
         app_version = metadata[0].rstrip("\n")
 
-def doNothing():
-    return
-
-def do_nothing():
-    return
-
 class RWebPage(QtWebKit.QWebPage):
     alertToolBar = QtCore.pyqtSignal(QtGui.QToolBar)
     def __init__(self, parent=None):
@@ -137,7 +131,7 @@ class RWebPage(QtWebKit.QWebPage):
                     v.addItem(tab["title"])
                 v.itemActivated.connect(self.parent().parent().parent.undoCloseTabInThisTab)
                 v.itemClicked.connect(self.parent().parent().parent.undoCloseTabInThisTab)
-            except: do_nothing()
+            except: pass
             else:
                 return v
         elif unicode(classid).lower() == "fileview":
@@ -152,7 +146,7 @@ class RWebPage(QtWebKit.QWebPage):
                         f.addItem(os.path.join(u, fname))
                 f.itemClicked.connect(self.parent().load)
                 f.itemActivated.connect(self.parent().load)
-            except: do_nothing()
+            except: pass
             else: return f
         elif unicode(classid).lower() == "aboutqt":
             b = QtGui.QPushButton(self.view())
@@ -555,7 +549,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
             try:
                 self.setCookieJar(self.cookieJar)
             except:
-                doNothing()
+                pass
         else:
             cookies = QtNetwork.QNetworkCookieJar(None)
             cookies.setAllCookies([])
@@ -588,7 +582,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                 self.settings().setAttribute(QtWebKit.QWebSettings.JavaEnabled, self.settingsManager.settings['javaEnabled'])
             try: self.settingsManager.settings['customUserAgent']
             except:
-                doNothing()
+                pass
             else:
                 if self.settingsManager.settings['customUserAgent'].replace(" ", "") != "":
                     self.page().setUserAgent(self.settingsManager.settings['customUserAgent'])
@@ -619,7 +613,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                     self.establishPBMode(True)
             try: self.settingsManager.settings['proxy']
             except:
-                doNothing()
+                pass
             else:
                 pr = self.settingsManager.settings['proxy']
                 up = ""
@@ -627,7 +621,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                     up = ", qstring(\"" + pr['user'] + "\"), qstring(\"" + pr['password'] + "\")"
                 try: pr['type']
                 except:
-                    doNothing()
+                    pass
                 else:
                     t = pr['type']
                     if t == "None":
@@ -636,9 +630,9 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
                     except:
                         try: exec("self.page().networkAccessManager().setProxy(QtNetwork.QNetworkProxy(QtNetwork.QNetworkProxy." + pr['type'] + "Proxy")
                         except:
-                            doNothing()
+                            pass
             try: self.settingsManager.settings['showBookmarksToolBar']
-            except: do_nothing()
+            except: pass
             else:
                 if self.settingsManager.settings['showBookmarksToolBar'] == False:
                     if not self.page().mainFrame().findFirstElement("#ryouko-toolbar").isNull():
@@ -747,7 +741,7 @@ ryoukoBrowserControls.appendChild(ryoukoURLEdit);"></input> <a href="about:blank
         h = tr('newTabShortcuts')
         try: self.parent2.parent.closedTabsList
         except:
-            doNothing()
+            pass
         else:
             if len(self.parent2.parent.closedTabsList) > 0:
                 html = html + "<td style='border-right: 1px solid; padding-right: 4px;' width=\"49%\"><b>" + tr('rCTabs') + "</b><br/>"

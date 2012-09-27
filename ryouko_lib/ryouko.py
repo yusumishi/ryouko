@@ -30,9 +30,6 @@ SOFTWARE.
 from __future__ import print_function
 from locale import getdefaultlocale
 
-def do_nothing(dummy=None):
-    return
-
 try:
     from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 except:
@@ -50,7 +47,7 @@ use_unity_launcher = False
 try:
     from gi.repository import Unity, Gio, GObject, Dbusmenu
 except:
-    do_nothing()
+    pass
 else:
     use_unity_launcher = True
 
@@ -58,7 +55,7 @@ use_linux_notifications = False
 try:
     import pynotify
 except:
-    do_nothing()
+    pass
 else:
     pynotify.init("Ryouko")
     use_linux_notifications = True
@@ -100,7 +97,7 @@ from RSearchBar import RSearchBar
 from Python23Compat import *
 from QStringFunctions import *
 from SettingsManager import SettingsManager
-from RWebKit import RWebPage, RWebView, RAboutPageView, doNothing
+from RWebKit import RWebPage, RWebView, RAboutPageView
 from DownloaderThread import DownloaderThread
 from DialogFunctions import inputDialog, centerWidget, message
 from MovableTabWidget import MovableTabWidget
@@ -110,7 +107,7 @@ from BookmarksManager import BookmarksManager
 from ContextMenu import ContextMenu
 from MenuPopupWindow import MenuPopupWindowMenu, MenuPopupWindow
 from RExpander import RExpander
-from SearchManager import SearchManager, doNothing
+from SearchManager import SearchManager
 from RHBoxLayout import RHBoxLayout
 from NotificationManager import NotificationManager
 from TranslationManager import *
@@ -167,7 +164,7 @@ def loadCookies():
         cookies = []
         for cookie in c:
             try: cookies.append(QtNetwork.QNetworkCookie().parseCookies(QtCore.QByteArray(cookie))[0])
-            except: do_nothing()
+            except: pass
         app_cookiejar.setAllCookies(cookies)
 
 def saveCookies():
@@ -187,7 +184,7 @@ def saveCookies():
             os.system("shred -v \"%s\"" % (app_cookies))
         try: remove2(app_cookies)
         except:
-            doNothing()
+            pass
 
 app_cookiejar = QtNetwork.QNetworkCookieJar(QtCore.QCoreApplication.instance())
 
@@ -212,7 +209,7 @@ def reload_app_extension_whitelist():
     if os.path.exists(app_extensions_wlfile):
         f = open(app_extensions_wlfile, "r")
         try: a = f.read()
-        except: do_nothing()
+        except: pass
         f.close()
         app_extensions_whitelist = a.split("\n")
     else:
@@ -229,7 +226,7 @@ def reload_app_extensions():
                 if os.path.exists(fname) and not os.path.isdir(fname):
                     f = open(fname, "r")
                     try: ext = json.load(f)
-                    except: do_nothing()
+                    except: pass
                     else:
                         try: ext["path"] = fname
                         except: ext["path"] = None
@@ -277,21 +274,21 @@ def changeProfile(profile, init = False):
     settings_manager.changeProfile(app_profile)
 
     try: bookmarksManager
-    except: doNothing()
+    except: pass
     else: bookmarksManager.setDirectory(app_links)
 
     global user_links
     try: user_links = bookmarksManager.reload_user_links(app_links)
-    except: do_nothing()
+    except: pass
 
     try: browserHistory
-    except: doNothing()
+    except: pass
     else:
         browserHistory.setAppProfile(app_profile)
         browserHistory.reload()
 
     try: searchManager
-    except: doNothing()
+    except: pass
     else: searchManager.changeProfile(app_profile)
 
 app_default_profile_name = "default"
@@ -348,7 +345,7 @@ def hiddenNotificationMessage(message="This is a message."):
 def notificationMessage(message="This is a message."):
     if use_linux_notifications == False:
         try: app_tray_icon.showMessage(tr("ryoukoSays"), message)
-        except: do_nothing()
+        except: pass
     else:
         linux_notification(message)
     notificationManager.newNotification(message)
@@ -377,7 +374,7 @@ def prepareQuit():
         remove2(app_lock)
     saveCookies()
     try: settings_manager.settings['cloudService']
-    except: doNothing()
+    except: pass
     else:
         sync_data()
     sys.exit()
@@ -428,7 +425,7 @@ def sync_data():
                 for win in app_windows:
                     for tab in range(win.tabs.count()):
                         win.tabs.widget(tab).webView.disablePersistentStorage()
-                        #except: do_nothing()
+                        #except: pass
                 shutil.rmtree(app_profile)
             shutil.copytree(remote_profile, app_profile)
             f = open(sfile, "w")
@@ -692,7 +689,7 @@ class BookmarksManagerGUI(QtGui.QMainWindow):
         try:
             self.parent.close()
         except:
-            doNothing()
+            pass
         return QtGui.QMainWindow.closeEvent(self, ev)
 
 class ClearHistoryDialog(QtGui.QMainWindow):
@@ -768,7 +765,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
                 os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
             try: remove2(os.path.join(app_profile, "WebpageIcons.db"))
             except:
-                doNothing()
+                pass
             saveTime = time.time()
             browserHistory.reload()
             newHistory = []
@@ -787,7 +784,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
                 try:
                     win.reloadHistory()
                 except:
-                    doNothing()
+                    pass
             if library.advancedHistoryViewGUI.reload_:
                 library.advancedHistoryViewGUI.reload_()
 
@@ -823,7 +820,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
                     os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
                 try: remove2(os.path.join(app_profile, "WebpageIcons.db"))
                 except:
-                    doNothing()
+                    pass
                 saveMonth = time.strftime("%m")
                 saveDay = time.strftime("%d")
                 now = datetime.datetime.now()
@@ -838,7 +835,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
                     try:
                         win.reloadHistory()
                     except:
-                        doNothing()
+                        pass
                 if library.advancedHistoryViewGUI.reload_:
                     library.advancedHistoryViewGUI.reload_()
         elif self.selectRange.currentIndex() == 12:
@@ -850,14 +847,14 @@ class ClearHistoryDialog(QtGui.QMainWindow):
                     os.system("shred -v \"%s\"" % (os.path.join(app_profile, "WebpageIcons.db")))
                 try: remove2(os.path.join(app_profile, "WebpageIcons.db"))
                 except:
-                    doNothing()
+                    pass
                 browserHistory.history = []
                 browserHistory.save()
                 for win in app_windows:
                     try:
                         win.reloadHistory()
                     except:
-                        doNothing()
+                        pass
                 if library.advancedHistoryViewGUI.reload_:
                     library.advancedHistoryViewGUI.reload_()
         elif self.selectRange.currentIndex() == 14:
@@ -879,7 +876,7 @@ class ClearHistoryDialog(QtGui.QMainWindow):
                     os.system("find \"" + d + "\" -type f -exec shred {} \;")
                 try: shutil.rmtree(d)
                 except:
-                    doNothing()
+                    pass
 
 clearHistoryDialog = None
 
@@ -1008,7 +1005,7 @@ class AdvancedHistoryViewGUI(QtGui.QMainWindow):
         try:
             self.parent.close()
         except:
-            doNothing()
+            pass
         return QtGui.QMainWindow.closeEvent(self, ev)
     
     def display(self):
@@ -1163,7 +1160,7 @@ class RAboutDialog(QtGui.QMainWindow):
     def updateUserAgent(self):
         try: settings_manager.settings['customUserAgent']
         except:
-            doNothing()
+            pass
         else:
             if settings_manager.settings['customUserAgent'].replace(" ", "") != "":
                 self.aboutPage.page().userAgent = settings_manager.settings['customUserAgent']
@@ -1282,7 +1279,7 @@ class MiniBrowser(QtGui.QDockWidget):
 
     def setIcon(self):
         try: i = self.webView().icon()
-        except: do_nothing()
+        except: pass
         else:
             if i.actualSize(QtCore.QSize(16, 16)).width() < 1 or self.webView().url() == QtCore.QUrl("about:blank"):
                 self.urlBar.setIcon(app_webview_default_icon)
@@ -1300,7 +1297,7 @@ class Browser(QtGui.QMainWindow):
 
     def swapWebView(self, webView):
         try: self.webView
-        except: do_nothing()
+        except: pass
         else:
             if self.webView != None:
                 self.webView.deleteLater()
@@ -1361,7 +1358,7 @@ class Browser(QtGui.QMainWindow):
 
         historySearchAction = QtGui.QAction(self)
         try: self.parent.focusHistorySearch
-        except: do_nothing()
+        except: pass
         else: historySearchAction.triggered.connect(self.parent.focusHistorySearch)
         #historySearchAction.setShortcuts(["Alt+H"])
         self.addAction(historySearchAction)
@@ -1391,7 +1388,7 @@ class Browser(QtGui.QMainWindow):
         self.statusMessage.setReadOnly(True)
         self.statusMessage.setFocusPolicy(QtCore.Qt.TabFocus)
         try: self.parent.historyCompletion
-        except: do_nothing()
+        except: pass
         else: self.parent.historyCompletion.statusMessage.connect(self.statusMessage.setText)
         self.statusMessage.setStyleSheet("""
         QLineEdit {
@@ -1722,7 +1719,7 @@ class CDialog(QtGui.QMainWindow):
         self.editSearchButton = QtGui.QPushButton(tr('manageSearchEngines'), self)
         try: self.editSearchButton.clicked.connect(searchEditor.display)
         except:
-            doNothing()
+            pass
         self.gLayout.addWidget(self.editSearchButton)
         self.gLayout.addWidget(RExpander())
 
@@ -1903,7 +1900,7 @@ class CDialog(QtGui.QMainWindow):
         except: self.aBBox.setChecked(False)
         else: self.aBBox.setChecked(self.settings['adBlock'])
         try: self.settings['customUserAgent']
-        except: doNothing()
+        except: pass
         else: self.uABox.setEditText(self.settings['customUserAgent'])
         try: self.settings['maxUndoCloseTab']
         except: self.undoCloseTabCount.setText("-1")
@@ -1913,7 +1910,7 @@ class CDialog(QtGui.QMainWindow):
             except:
                 self.undoCloseTabCount.setText("-1")
         try: self.settings['proxy']
-        except: doNothing()
+        except: pass
         else:
             pr = self.settings['proxy']
             if pr['type']:
@@ -1931,12 +1928,12 @@ class CDialog(QtGui.QMainWindow):
             if pr['password']:
                 self.portBox.setText(pr['password'])
         try: self.settings["allowInjectAddons"]
-        except: do_nothing()
+        except: pass
         else:
             self.s1Box.setChecked(self.settings["allowInjectAddons"])
         try: self.settings['cloudService']
         except:
-            doNothing()
+            pass
         else:
             for i in range(self.cloudBox.count()):
                 u = self.cloudBox.itemText(i)
@@ -1967,9 +1964,9 @@ class CDialog(QtGui.QMainWindow):
                 try:
                     window.updateSettings()
                 except:
-                    doNothing()
+                    pass
         except:
-            doNothing()
+            pass
         self.extensionManager.loadExtensions()
     def addProfile(self):
         pname = inputDialog(tr('query'), tr('enterProfileName'))
@@ -2011,7 +2008,7 @@ class CDialog(QtGui.QMainWindow):
             try:
                 window.updateSettings()
             except:
-                doNothing()
+                pass
         
 
 cDialog = None
@@ -2265,7 +2262,7 @@ self.origY + ev.globalY() - self.mouseY)
 
     def enableDisableBF(self):
         try: self.currentWebView()
-        except: do_nothing()
+        except: pass
         else:
             if self.currentWebView().page().history().canGoBack():
                 self.mainToolBar.widgetForAction(self.backAction).setEnabled(True)
@@ -2278,7 +2275,7 @@ self.origY + ev.globalY() - self.mouseY)
 
     def setIcon(self):
         try: i = self.currentWebView().icon()
-        except: do_nothing()
+        except: pass
         else:
             if i.actualSize(QtCore.QSize(16, 16)).width() < 1 or    self.currentWebView().url() == QtCore.QUrl("about:blank"):
                 self.urlBar.setIcon(app_webview_default_icon)
@@ -2880,7 +2877,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.mainMenu.addSeparator()
 
         try: settings_manager.settings["showBookmarksToolBar"]
-        except: do_nothing()
+        except: pass
         else:
             if settings_manager.settings["showBookmarksToolBar"] == True:
                 self.toggleBTAction.setChecked(True)
@@ -3114,7 +3111,7 @@ self.origY + ev.globalY() - self.mouseY)
 
         for e in self.extensions:
             try: self.extensions[e].deleteLater()
-            except: do_nothing()
+            except: pass
         self.extensions = {}
         for e in app_extensions:
             try: e["name"]
@@ -3126,63 +3123,63 @@ self.origY + ev.globalY() - self.mouseY)
                         exec("ext" + str(count) + " = RExtensionButton(self)")
                         exec("ext" + str(count) + ".setText(e['name'])")
                         exec("ext" + str(count) + ".setToolTip(e['name'])")
-                    except: do_nothing()
+                    except: pass
                     else:
                         nobutton = False
                         try: e["icon"]
-                        except: do_nothing()
+                        except: pass
                         else:
                             if e["folder"] != None:
                                 icon = os.path.join(unicode(e["folder"]), unicode(e["icon"]))
                                 if os.path.exists(icon) and not os.path.isdir(icon):
                                     try: exec("ext" + str(count) + ".setIcon(QtGui.QIcon(icon))")
-                                    except: do_nothing()
+                                    except: pass
                         try: e["type"]
                         except: t = ""
                         else:
                             t = unicode(e["type"])
                             try: exec("ext" + str(count) + ".setType(unicode(e['type']))")
-                            except: do_nothing()
+                            except: pass
                             else:
                                 if unicode(e["type"]).lower() == "python-tabbrowser":
                                     nobutton = True
                         try: e["js"]
-                        except: do_nothing()
+                        except: pass
                         else:
                             try: exec("ext" + str(count) + ".setJavaScript(unicode(e['js']))")
-                            except: do_nothing()
+                            except: pass
                         try: e["javascript"]
-                        except: do_nothing()
+                        except: pass
                         else:
                             try: exec("ext" + str(count) + ".setJavaScript(unicode(e['javascript']))")
-                            except: do_nothing()
+                            except: pass
                         try: e["python"]
-                        except: do_nothing()
+                        except: pass
                         else:
                             try: exec("ext" + str(count) + ".setPython(unicode(e['python']))")
-                            except: do_nothing()
+                            except: pass
                         try: e["url"]
-                        except: do_nothing()
+                        except: pass
                         else:
                             try: exec("ext" + str(count) + ".setLink(unicode(e['url']))")
-                            except: do_nothing()
+                            except: pass
                         try: exec("ext" + str(count) + ".linkTriggered.connect(self.loadExtensionURL)")
-                        except: do_nothing()
+                        except: pass
                         try: exec("ext" + str(count) + ".javaScriptTriggered.connect(self.loadExtensionJS)")
-                        except: do_nothing()
+                        except: pass
                         try: exec("ext" + str(count) + ".pythonTriggered.connect(self.loadExtensionPython)")
-                        except: do_nothing()
+                        except: pass
                         if nobutton == False:
                             if not t in app_inject_types:
                                 try: exec("self.extensionToolBar.addWidget(ext" + str(count) + ")")
-                                except: do_nothing()
+                                except: pass
                                 else: exec("self.extensions[\"" + e["name"] + "\"] = ext" + str(count))
                             else:
                                 try: exec("ext" + str(count) + ".deleteLater()")
-                                except: do_nothing()
+                                except: pass
                         else:
                             try: exec("ext" + str(count) + ".deleteLater()")
-                            except: do_nothing()
+                            except: pass
                             try: cDialog.settings["allowInjectAddons"]
                             except: notificationMessage(tr("extensionWarn"))
                             else:
@@ -3218,12 +3215,12 @@ self.origY + ev.globalY() - self.mouseY)
             if sys.platform.startswith("win"):
                 for win in app_windows:
                     try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
-                    except: do_nothing()
+                    except: pass
                     else: win.mainToolBar.setStyleSheet(tabsontopsheet); win.tabs.setStyleSheet(tabsontopsheet2)
             else:
                 for win in app_windows:
                     try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
-                    except: do_nothing()
+                    except: pass
                     else: win.mainToolBar.setStyleSheet(""); win.tabs.setStyleSheet("")
         else:
             self.tabsOnTopAction.setChecked(False)
@@ -3253,18 +3250,18 @@ self.origY + ev.globalY() - self.mouseY)
             if sys.platform.startswith("win"):
                 for win in app_windows:
                     try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
-                    except: do_nothing()
+                    except: pass
                     else: win.mainToolBar.setStyleSheet(tabsontopsheet); win.tabs.setStyleSheet(tabsontopsheet2)
             else:
                 for win in app_windows:
                     try: win.tabs.widget(win.tabs.currentIndex()).addToolBar(win.mainToolBar)
-                    except: do_nothing()
+                    except: pass
                     else: win.mainToolBar.setStyleSheet(""); win.tabs.setStyleSheet("")
 
     def checkTabsOnTop(self):
         if app_tabs_on_top == True:
             try: self.tabs.widget(self.tabs.currentIndex()).addToolBar(self.mainToolBar)
-            except: do_nothing()
+            except: pass
             else:
                 if sys.platform.startswith("win"):
                     self.mainToolBar.setStyleSheet(tabsontopsheet); self.tabs.setStyleSheet(tabsontopsheet2)
@@ -3380,7 +3377,7 @@ self.origY + ev.globalY() - self.mouseY)
             try:
                 self.tabs.widget(tab).webInspectorDock.hide()
             except:
-                doNothing()
+                pass
 
     def showTabsContextMenu(self):
         x = QtCore.QPoint(QtGui.QCursor.pos()).x()
@@ -3442,7 +3439,7 @@ self.origY + ev.globalY() - self.mouseY)
                 return
         try: self.urlBar.setText(self.currentWebView().url().toString())
         except:
-            do_nothing()
+            pass
 
     def newWindowWithRWebView(self, webView):
         win = self.newWindow()
@@ -3588,7 +3585,7 @@ self.origY + ev.globalY() - self.mouseY)
             self.tabs.removeTab(index)
             try: settings_manager.settings['maxUndoCloseTab']
             except:
-                doNothing()
+                pass
             else:
                 if settings_manager.settings['maxUndoCloseTab'] >= 0:
                     if len(self.closedTabsList) >= int(settings_manager.settings['maxUndoCloseTab'] + 1):
@@ -3663,7 +3660,7 @@ self.origY + ev.globalY() - self.mouseY)
             """else:
                 w = self.closedTabsList[index]['widget']
                 self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, w)
-                do_nothing()
+                pass
                 else:
                     if w.browser.webView.history().canGoForward():
                         w.browser.webView.forward()
@@ -3719,13 +3716,13 @@ def load_startup_extensions():
         else:
             if e["name"] in app_extensions_whitelist:
                 try: e["type"]
-                except: do_nothing()
+                except: pass
                 else:
                     nobutton = False
                     if unicode(e["type"]).lower() == "python-startup":
                         nobutton = True
                     if nobutton == False:
-                        do_nothing()
+                        pass
                     else:
                         try: cDialog.settings["allowInjectAddons"]
                         except: notificationMessage(tr("extensionWarn"))

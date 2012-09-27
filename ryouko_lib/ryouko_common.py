@@ -27,9 +27,6 @@ SOFTWARE.
 """
 ## END OF LICENSE ##
 
-def do_nothing():
-    return
-
 import os, sys
 
 try:
@@ -58,7 +55,7 @@ try: from urllib.parse import unquote, quote
 except ImportError:
     try: from urllib import unquote, quote
     except:
-        do_nothing()
+        pass
 
 from xml.sax.saxutils import escape, quoteattr
 
@@ -66,12 +63,9 @@ try: from urllib.request import urlopen
 except ImportError:
     try: from urllib2 import urlopen
     except:
-        do_nothing()
+        pass
 
 _entity_re = re.compile(r'&(?:(#)(\d+)|([^;]+));')
-
-def doNothing():
-    return
 
 def getMimeType(filename):
     return get_mimetype(filename)
@@ -102,7 +96,7 @@ def shred_directory(directory):
                 os.system("shred -v \"" + fname + "\"")
             try: os.remove(fname)
             except:
-                do_nothing()
+                pass
 
 def _repl_func(match):
     if match.group(1): # Numeric character reference

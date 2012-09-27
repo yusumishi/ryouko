@@ -104,7 +104,7 @@ class BrowserHistory(QtCore.QObject):
             self.save()
             self.historyChanged.emit()
         except:
-            doNothing()
+            pass
     def removeByUrl(self, url=""):
         try:
             self.reload()
@@ -114,4 +114,4 @@ class BrowserHistory(QtCore.QObject):
             self.historyChanged.emit()
             self.save()
         except:
-            doNothing()
+            pass
