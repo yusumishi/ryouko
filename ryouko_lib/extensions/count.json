@@ -5,5 +5,5 @@
 "modifications": "Unescaped code, removed javascript: prefix, and converted into a Ryouko extension. Otherwise, the bookmarklet remains untouched.",
 "icon": "count.png",
 "type": "javascript",
-"js": "(function(){if(document.getElementById('__wc_display')){__wc_refresh();return};window.__wc_base='http://charcount.appspot.com/';var d=document;var s=d.createElement('script');s.setAttribute('src',__wc_base+'s/jquery.js');s.setAttribute('type','text/javascript');d.body.appendChild(s);s=d.createElement('script');s.setAttribute('src',__wc_base+'s/wc.js');s.setAttribute('type','text/javascript');d.body.appendChild(s);})()"
+"js": "(function(){if(document.getElementById('__wc_display')){__wc_refresh();return};window.__wc_base='http://127.0.0.1:8000/charcount/';var d=document;var s=d.createElement('script');s.setAttribute('src',__wc_base+'s/jquery.js');s.setAttribute('type','text/javascript');d.body.appendChild(s);s=d.createElement('script');s.setAttribute('src',__wc_base+'s/wc.js');s.setAttribute('type','text/javascript');d.body.appendChild(s);})()"
 }

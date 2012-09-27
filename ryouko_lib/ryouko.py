@@ -241,6 +241,14 @@ def reload_app_extensions():
 
 extensionServer = ServerThread()
 
+def acopy(f1, f2):
+    if os.path.isdir(f1):
+        if os.path.exists(f2):
+            shutil.rmtree(f2)
+        shutil.copytree(f1, f2)
+    elif os.path.exists(f1):
+        shutil.copyfile(f1, f2)
+
 def changeProfile(profile, init = False):
     global app_profile_name; global app_profile; global app_links;
     global app_lock; global app_cookies; global app_instance2;
@@ -274,6 +282,20 @@ def changeProfile(profile, init = False):
             shutil.copytree(os.path.join(app_lib, "extensions"), app_extensions_folder)
         else:
             os.makedirs(app_extensions_folder)
+    if os.path.isdir(os.path.join(app_lib, "extensions")):
+        for fname in os.listdir(os.path.join(app_lib, "extensions")):
+            update = os.path.join(app_lib, "extensions", fname)
+            current = os.path.join(app_extensions_folder, fname)
+            if not os.path.exists(current):
+                acopy(update, current)
+            else:
+                if os.path.exists(update):
+                    rt = int(float(os.stat(update).st_mtime)*100)
+                    lt = int(float(os.stat(current).st_mtime)*100)
+                if (lt >= rt) == False:
+                    acopy(update, current)
+                elif (rt >= lt) == False:
+                    acopy(current, update)
 
     settings_manager.changeProfile(app_profile)
 
@@ -382,14 +404,6 @@ def prepareQuit():
     else:
         sync_data()
     sys.exit()
-
-def acopy(f1, f2):
-    if os.path.isdir(f1):
-        if os.path.exists(f2):
-            shutil.rmtree(f2)
-        shutil.copytree(f1, f2)
-    elif os.path.exists(f1):
-        shutil.copyfile(f1, f2)
 
 def sync_data():
     sfile = os.path.join(app_profile, "app_sync.conf")
