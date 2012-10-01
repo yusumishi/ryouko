@@ -3033,6 +3033,7 @@ self.origY + ev.globalY() - self.mouseY)
         self.fileMenu.addAction(closeRightTabsAction)
         self.fileMenu.addAction(closeTabForeverAction)
         self.fileMenu.addSeparator()
+        self.fileMenu.addAction(quitAction)
 
         self.editMenu = QMenu(tr("editHKey"))
         self.editMenu.addAction(self.findAction)
