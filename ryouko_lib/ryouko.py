@@ -1886,7 +1886,7 @@ class CDialog(QMainWindow):
         settings_manager.loadSettings()
         self.settings = settings_manager.settings
         try: self.settings['homePages']
-        except: self.homePagesField.setText("http://www.sourceforge.net/projects/ryouko")
+        except: self.homePagesField.setText("https://github.com/foxhead128/ryouko/")
         else: self.homePagesField.setText(qstring(self.settings['homePages']))
         try: self.settings['openInTabs']
         except: self.openTabsBox.setChecked(True)
