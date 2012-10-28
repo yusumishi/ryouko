@@ -1,0 +1,7 @@
+{
+"name": "SVG-edit",
+"license": "http://code.google.com/p/svg-edit/",
+"icon": "svg-edit.png",
+"type": "javascript",
+"js": "(function(){window.open(\"http://127.0.0.1:8000/svg-edit/svg-editor.html\");})()"
+}
