@@ -4,14 +4,17 @@ from __future__ import print_function
 import sys
 import os
 
-try:
-    filename = __file__
-except:
-    __file__ = sys.executable
-else:
-    del filename
+paths = ["/usr/lib/python2", "/usr/lib64/python2", "/usr/lib/python3", "/usr/lib64/python3"]
+
+try: __file__
+except: __file__ = sys.executable
 app_lib = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(app_lib)
+for path in paths:
+    for i in range(0, 11):
+        full_path = "%s.%s/site-packages/" % tuple((path, i))
+        if os.path.isdir(full_path) and not full_path in sys.path:
+            sys.path.append(full_path)
 
 import ryouko_lib.ryouko
 
