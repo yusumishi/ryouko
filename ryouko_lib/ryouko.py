@@ -29,6 +29,12 @@ SOFTWARE.
 
 from __future__ import print_function
 from locale import getdefaultlocale
+import os, sys
+try: __file__
+except: __file__ = sys.executable
+app_lib = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(app_lib)
+from TranslationManager import *
 
 try:
     import PyQt4.QtCore
@@ -64,7 +70,7 @@ else:
     pynotify.init("Ryouko")
     use_linux_notifications = True
 
-import os, sys, json, time, datetime, string, shutil, zipfile
+import json, time, datetime, string, shutil, zipfile
 
 app_vista = False
 if sys.platform.startswith("win"):
@@ -82,12 +88,8 @@ except ImportError:
 else:
     import urllib.request
 
-try: __file__
-except: __file__ = sys.executable
-app_lib = os.path.dirname(os.path.realpath(__file__))
 app_inject_types = ["python-tabbrowser", "python-startup"]
 app_locale = getdefaultlocale()[0]
-sys.path.append(app_lib)
 app_default_useragent = "Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/534.34 (KHTML, like Gecko) Qt/4.8.1 Safari/534.34"
 app_webview_default_icon = QIcon()
 app_tabs_on_top = False
@@ -114,7 +116,6 @@ from RExpander import RExpander
 from SearchManager import SearchManager
 from RHBoxLayout import RHBoxLayout
 from NotificationManager import NotificationManager
-from TranslationManager import *
 from RExtensionButton import RExtensionButton
 from DownloadManager import DownloadManagerGUI
 
