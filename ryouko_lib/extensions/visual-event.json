@@ -7,5 +7,5 @@
 "modifications": "Unescaped code, removed javascript: prefix, and converted into a Ryouko extension. Otherwise, the bookmarklet remains untouched.",
 "icon": "visual-event.png",
 "type": "javascript",
-"js": "(function() {var url = 'http://www.sprymedia.co.uk/VisualEvent/VisualEvent_Loader.js';if( typeof VisualEvent!='undefined' ) {if ( VisualEvent.instance !== null ) {VisualEvent.close();}else {new VisualEvent();}}else {var n=document.createElement('script');n.setAttribute('language','JavaScript');n.setAttribute('src',url+'?rand='+new Date().getTime());document.body.appendChild(n);}})();"
+"js": "(function() {var url = 'http://127.0.0.1:8000/VisualEvent/VisualEvent_Loader.js';if( typeof VisualEvent!='undefined' ) {if ( VisualEvent.instance !== null ) {VisualEvent.close();}else {new VisualEvent();}}else {var n=document.createElement('script');n.setAttribute('language','JavaScript');n.setAttribute('src',url+'?rand='+new Date().getTime());document.body.appendChild(n);}})();"
 }

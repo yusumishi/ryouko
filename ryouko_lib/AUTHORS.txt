@@ -3,3 +3,6 @@ Ryouko, en_US, and es translations:
 
 zh_CN translation:
     Jason Liu
+
+es translation:
+    Juan Garcia
