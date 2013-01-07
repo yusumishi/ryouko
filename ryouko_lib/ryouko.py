@@ -3170,7 +3170,6 @@ self.origY + ev.globalY() - self.mouseY)
             try: self.extensions[e].deleteLater()
             except: pass
         self.extensions = {}
-        self.user_scripts = {}
         for e in app_extensions:
             try: e["name"]
             except: print("Error! Extension has no name!")
