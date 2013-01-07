@@ -146,3 +146,9 @@ def unescape(text):
             pass
       return text # leave as is
    return re.sub("&#?\w+;", fixup, text)
+
+def match_url(url, match):
+    for urlc in match:
+        if not urlc in url:
+            return False
+    return True

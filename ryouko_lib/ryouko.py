@@ -102,6 +102,7 @@ from RUrlBar import RUrlBar
 from RSearchBar import RSearchBar
 from Python23Compat import *
 from QStringFunctions import *
+from StringFunctions import *
 from SettingsManager import SettingsManager
 from RWebKit import RWebPage, RWebView, RAboutPageView
 from DownloaderThread import DownloaderThread
@@ -147,6 +148,7 @@ app_profile_exists = False
 app_kill_cookies = False
 app_kill_temp_files = False
 app_extensions = []
+app_user_scripts = []
 app_extensions_whitelist = []
 app_extensions_path = []
 for arg in sys.argv:
@@ -222,7 +224,9 @@ def reload_app_extension_whitelist():
 
 def reload_app_extensions():
     global app_extensions
+    global app_user_scripts
     app_extensions = []
+    app_user_scripts = []
     for folder in app_extensions_path:
         if os.path.isdir(folder):
             l = os.listdir(folder)
@@ -230,15 +234,30 @@ def reload_app_extensions():
                 fname = os.path.join(folder, addon)
                 if os.path.exists(fname) and not os.path.isdir(fname):
                     f = open(fname, "r")
-                    try: ext = json.load(f)
-                    except: pass
+                    if fname.endswith(".user.js"):
+                        try: contents = f.read()
+                        except: f.close()
+                        else:
+                            lines = f.readlines()
+                            f.close()
+                            match = []
+                            for line in lines:
+                                if "@match " in line:
+                                    newline = ichop(line, "@match ")
+                                    match.append(newline.split("*"))
+                                    print(newline)
+                            app_extensions.append({"name": addon, "type": "userscript", "js": contents, "match": match})
+                            app_user_scripts.append(app_extensions[len(app_extensions) - 1])
                     else:
-                        try: ext["path"] = fname
-                        except: ext["path"] = None
-                        try: ext["folder"] = folder
-                        except: ext["folder"] = None
-                        app_extensions.append(ext)
-                        f.close()
+                        try: ext = json.load(f)
+                        except: f.close()
+                        else:
+                            try: ext["path"] = fname
+                            except: ext["path"] = None
+                            try: ext["folder"] = folder
+                            except: ext["folder"] = None
+                            app_extensions.append(ext)
+                            f.close()
 
 extensionServer = ServerThread()
 
@@ -2336,6 +2355,13 @@ self.origY + ev.globalY() - self.mouseY)
     def loadExtensionURL(self, url):
         self.currentWebView().load(url)
 
+    def loadUserScripts(self):
+        frames = [self.currentWebView().page().mainFrame()] + self.currentWebView().page().mainFrame().childFrames()
+        for frame in frames:
+            for extension in app_user_scripts:
+                if match_url(unicode(self.currentWebView().url().toString()), extension["match"]):
+                    frame.evaluateJavaScript(extension["js"])
+
     def loadExtensionJS(self, js):
         self.currentWebView().page().mainFrame().evaluateJavaScript(js)
 
@@ -3144,6 +3170,7 @@ self.origY + ev.globalY() - self.mouseY)
             try: self.extensions[e].deleteLater()
             except: pass
         self.extensions = {}
+        self.user_scripts = {}
         for e in app_extensions:
             try: e["name"]
             except: print("Error! Extension has no name!")
@@ -3508,6 +3535,7 @@ self.origY + ev.globalY() - self.mouseY)
             exec("tab%s.webView.urlChanged.connect(self.correctURLText)" % (s))
             exec("tab%s.webView.loadProgress.connect(self.toggleStopReload)" % (s))
             exec("tab%s.webView.loadFinished.connect(self.toggleStopReload)" % (s))
+            exec("tab%s.webView.loadFinished.connect(self.loadUserScripts)" % (s))
             if settings_manager.settings["relativeTabs"] == False:
                 exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
                 self.tabs.setCurrentIndex(self.tabs.count() - 1)
