@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from __future__ import print_function
-import os, sys, string, locale
+import os, sys, string, locale, types
 from PyQt4 import QtCore, QtGui, QtWebKit, QtNetwork
 try: __file__
 except: __file__ == sys.executable
@@ -14,6 +14,7 @@ from DialogFunctions import *
 from ViewSourceDialog import *
 from TranslationManager import *
 from SystemFunctions import *
+from ryouko_common import match_url
 
 app_google_docs_extensions = [".doc", ".pdf", ".ppt", ".pptx", ".docx", ".xls", ".xlsx", ".pages", ".ai", ".psd", ".tiff", ".dxf", ".svg", ".eps", ".ps", ".ttf", ".xps", ".zip", ".rar"]
 app_zoho_extensions = [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".pps", ".xls", ".xlsx", ".odt", ".ods", ".odp", ".sxw", ".sxc", ".sxi", ".wpd", ".rtf", ".csv", ".tsv", ".txt", ".html"]
@@ -27,12 +28,18 @@ if os.path.exists(app_info):
     if len(metadata) > 0:
         app_version = metadata[0].rstrip("\n")
 
+def loadUserScripts(self):
+    for extension in self.userScripts:
+        if match_url(unicode(self.url().toString()), extension["match"]):
+            self.evaluateJavaScript("var e = document.createElement('script'); e.setAttribute('src', '%s'); window.document.body.appendChild(e);".replace("%s", "http://127.0.0.1:8000/" + extension["filename"]))
+
 class RWebPage(QtWebKit.QWebPage):
     alertToolBar = QtCore.pyqtSignal(QtGui.QToolBar)
     def __init__(self, parent=None):
         super(RWebPage, self).__init__()
         self.setParent(parent)
         self.userAgent = False
+        self.userScripts = []
         self.toolBarLimit = 0
         global app_default_useragent
         app_default_useragent = unicode(self.userAgentForUrl(QtCore.QUrl("about:blank"))).replace("Safari", "Ryouko/" + app_version + " Safari")
@@ -41,6 +48,15 @@ class RWebPage(QtWebKit.QWebPage):
         self.setNetworkAccessManager(RNetworkAccessManager(self.networkAccessManager()))
         self.networkAccessManager().authenticationRequired.connect(self.provideAuthentication)
         self.networkAccessManager().sslErrors.connect(self.sslError)
+        self.frameCreated.connect(self.doStuffToFrame)
+
+    def setUserScripts(self, user_scripts):
+        self.userScripts = user_scripts
+
+    def doStuffToFrame(self, frame):
+        frame.userScripts = self.userScripts
+        frame.loadUserScripts = types.MethodType(loadUserScripts, frame)
+        frame.loadFinished.connect(frame.loadUserScripts)
 
     def sslError(self, reply, errors):
         q = QtGui.QMessageBox.warning(None, tr("warning"),
@@ -247,6 +263,7 @@ class RWebView(QtWebKit.QWebView):
         page = RWebPage(self)
         self.setPage(page)
         self.settingsManager = None
+        self.userScripts = []
         self.loading = False
         self.destinations = []
         self.sourceViews = []
@@ -359,6 +376,9 @@ class RWebView(QtWebKit.QWebView):
         else:
             self.isWindow = False
         self.loadFinished.connect(self.loadLinks)
+
+    def setUserScripts(self, user_scripts):
+        self.page().setUserScripts(user_scripts)
 
     def setHoveredUrl(self, url, title, content):
         self.hoveredUrl = QtCore.QUrl(url)

@@ -150,6 +150,7 @@ app_kill_temp_files = False
 app_extensions = []
 app_user_scripts = []
 app_extensions_whitelist = []
+app_enabled_userscripts = []
 app_extensions_path = []
 for arg in sys.argv:
     app_commandline = "%s%s " % (app_commandline, arg)
@@ -213,6 +214,7 @@ def remove2(fname):
 
 def reload_app_extension_whitelist():
     global app_extensions_whitelist
+    global app_enabled_userscripts
     if os.path.exists(app_extensions_wlfile):
         f = open(app_extensions_wlfile, "r")
         try: a = f.read()
@@ -221,6 +223,10 @@ def reload_app_extension_whitelist():
         app_extensions_whitelist = a.split("\n")
     else:
         app_extensions_whitelist = []
+    for script in app_user_scripts:
+        for extension in app_extensions_whitelist:
+            if script["name"] == extension:
+                app_enabled_userscripts.append(script)
 
 def reload_app_extensions():
     global app_extensions
@@ -241,12 +247,15 @@ def reload_app_extensions():
                             lines = f.readlines()
                             f.close()
                             match = []
+                            name = addon
                             for line in lines:
                                 if "@match " in line:
                                     newline = ichop(line, "@match ")
                                     match.append(newline.split("*"))
                                     print(newline)
-                            app_extensions.append({"name": addon, "type": "userscript", "js": contents, "match": match})
+                                elif "@name " in line:
+                                    name = ichop(line, "@name ")
+                            app_extensions.append({"name": name, "filename": addon, "path": fname, "type": "userscript", "match": match})
                             app_user_scripts.append(app_extensions[len(app_extensions) - 1])
                     else:
                         try: ext = json.load(f)
@@ -1540,6 +1549,7 @@ class Browser(QMainWindow):
 
     def updateSettings(self):
         self.webView.updateSettings()
+        self.webView.setUserScripts(app_enabled_userscripts)
 
 downloaderThread = DownloaderThread()
 
@@ -2354,13 +2364,6 @@ self.origY + ev.globalY() - self.mouseY)
 
     def loadExtensionURL(self, url):
         self.currentWebView().load(url)
-
-    def loadUserScripts(self):
-        frames = [self.currentWebView().page().mainFrame()] + self.currentWebView().page().mainFrame().childFrames()
-        for frame in frames:
-            for extension in app_user_scripts:
-                if match_url(unicode(self.currentWebView().url().toString()), extension["match"]):
-                    frame.evaluateJavaScript(extension["js"])
 
     def loadExtensionJS(self, js):
         self.currentWebView().page().mainFrame().evaluateJavaScript(js)
@@ -3198,7 +3201,7 @@ self.origY + ev.globalY() - self.mouseY)
                             try: exec("ext" + str(count) + ".setType(unicode(e['type']))")
                             except: pass
                             else:
-                                if unicode(e["type"]).lower() == "python-tabbrowser":
+                                if unicode(e["type"]).lower() in ["python-tabbrowser", "userscript"]:
                                     nobutton = True
                         try: e["js"]
                         except: pass
@@ -3240,9 +3243,9 @@ self.origY + ev.globalY() - self.mouseY)
                             try: cDialog.settings["allowInjectAddons"]
                             except: notificationMessage(tr("extensionWarn"))
                             else:
-                                if cDialog.settings["allowInjectAddons"] != True:
+                                if cDialog.settings["allowInjectAddons"] != True and "python" in e.keys():
                                     notificationMessage(tr("extensionWarn"))
-                                else:
+                                elif "python" in e.keys():
                                     try: exec(e["python"])
                                     except: notificationMessage("extensionError")
 
@@ -3534,7 +3537,6 @@ self.origY + ev.globalY() - self.mouseY)
             exec("tab%s.webView.urlChanged.connect(self.correctURLText)" % (s))
             exec("tab%s.webView.loadProgress.connect(self.toggleStopReload)" % (s))
             exec("tab%s.webView.loadFinished.connect(self.toggleStopReload)" % (s))
-            exec("tab%s.webView.loadFinished.connect(self.loadUserScripts)" % (s))
             if settings_manager.settings["relativeTabs"] == False:
                 exec("self.tabs.addTab(tab" + s + ", tab" + s + ".webView.icon(), 'New Tab')")
                 self.tabs.setCurrentIndex(self.tabs.count() - 1)
